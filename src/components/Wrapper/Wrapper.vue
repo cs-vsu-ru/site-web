@@ -1,11 +1,11 @@
 <template>
+  <main class="wrapper">
 
+  </main>
 </template>
 
-<script>
-export default {
-  name: "Wrapper"
-}
+<script setup>
+
 </script>
 
 <style scoped>
