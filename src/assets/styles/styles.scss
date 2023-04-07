@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Lora:wght@700&family=Roboto+Condensed:wght@300;400;700&display=swap');
 @import "variables";
+@import 'swiper/swiper.css';
 
 *{
   margin: 0;
@@ -61,6 +62,29 @@ h1, h2{
     &:after{
       left: 0;
       right: 0;
+    }
+  }
+}
+
+.section-header{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  &__link{
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    line-height: 16px;
+    color: $pr1;
+    transition: 0.2s;
+
+    &:hover{
+      svg{
+        transform: translateX(10px);
+      }
     }
   }
 }
