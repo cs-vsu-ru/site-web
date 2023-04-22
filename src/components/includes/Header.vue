@@ -84,7 +84,7 @@ const auth = async () => {
         rememberMe: true
     })
       .then((token) => {
-          store.setAuth(token.data.jwtToken.id_token)
+          store.setAuth(token.data.jwtToken.id_token, token.data.mainRole)
           window.location.replace('/')
       })
 }

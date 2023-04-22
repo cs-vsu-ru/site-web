@@ -4,10 +4,10 @@
     <div class="events__field">
       <a v-for="event in eventArr" href="/" class="event">
         <div class="event__date">
-          <p class="event__date-day">{{ event.publicationDate.split('T')[0].split('-')[2] + '.' + event.publicationDate.split('T')[0].split('-')[1] + '.' + event.publicationDate.split('T')[0].split('-')[0] }}</p>
-          <p class="event__date-time">{{ event.publicationDate.split('T')[1].slice(0, 5) }}</p>
+          <p class="event__date-day">{{ event.startDate.split('-').reverse().join('.') }}</p>
+          <p class="event__date-time">{{ event.startTime }}</p>
         </div>
-        <p class="event__name">{{ event.content }}</p>
+        <p class="event__name">{{ event.title }}</p>
       </a>
     </div>
   </section>

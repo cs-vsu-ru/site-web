@@ -5,6 +5,7 @@ import AllNews from "@/views/AllNews.vue";
 import Profile from "@/views/Profile.vue";
 import {userAuth} from "@/store/userAuth";
 import NewPage from "@/views/NewPage.vue";
+import Admin from "@/views/Admin";
 
 const routes = [
   {
@@ -40,7 +41,18 @@ const routes = [
     path: '/news/new/:id',
     name: 'New',
     component: NewPage
+  },
+  {
+    path: '/admin',
+    name: 'Admin',
+    component: Admin,
+    beforeEnter: (to, from, next) => {
+      const store = userAuth()
+
+      store.getRole !== 'ROLE_ADMIN' ? next('/') : next()
+    }
   }
+
 ]
 
 const router = createRouter({

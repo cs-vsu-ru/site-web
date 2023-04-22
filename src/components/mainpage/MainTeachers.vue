@@ -77,6 +77,7 @@ const teacherList = async () => {
                 padding: 15px;
                 border-radius: 10px;
                 position: relative;
+                width: 100%;
 
                 &-name{
                     font-size: 24px;

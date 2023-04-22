@@ -18,32 +18,14 @@
           }"
           :modules="[Navigation]"
       >
-        <SwiperSlide>
-          <div class="event">
+        <SwiperSlide v-for="slide in slidesArr">
+          <a :href="slide.urlTo" class="event">
             <div class="event__text">
               <p class="event__text-name">События</p>
-              <p class="event__text-value">Прошла зимняя школа подготовки к поступлению</p>
+              <p class="event__text-value">{{ slide.title }}</p>
             </div>
-            <img src="../../assets/img/main-slide.png" alt="" class="event__image">
-          </div>
-        </SwiperSlide>
-        <SwiperSlide>
-          <div class="event">
-            <div class="event__text">
-              <p class="event__text-name">События</p>
-              <p class="event__text-value">Прошла зимняя школа подготовки к поступлению</p>
-            </div>
-            <img src="../../assets/img/main-slide.png" alt="" class="event__image">
-          </div>
-        </SwiperSlide>
-        <SwiperSlide>
-          <div class="event">
-            <div class="event__text">
-              <p class="event__text-name">События</p>
-              <p class="event__text-value">Прошла зимняя школа подготовки к поступлению</p>
-            </div>
-            <img src="../../assets/img/main-slide.png" alt="" class="event__image">
-          </div>
+            <img :src="slide.imageURL" alt="" class="event__image">
+          </a>
         </SwiperSlide>
       </Swiper>
       <div class="main__slider-nav">
@@ -65,7 +47,21 @@
 <script setup>
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import { Navigation } from 'swiper'
+import axios from "axios";
+import {onMounted, ref} from "vue";
 
+const slidesArr = ref([])
+
+onMounted(() => {
+  getSlides()
+})
+
+const getSlides = async () => {
+  await axios.get('sliders')
+      .then((slideData) => {
+        slidesArr.value = slideData.data
+      })
+}
 </script>
 
 <style lang="scss" scoped>
