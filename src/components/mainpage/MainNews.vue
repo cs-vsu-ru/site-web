@@ -3,7 +3,7 @@
     <div class="news__container">
       <div class="section-header">
         <h1 class="section-header__title">Новости</h1>
-        <router-link class="section-header__link" to="/">
+        <router-link class="section-header__link" to="/news">
           Читать далее
           <svg width="40" height="9" viewBox="0 0 40 9" xmlns="http://www.w3.org/2000/svg">
             <path d="M1.00908 5.30969H36.3673L33.2593 7.67647C32.8557 7.98789 32.8557 8.48616 33.2593 8.76644C33.663 9.07786 34.3088 9.07786 34.6721 8.76644L39.8789 4.71799C40.0404 4.59343 40.0404 4.40657 39.8789 4.28201L34.6721 0.233564C34.2684 -0.0778547 33.6226 -0.0778547 33.2593 0.233564C32.8557 0.544983 32.8557 1.04325 33.2593 1.32353L36.3673 3.69031H1.00908C0.443996 3.69031 0 4.03287 0 4.46886C0 4.96713 0.443996 5.30969 1.00908 5.30969Z"/>
@@ -20,10 +20,10 @@
             }"
             :modules="[Navigation]"
         >
-          <SwiperSlide v-for="newsSlide in newsSlider" class="new">
-            <img src="../../assets/img/new.png" alt="" class="new__image">
+          <SwiperSlide v-for="newsSlide in newsSlider.slice(0, 8)" class="new">
+            <img :src="newsSlide.imageURL" alt="" class="new__image">
             <p class="new__date">3 марта</p>
-            <p class="new__text">Прием документов от абитуриентов завершится 13 марта</p>
+            <p class="new__text">{{ newsSlide.title }}</p>
           </SwiperSlide>
         </Swiper>
         <div class="slider-nav">
@@ -46,15 +46,27 @@
 <script setup>
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import { Navigation } from 'swiper'
-import {ref} from "vue";
+import {onMounted, ref} from "vue";
+import axios from "axios";
 
 const prevEl = ref(null)
 const nextEl = ref(null)
 
-const newsSlider = [1, 2, 3, 4, 5, 6, 7, 8]
+const newsSlider = ref([])
+
+onMounted(() => {
+    newsList()
+})
+
+const newsList = async () => {
+    await axios.get('articles')
+        .then((news) => {
+            newsSlider.value = news.data
+        })
+}
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 @import "../../assets/styles/styles.scss";
 .news{
   background: $pr3;
@@ -70,51 +82,50 @@ const newsSlider = [1, 2, 3, 4, 5, 6, 7, 8]
     &-field{
       width: 100%;
       position: relative;
-
-      .new{
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 15px;
-        max-width: 296px;
-        position: relative;
-        cursor: pointer;
-
-        &:before{
-          content: '';
-          position: absolute;
-          height: 100%;
-          width: 2px;
-          left: 0;
-          top: 0;
-          background: $pr2;
-        }
-
-        &__image{
-          width: 296px;
-          height: 180px;
-          object-fit: cover;
-          border-radius: 0 10px 10px 0;
-        }
-
-        &__date{
-          font-size: 18px;
-          line-height: 21px;
-          color: white;
-          background: $pr2;
-          border-radius: 0 10px 10px 0;
-          padding: 7px 14px;
-        }
-
-        &__text{
-          font-size: 24px;
-          line-height: 28px;
-          background: white;
-          padding: 10px;
-          border-radius: 0 10px 10px 0;
-        }
-      }
     }
+  }
+}
+.new{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 15px;
+  max-width: 296px;
+  position: relative;
+  cursor: pointer;
+
+  &:before{
+    content: '';
+    position: absolute;
+    height: 100%;
+    width: 2px;
+    left: 0;
+    top: 0;
+    background: $pr2;
+  }
+
+  &__image{
+    width: 296px;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 0 10px 10px 0;
+  }
+
+  &__date{
+    font-size: 18px;
+    line-height: 21px;
+    color: white;
+    background: $pr2;
+    border-radius: 0 10px 10px 0;
+    padding: 7px 14px;
+  }
+
+  &__text{
+    font-size: 24px;
+    line-height: 28px;
+    background: white;
+    padding: 10px;
+    border-radius: 0 10px 10px 0;
   }
 }
 </style>

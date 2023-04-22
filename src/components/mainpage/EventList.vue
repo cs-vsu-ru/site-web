@@ -2,54 +2,33 @@
   <section class="events">
     <h1 class="events__title">Мероприятия</h1>
     <div class="events__field">
-      <a href="/" class="event">
+      <a v-for="event in eventArr" href="/" class="event">
         <div class="event__date">
-          <p class="event__date-day">19.02 - 25.02</p>
-          <p class="event__date-time">12:00</p>
+          <p class="event__date-day">{{ event.publicationDate.split('T')[0].split('-')[2] + '.' + event.publicationDate.split('T')[0].split('-')[1] + '.' + event.publicationDate.split('T')[0].split('-')[0] }}</p>
+          <p class="event__date-time">{{ event.publicationDate.split('T')[1].slice(0, 5) }}</p>
         </div>
-        <p class="event__name">Семинар HDI Lab</p>
-      </a>
-      <a href="/" class="event">
-        <div class="event__date">
-          <p class="event__date-day">19.02 - 25.02</p>
-          <p class="event__date-time">12:00</p>
-        </div>
-        <p class="event__name">Семинар HDI Lab</p>
-      </a>
-      <a href="/" class="event">
-        <div class="event__date">
-          <p class="event__date-day">19.02 - 25.02</p>
-          <p class="event__date-time">12:00</p>
-        </div>
-        <p class="event__name">Семинар HDI Lab</p>
-      </a>
-      <a href="/" class="event">
-        <div class="event__date">
-          <p class="event__date-day">19.02 - 25.02</p>
-          <p class="event__date-time">12:00</p>
-        </div>
-        <p class="event__name">Семинар HDI Lab</p>
-      </a>
-      <a href="/" class="event">
-        <div class="event__date">
-          <p class="event__date-day">19.02 - 25.02</p>
-          <p class="event__date-time">12:00</p>
-        </div>
-        <p class="event__name">Семинар HDI Lab</p>
-      </a>
-      <a href="/" class="event">
-        <div class="event__date">
-          <p class="event__date-day">19.02 - 25.02</p>
-          <p class="event__date-time">12:00</p>
-        </div>
-        <p class="event__name">Семинар HDI Lab</p>
+        <p class="event__name">{{ event.content }}</p>
       </a>
     </div>
   </section>
 </template>
 
 <script setup>
+import {onMounted, ref} from "vue";
+import axios from "axios";
 
+const eventArr = ref([])
+
+onMounted(() => {
+    eventList()
+})
+
+const eventList = async () => {
+    await axios.get('events')
+        .then((events) => {
+            eventArr.value = events.data
+        })
+}
 </script>
 
 <style lang="scss" scoped>
@@ -103,6 +82,8 @@
       &__name{
         font-size: 30px;
         line-height: 35px;
+        max-width: 200px;
+        width: 100%;
       }
 
       &:after{
@@ -111,7 +92,7 @@
         height: 100%;
         width: 2px;
         background: $pr2;
-        left: calc(50% - 2px);
+        left: calc(48% - 2px);
       }
     }
   }
