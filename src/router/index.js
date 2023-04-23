@@ -46,11 +46,11 @@ const routes = [
     path: '/admin',
     name: 'Admin',
     component: Admin,
-    beforeEnter: (to, from, next) => {
-      const store = userAuth()
-
-      store.getRole !== 'ROLE_ADMIN' ? next('/') : next()
-    }
+    // beforeEnter: (to, from, next) => {
+    //   const store = userAuth()
+    //
+    //   store.getRole !== 'ROLE_ADMIN' ? next('/') : next()
+    // }
   }
 
 ]
