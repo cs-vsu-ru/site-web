@@ -7,7 +7,7 @@ import { GDialog } from 'gitart-vue-dialog'
 import 'gitart-vue-dialog/dist/style.css'
 import CKEditor from '@ckeditor/ckeditor5-vue';
 
-axios.defaults.baseURL = 'http://dev.fiori-vrn.online/api/'
+axios.defaults.baseURL = process.env.VUE_APP_BASE_URL
 axios.defaults.headers['Authorization'] = `Bearer ${localStorage.getItem('token')}`
 
 const pinia = createPinia()

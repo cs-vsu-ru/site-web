@@ -1,9 +1,7 @@
 <template>
   <section class="admin">
     <aside class="admin__tabs">
-      <button class="admin__tabs-item admin-button active">Слайдер</button>
-      <button class="admin__tabs-item admin-button">Мероприятия</button>
-      <button class="admin__tabs-item admin-button">Новости</button>
+      <button v-for="tab in tabTitles" class="admin__tabs-item admin-button active">{{ tab }}</button>
     </aside>
     <div class="admin__view">
       <div class="admin__view-item">
@@ -37,6 +35,9 @@
           <button @click="newSlide = true" class="slider-admin__add admin-button">Добавить слайд</button>
         </div>
       </div>
+      <div class="admin__view-item">
+
+      </div>
     </div>
   </section>
 </template>
@@ -44,6 +45,8 @@
 <script setup>
 import {onMounted, ref} from "vue";
 import axios from "axios";
+
+const tabTitles = ['Слайдер', 'Мероприятия', 'Новости']
 
 const slidesAdminArr = ref([])
 const checkDisable = ref([])
