@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        required: false
+        type: string
+        default: 'latest'
+  workflow_dispatch:
+    inputs:
+      tag:
+        required: false
+        type: string
+        default: 'latest'
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3.5.2
+      - name: Set up environment
+        run: |
+          echo "VUE_APP_BASE_URL=${{ vars.DEV_VUE_APP_BASE_URL }}" > .env
+      - name: Login to docker.hub
+        uses: docker/login-action@v2.1.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push docker image
+        uses: docker/build-push-action@v4.0.0
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository }}/web:${{ inputs.tag }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/api:${{ inputs.tag }}
+          cache-to: type=inline
