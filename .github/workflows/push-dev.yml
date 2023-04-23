@@ -1,0 +1,11 @@
+name: "Push: dev"
+
+on:
+  push:
+    branches:    
+      - 'dev'
+
+jobs:
+  ci:
+    uses: ./.github/workflows/call-dev_ci.yml
+    secrets: inherit
