@@ -127,6 +127,9 @@ h1, h2{
   border: 1px solid $pr1;
   border-radius: 10px;
   padding: 5px 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   &.active, &:hover{
     background: $pr1;

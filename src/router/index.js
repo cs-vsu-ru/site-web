@@ -6,6 +6,7 @@ import Profile from "@/views/Profile.vue";
 import {userAuth} from "@/store/userAuth";
 import NewPage from "@/views/NewPage.vue";
 import Admin from "@/views/Admin";
+import axios from "axios";
 
 const routes = [
   {
@@ -30,12 +31,7 @@ const routes = [
   {
     path: '/profile/:id',
     name: 'Profile',
-    component: Profile,
-    // beforeEnter: (to, from, next) => {
-    //   const store = userAuth()
-    //
-    //   store.getIsAuth === '' ? next('/') : next()
-    // }
+    component: Profile
   },
   {
     path: '/news/new/:id',
@@ -46,11 +42,19 @@ const routes = [
     path: '/admin',
     name: 'Admin',
     component: Admin,
-    // beforeEnter: (to, from, next) => {
-    //   const store = userAuth()
-    //
-    //   store.getRole !== 'ROLE_ADMIN' ? next('/') : next()
-    // }
+    beforeEnter: async (to, from, next) => {
+      const store = userAuth()
+
+      if (store.getIsAuth !== '') {
+        await axios.get('account')
+            .then((accData) => {
+              accData.data.mainRole === 'ROLE_ADMIN' ? next() : next('/')
+            })
+      }
+      else {
+        next('/')
+      }
+    }
   }
 
 ]
