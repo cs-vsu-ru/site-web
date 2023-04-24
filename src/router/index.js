@@ -7,6 +7,7 @@ import {userAuth} from "@/store/userAuth";
 import NewPage from "@/views/NewPage.vue";
 import Admin from "@/views/Admin";
 import axios from "axios";
+import Schedule from "@/views/Schedule.vue";
 
 const routes = [
   {
@@ -55,6 +56,11 @@ const routes = [
         next('/')
       }
     }
+  },
+  {
+    path: '/schedule/:id',
+    name: 'Schedule',
+    component: Schedule
   }
 
 ]

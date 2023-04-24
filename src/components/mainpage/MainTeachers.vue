@@ -13,7 +13,7 @@
             <router-link :to="'/profile/' + teacher.user.id" v-for="teacher in teachersArr.slice(0, 5)" class="teacher">
                 <img :src="teacher.user.imageUrl" alt="" class="teacher__photo">
                 <div class="teacher__data">
-                    <p class="teacher__data-name">{{ teacher.user.firstName + ' ' + teacher.user.lastName + ' ' + teacher.patronymic}}</p>
+                    <p class="teacher__data-name">{{ teacher.user.lastName + ' ' + teacher.user.firstName + ' ' + teacher.patronymic}}</p>
                     <p class="teacher__data-status">{{ teacher.post }}</p>
                 </div>
             </router-link>
