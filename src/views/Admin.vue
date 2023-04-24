@@ -44,10 +44,16 @@
         </div>
       </div>
       <div class="admin__view-item"></div>
-      <div class="admin__view-item active">
+      <div class="admin__view-item">
           <div class="news-all__field">
               <div v-for="(newsSlide, index) in newsSlider" class="new">
-                  <img :src="newsSlide.imageURL" alt="" class="new__image">
+                <div class="slider-admin__box">
+                  <img v-if="currNews[index] === null" :src="newsSlide.imageURL" alt="" class="slider-admin__item-img">
+                  <img v-else :src="currNews[index]" alt="" class="slider-admin__item-img">
+                  <input v-on:change="checkNew(index)" ref="newUrl" :id="newsSlide.id" type="file" accept="image/png, image/jpeg, image/jpg" class="slider-admin__box-input">
+                  <label v-if="newsDisabler[index]" class="slider-admin__box-label" :for="newsSlide.id"></label>
+                  <svg v-if="newsDisabler[index]" width="64px" height="64px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"></path> </g></svg>
+                </div>
                   <p class="new__date">3 марта</p>
                   <textarea maxlength="110" v-model="newsSlide.title" class="new__input" :disabled="!newsDisabler[index]"/>
                   <div class="news-admin__buttons">
@@ -57,9 +63,15 @@
                           <svg fill="#00295F" width="30" height="30" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" stroke="#00295F"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>link</title> <path d="M10.406 13.406l2.5-2.531c0.219-0.219 0.469-0.5 0.719-0.813 0.25-0.281 0.531-0.531 0.813-0.75 0.531-0.469 1.156-0.875 1.938-0.875 0.688 0 1.281 0.313 1.719 0.719s0.688 1 0.688 1.688c0 0.281-0.031 0.594-0.125 0.813-0.219 0.438-0.406 0.75-0.594 1-0.094 0.125-0.188 0.25-0.188 0.375 0 0.094 0 0.188 0.063 0.219 0.344 0.844 0.594 1.563 0.75 2.438 0.094 0.344 0.281 0.5 0.594 0.5 0.125 0 0.25-0.031 0.375-0.125 0.25-0.156 0.469-0.406 0.688-0.656 0.125-0.125 0.219-0.25 0.281-0.313 1.125-1.094 1.781-2.656 1.781-4.25 0-1.688-0.688-3.188-1.781-4.281-1.094-1.063-2.625-1.781-4.25-1.781s-3.188 0.656-4.281 1.813l-4.281 4.25c-1.125 1.156-1.75 2.656-1.75 4.25 0 0.469 0.188 1.438 0.5 2.344 0.313 0.875 0.719 1.656 1.25 1.656 0.281 0 0.875-0.469 1.375-1s1-1.125 1-1.344c0-0.156-0.125-0.344-0.25-0.625-0.156-0.281-0.219-0.625-0.219-1.031 0-0.625 0.25-1.25 0.688-1.688zM10.313 25.406l4.281-4.25c1.125-1.094 1.75-2.688 1.75-4.281 0-0.469-0.188-1.406-0.5-2.313-0.281-0.875-0.719-1.688-1.25-1.688-0.219 0-0.875 0.5-1.344 1.031-0.531 0.531-1.031 1.094-1.031 1.313 0 0.156 0.094 0.406 0.25 0.656 0.156 0.281 0.281 0.594 0.281 1-0.031 0.625-0.281 1.25-0.719 1.75l-2.531 2.5c-0.219 0.25-0.469 0.5-0.719 0.781l-0.781 0.781c-0.531 0.5-1.188 0.844-1.969 0.844-1.313 0-2.375-1.031-2.375-2.375 0-0.313 0.063-0.594 0.156-0.813 0.188-0.438 0.375-0.75 0.594-1 0.094-0.125 0.125-0.25 0.125-0.344 0-0.063-0.031-0.125-0.063-0.25-0.375-0.844-0.594-1.563-0.75-2.438-0.063-0.156-0.094-0.281-0.188-0.344-0.094-0.125-0.25-0.156-0.406-0.156-0.125 0-0.219 0.031-0.344 0.125-0.25 0.156-0.5 0.406-0.719 0.656-0.094 0.125-0.219 0.219-0.281 0.281-1.125 1.125-1.781 2.688-1.781 4.281 0 1.656 0.656 3.188 1.781 4.281 1.094 1.094 2.594 1.75 4.25 1.75 1.625 0 3.188-0.625 4.281-1.781z"></path> </g>#00295F</svg>
                       </router-link>
                   </div>
-                  <button @click="saveNews(newsSlide.id, newsSlide.publicationDate, newsSlide.publicationTime, newsSlide.content, newsSlide.title, newsSlide.imageURL)" v-if="newsDisabler[index]" class="news-admin__button admin-button">Сохранить</button>
+                  <button @click="saveNews(newsSlide.id, newsSlide.publicationDate, newsSlide.publicationTime, newsSlide.content, newsSlide.title, newsSlide.imageURL, index); newsDisabler[index] = false" v-if="newsDisabler[index]" class="news-admin__button admin-button">Сохранить</button>
               </div>
           </div>
+      </div>
+      <div class="admin__view-item active">
+        <div class="admin-schedule">
+          <input ref="scheduleUrl" type="file">
+          <button @click="uploadSchedule" class="admin-button">Загрузить</button>
+        </div>
       </div>
     </div>
   </section>
@@ -70,7 +82,7 @@ import {onMounted, ref} from "vue";
 import axios from "axios";
 import index from "vuex";
 
-const tabTitles = ['Слайдер', 'Мероприятия', 'Новости']
+const tabTitles = ['Слайдер', 'Мероприятия', 'Новости', 'Расписание']
 
 const slidesAdminArr = ref([])
 const checkDisable = ref([])
@@ -83,6 +95,8 @@ const newFile = ref(null)
 const activeItem = ref(0)
 const newsSlider = ref([])
 const newsDisabler = ref([])
+const currNews = ref([])
+const scheduleUrl = ref(null)
 
 onMounted(() => {
   getSlidesForAdmin()
@@ -188,22 +202,49 @@ const newsList = async () => {
 
             for (let i in news.data) {
                 newsDisabler.value.push(false)
+                currNews.value.push(null)
             }
         })
 }
 
-const saveNews = async (artId, pubDate, pubTime, content, title, imageURL) => {
-    await axios.put('articles/' + artId, {
-        id: artId,
-        publicationDate: pubDate,
-        publicationTime: pubTime,
-        content: content,
-        title: title,
-        imageURL: imageURL
-    })
-        .then(() => {
-            location.reload()
+const checkNew = (currId) => {
+  currNews.value[currId] = URL.createObjectURL(newUrl.value[currId].files[0])
+}
+
+const saveNews = async (artId, pubDate, pubTime, content, title, imageURL, slideIdx) => {
+  if (newUrl.value[slideIdx].files[0]) {
+    let formData = new FormData()
+
+    formData.append('file', newUrl.value[slideIdx].files[0])
+
+    await axios.post('uploadFile',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
         })
+        .then(async (urlData) => {
+          await axios.put('articles/' + artId, {
+            id: artId,
+            publicationDate: pubDate,
+            publicationTime: pubTime,
+            content: content,
+            title: title,
+            imageURL: urlData.data
+          })
+        })
+  }
+  else {
+    await axios.put('articles/' + artId, {
+      id: artId,
+      publicationDate: pubDate,
+      publicationTime: pubTime,
+      content: content,
+      title: title,
+      imageURL: imageURL
+    })
+  }
 }
 
 const deleteNews = async (artId) => {
@@ -211,6 +252,25 @@ const deleteNews = async (artId) => {
         .then(() => {
             location.reload()
         })
+}
+
+const uploadSchedule = async () => {
+  let formData = new FormData()
+
+  formData.append('file', scheduleUrl.value.files[0])
+
+  await axios.post('uploadFile',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+      .then(async (schData) => {
+        await axios.post('parseTimetable', {
+          filepath: schData.data.substr(32)
+        })
+      })
 }
 </script>
 
@@ -391,5 +451,11 @@ const deleteNews = async (artId) => {
     bottom: 0;
     margin: auto;
   }
+}
+
+.admin-schedule{
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 </style>

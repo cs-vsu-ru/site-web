@@ -1,7 +1,7 @@
 <template>
   <section class="schedule" v-if="destination">
       <h1 class="schedule__title">Расписание</h1>
-      <h3 style="font-size: 24px">{{ destination.user.lastName + ' ' + destination.user.firstName + ' ' + destination.patronymic }}</h3>
+      <h3 style="font-size: 26px">{{ destination.user.lastName + ' ' + destination.user.firstName + ' ' + destination.patronymic }}</h3>
       <table class="schedule__table">
           <thead>
             <tr>
@@ -57,8 +57,9 @@ const destination = computed(() => {
     return accountInfo.value.find(item => item.id == destinationId.value)
 })
 
-onMounted(() => {
+onMounted(async () => {
     schedule()
+    await axios.get('lessons')
 })
 
 const schedule = async () => {

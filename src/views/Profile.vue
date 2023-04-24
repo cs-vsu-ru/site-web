@@ -4,7 +4,10 @@
           <div class="profile__left-block">
               <img :src="destination.user.imageUrl" alt="" class="profile__left-block_image">
           </div>
-
+          <div class="profile__left-buttons">
+            <router-link :to="'/schedule/' + destination.user.id" class="profile__left-buttons_item">Расписание преподавателя</router-link>
+            <button class="profile__left-buttons_item">Научное руководство</button>
+          </div>
 
       </div>
       <div class="profile__right">
@@ -75,6 +78,27 @@ const accountAPI = async () => {
         width: 345px;
         height: 345px;
         object-fit: contain;
+      }
+    }
+
+    &-buttons{
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 30px;
+
+      &_item{
+        font-size: 18px;
+        line-height: 21px;
+        background: $sc3;
+        border-radius: 10px;
+        padding: 10px 0;
+        text-align: center;
+
+        &:hover{
+          color: white;
+          background: $pr1;
+        }
       }
     }
   }

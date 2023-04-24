@@ -20,10 +20,12 @@
             }"
             :modules="[Navigation]"
         >
-          <SwiperSlide v-for="newsSlide in newsSlider.slice(0, 8)" class="new">
-            <img :src="newsSlide.imageURL" alt="" class="new__image">
-            <p class="new__date">3 марта</p>
-            <p class="new__text">{{ newsSlide.title }}</p>
+          <SwiperSlide v-for="newsSlide in newsSlider.slice(0, 8)">
+            <router-link :to="'/news/new/' + newsSlide.id" class="new">
+              <img :src="newsSlide.imageURL" alt="" class="new__image">
+              <p class="new__date">3 марта</p>
+              <p class="new__text">{{ newsSlide.title }}</p>
+            </router-link>
           </SwiperSlide>
         </Swiper>
         <div class="slider-nav">
@@ -68,6 +70,7 @@ const newsList = async () => {
 
 <style lang="scss">
 @import "../../assets/styles/styles.scss";
+
 .news{
   background: $pr3;
   padding: 80px 0;
