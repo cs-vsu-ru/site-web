@@ -1,3 +1,216 @@
+<script setup>
+import {onMounted, ref} from "vue";
+import axios from "axios";
+import index from "vuex";
+
+const tabTitles = ['Слайдер', 'Мероприятия', 'Новости', 'Расписание', 'Пользователи']
+
+const slidesAdminArr = ref([])
+const checkDisable = ref([])
+const previewUrl = ref([])
+const currFile = ref([])
+const newSlide = ref(false)
+const newText = ref('')
+const addUrl = ref(null)
+const newUrl = ref(null)
+const newFile = ref(null)
+const activeItem = ref(0)
+const newsSlider = ref([])
+const newsDisabler = ref([])
+const currNews = ref([])
+const scheduleUrl = ref(null)
+const userList = ref([])
+
+onMounted(() => {
+    getSlidesForAdmin()
+    newsList()
+    getUsers()
+})
+
+const getSlidesForAdmin = async () => {
+    await axios.get('sliders')
+        .then((slidesData) => {
+            slidesAdminArr.value = slidesData.data
+
+            for (let i in slidesData.data) {
+                checkDisable.value.push(true)
+                currFile.value.push(null)
+            }
+        })
+}
+
+const saveChanges = async (slideId, imageURL, title, slideIdx) => {
+    if (previewUrl.value[slideIdx].files[0]) {
+        let formData = new FormData()
+
+        formData.append('file', previewUrl.value[slideIdx].files[0])
+
+        await axios.post('uploadFile',
+            formData,
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
+            .then(async (urlData) => {
+                await axios.put('sliders/' + slideId, {
+                    id: slideId,
+                    imageURL: urlData.data,
+                    title: title,
+                    urlTo: 'https://www.vsu.ru/'
+                })
+            })
+    }
+    else {
+        await axios.put('sliders/' + slideId, {
+            id: slideId,
+            imageURL: imageURL,
+            title: title,
+            urlTo: 'https://www.vsu.ru/'
+        })
+    }
+}
+
+const checkFile = (currId) => {
+    currFile.value[currId] = URL.createObjectURL(previewUrl.value[currId].files[0])
+}
+
+const addSlide = async () => {
+    let formData = new FormData()
+
+    formData.append('file', addUrl.value.files[0])
+
+    await axios.post('uploadFile',
+        formData,
+        {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+        .then(async (urlData) => {
+            await axios.post('sliders', {
+                imageURL: urlData.data,
+                title: newText.value,
+                urlTo: 'https://www.vsu.ru/'
+            })
+
+            location.reload()
+        })
+}
+
+const checkNewFile = () => {
+    newFile.value = URL.createObjectURL(addUrl.value.files[0])
+}
+
+const deleteSlide = async (slideId) => {
+    await axios.delete('sliders/' + slideId)
+        .then(() => {
+            location.reload()
+        })
+}
+
+const tabsHandler = (tabIndex) => {
+    let tabView = document.querySelectorAll('.admin__view-item')
+
+    for (let i = 0; i < tabView.length; i++) {
+        tabView[i].classList.remove('active')
+    }
+
+    tabView[tabIndex].classList.add('active')
+}
+
+const newsList = async () => {
+    await axios.get('articles')
+        .then((news) => {
+            newsSlider.value = news.data
+
+            for (let i in news.data) {
+                newsDisabler.value.push(false)
+                currNews.value.push(null)
+            }
+        })
+}
+
+const checkNew = (currId) => {
+    currNews.value[currId] = URL.createObjectURL(newUrl.value[currId].files[0])
+}
+
+const saveNews = async (artId, pubDate, pubTime, content, title, imageURL, slideIdx) => {
+    if (newUrl.value[slideIdx].files[0]) {
+        let formData = new FormData()
+
+        formData.append('file', newUrl.value[slideIdx].files[0])
+
+        await axios.post('uploadFile',
+            formData,
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
+            .then(async (urlData) => {
+                await axios.put('articles/' + artId, {
+                    id: artId,
+                    publicationDate: pubDate,
+                    publicationTime: pubTime,
+                    content: content,
+                    title: title,
+                    imageURL: urlData.data
+                })
+            })
+    }
+    else {
+        await axios.put('articles/' + artId, {
+            id: artId,
+            publicationDate: pubDate,
+            publicationTime: pubTime,
+            content: content,
+            title: title,
+            imageURL: imageURL
+        })
+    }
+}
+
+const deleteNews = async (artId) => {
+    await axios.delete('articles/' + artId)
+        .then(() => {
+            location.reload()
+        })
+}
+
+const uploadSchedule = async () => {
+    let formData = new FormData()
+
+    formData.append('file', scheduleUrl.value.files[0])
+
+    await axios.post('uploadFile',
+        formData,
+        {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+        .then(async (schData) => {
+            let parseData = new FormData()
+
+            parseData.append('filepath', schData.data)
+
+            await axios.post('parseTimetable', parseData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
+        })
+}
+
+const getUsers = async () => {
+    await axios.get('employees')
+        .then((userData) => {
+            userList.value = userData.data
+        })
+}
+</script>
+
 <template>
   <section class="admin">
     <aside class="admin__tabs">
@@ -33,7 +246,7 @@
             <div class="slider-admin__box">
               <img v-if="newFile === null" alt="" class="slider-admin__item-img">
               <img v-else :src="newFile" alt="" class="slider-admin__item-img">
-              <input v-on:change="checkNewFile" ref="newUrl" id="new-slide" type="file" accept="image/png, image/jpeg, image/jpg" class="slider-admin__box-input">
+              <input v-on:change="checkNewFile" ref="addUrl" id="new-slide" type="file" accept="image/png, image/jpeg, image/jpg" class="slider-admin__box-input">
               <label for="new-slide" class="slider-admin__box-label"></label>
               <svg width="64px" height="64px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"></path> </g></svg>
             </div>
@@ -67,212 +280,32 @@
               </div>
           </div>
       </div>
-      <div class="admin__view-item active">
+      <div class="admin__view-item">
         <div class="admin-schedule">
           <input ref="scheduleUrl" type="file">
           <button @click="uploadSchedule" class="admin-button">Загрузить</button>
         </div>
       </div>
+      <div class="admin__view-item active">
+          <div class="admin-users">
+            <div class="admin-users__item">
+                <div class="admin-users__item-head">
+                    <p class="admin-users__item-head_name">Пользователи</p>
+                    <router-link to="/admin/create_user" class="admin-button">Добавить</router-link>
+                </div>
+                <div class="admin-users__item-list">
+                    <div v-for="user in userList" class="user-item">
+                      <p class="user-item__name">{{ user.user.lastName + ' ' + user.user.firstName + ' ' + user.patronymic }}</p>
+                      <button style="margin-left: auto;" class="admin-button">Редактировать</button>
+                      <button class="admin-button">Удалить</button>
+                    </div>
+                </div>
+            </div>
+          </div>
+      </div>
     </div>
   </section>
 </template>
-
-<script setup>
-import {onMounted, ref} from "vue";
-import axios from "axios";
-import index from "vuex";
-
-const tabTitles = ['Слайдер', 'Мероприятия', 'Новости', 'Расписание']
-
-const slidesAdminArr = ref([])
-const checkDisable = ref([])
-const previewUrl = ref([])
-const currFile = ref([])
-const newSlide = ref(false)
-const newText = ref('')
-const newUrl = ref(null)
-const newFile = ref(null)
-const activeItem = ref(0)
-const newsSlider = ref([])
-const newsDisabler = ref([])
-const currNews = ref([])
-const scheduleUrl = ref(null)
-
-onMounted(() => {
-  getSlidesForAdmin()
-  newsList()
-})
-
-const getSlidesForAdmin = async () => {
-  await axios.get('sliders')
-      .then((slidesData) => {
-        slidesAdminArr.value = slidesData.data
-
-        for (let i in slidesData.data) {
-          checkDisable.value.push(true)
-          currFile.value.push(null)
-        }
-      })
-}
-
-const saveChanges = async (slideId, imageURL, title, slideIdx) => {
-  if (previewUrl.value[slideIdx].files[0]) {
-    let formData = new FormData()
-
-    formData.append('file', previewUrl.value[slideIdx].files[0])
-
-    await axios.post('uploadFile',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        })
-        .then(async (urlData) => {
-          await axios.put('sliders/' + slideId, {
-            id: slideId,
-            imageURL: urlData.data,
-            title: title,
-            urlTo: 'https://www.vsu.ru/'
-          })
-        })
-  }
-  else {
-    await axios.put('sliders/' + slideId, {
-      id: slideId,
-      imageURL: imageURL,
-      title: title,
-      urlTo: 'https://www.vsu.ru/'
-    })
-  }
-}
-
-const checkFile = (currId) => {
-  currFile.value[currId] = URL.createObjectURL(previewUrl.value[currId].files[0])
-}
-
-const addSlide = async () => {
-  let formData = new FormData()
-
-  formData.append('file', newUrl.value.files[0])
-
-  await axios.post('uploadFile',
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      })
-      .then(async (urlData) => {
-        await axios.post('sliders', {
-          imageURL: urlData.data,
-          title: newText.value,
-          urlTo: 'https://www.vsu.ru/'
-        })
-
-        location.reload()
-      })
-}
-
-const checkNewFile = () => {
-  newFile.value = URL.createObjectURL(newUrl.value.files[0])
-}
-
-const deleteSlide = async (slideId) => {
-  await axios.delete('sliders/' + slideId)
-      .then(() => {
-        location.reload()
-      })
-}
-
-const tabsHandler = (tabIndex) => {
-    let tabView = document.querySelectorAll('.admin__view-item')
-
-    for (let i = 0; i < tabView.length; i++) {
-        tabView[i].classList.remove('active')
-    }
-
-    tabView[tabIndex].classList.add('active')
-}
-
-const newsList = async () => {
-    await axios.get('articles')
-        .then((news) => {
-            newsSlider.value = news.data
-
-            for (let i in news.data) {
-                newsDisabler.value.push(false)
-                currNews.value.push(null)
-            }
-        })
-}
-
-const checkNew = (currId) => {
-  currNews.value[currId] = URL.createObjectURL(newUrl.value[currId].files[0])
-}
-
-const saveNews = async (artId, pubDate, pubTime, content, title, imageURL, slideIdx) => {
-  if (newUrl.value[slideIdx].files[0]) {
-    let formData = new FormData()
-
-    formData.append('file', newUrl.value[slideIdx].files[0])
-
-    await axios.post('uploadFile',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        })
-        .then(async (urlData) => {
-          await axios.put('articles/' + artId, {
-            id: artId,
-            publicationDate: pubDate,
-            publicationTime: pubTime,
-            content: content,
-            title: title,
-            imageURL: urlData.data
-          })
-        })
-  }
-  else {
-    await axios.put('articles/' + artId, {
-      id: artId,
-      publicationDate: pubDate,
-      publicationTime: pubTime,
-      content: content,
-      title: title,
-      imageURL: imageURL
-    })
-  }
-}
-
-const deleteNews = async (artId) => {
-    await axios.delete('articles/' + artId)
-        .then(() => {
-            location.reload()
-        })
-}
-
-const uploadSchedule = async () => {
-  let formData = new FormData()
-
-  formData.append('file', scheduleUrl.value.files[0])
-
-  await axios.post('uploadFile',
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      })
-      .then(async (schData) => {
-        await axios.post('parseTimetable', {
-          filepath: schData.data.substr(32)
-        })
-      })
-}
-</script>
 
 <style lang="scss" scoped>
 @import "@/assets/styles/_variables.scss";
@@ -458,4 +491,57 @@ const uploadSchedule = async () => {
   align-items: center;
   gap: 10px;
 }
+
+.admin-users{
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  width: 100%;
+
+  &__item{
+    background: $pr3;
+    border-radius: 10px;
+    padding: 15px 20px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+
+    &-head{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid $pr2;
+      padding-bottom: 15px;
+
+      &_name{
+        font-size: 30px;
+        line-height: 35px;
+        color: $pr1;
+      }
+    }
+
+    &-list{
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+  }
+}
+
+.user-item{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  padding: 13px 18px;
+  border-radius: 10px;
+  gap: 15px;
+
+  &__name{
+    font-size: 22px;
+    line-height: 25px;
+  }
+}
+
 </style>

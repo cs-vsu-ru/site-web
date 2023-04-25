@@ -3,10 +3,8 @@
     <div class="footer__container">
       <div class="footer__container-left">
         <nav class="footer-nav">
-          <router-link class="footer-nav__item hover-underline" to="/">Адреса и контакты</router-link>
-          <router-link class="footer-nav__item hover-underline" to="/">Условия использования материалов</router-link>
-          <router-link class="footer-nav__item hover-underline" to="/">Политика конфиденциальности</router-link>
-          <router-link class="footer-nav__item hover-underline" to="/">Карта сайта</router-link>
+          <router-link class="footer-nav__item hover-underline" to="/address">Адреса и контакты</router-link>
+          <router-link class="footer-nav__item hover-underline" to="/confident">Политика конфиденциальности</router-link>
         </nav>
         <div class="footer-info">
           <p class="footer-info__item">©Воронежский Государственный Университет 1997-2023 Все права защищены</p>

@@ -29,12 +29,12 @@
     </div>
     <div class="header__bottom">
       <nav class="nav">
-        <router-link class="nav__item hover-underline" to="/">О кафедре</router-link>
-        <router-link class="nav__item hover-underline" to="/">Образование</router-link>
+        <router-link class="nav__item hover-underline" to="/about">О кафедре</router-link>
+        <router-link class="nav__item hover-underline" to="/education">Образование</router-link>
         <router-link class="nav__item hover-underline" to="/">Расписание</router-link>
-        <router-link class="nav__item hover-underline" to="/">Студентам и выпускникам</router-link>
+        <router-link class="nav__item hover-underline" to="/students">Студентам и выпускникам</router-link>
         <router-link class="nav__item hover-underline" to="/teachers">Сотрудники</router-link>
-        <router-link class="nav__item hover-underline" to="/">Партнеры</router-link>
+        <router-link class="nav__item hover-underline" to="/partners">Партнеры</router-link>
       </nav>
     </div>
     <GDialog

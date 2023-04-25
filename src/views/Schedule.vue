@@ -17,6 +17,7 @@
           <tbody>
             <tr>
                 <td>8:00 - 9:35</td>
+                <td colspan="2"></td>
             </tr>
             <tr>
                 <td>9:45 - 11:20</td>

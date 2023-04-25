@@ -21,7 +21,7 @@
 </template>
 
 <script setup>
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import DecoupledEditor from "@ckeditor/ckeditor5-build-decoupled-document";
 import '@ckeditor/ckeditor5-build-classic/build/translations/ru'
 import CustomUploader from "@/services/customUploader";
 import {computed, onMounted, ref} from "vue";
@@ -30,15 +30,15 @@ import axios from "axios";
 
 const userRole = ref('')
 const isEditorActive = ref(false)
-const editor = ref(ClassicEditor)
+const editor = ref(DecoupledEditor)
 const editorConfig = ref({
-    toolbar: [
-        'undo', 'redo',
-        '|', 'heading',
-        '|', 'bold', 'italic',
-        '|', 'link', 'uploadImage', 'insertTable', 'mediaEmbed',
-        '|', 'bulletedList', 'numberedList', 'outdent', 'indent'
-    ],
+    // toolbar: [
+    //     'undo', 'redo',
+    //     '|', 'heading',
+    //     '|', 'bold', 'italic',
+    //     '|', 'link', 'uploadImage', 'insertTable', 'mediaEmbed',
+    //     '|', 'bulletedList', 'numberedList', 'outdent', 'indent'
+    // ],
     language: 'ru'
 })
 
@@ -63,6 +63,11 @@ const newsList = async () => {
 }
 
 const onReady = (editor) => {
+    editor.ui.getEditableElement().parentElement.insertBefore(
+        editor.ui.view.toolbar.element,
+        editor.ui.getEditableElement()
+    )
+
     editor.plugins.get('FileRepository').createUploadAdapter = loader => {
         return new CustomUploader(loader)
     }
@@ -104,6 +109,10 @@ const checkRole = async () => {
     p{
         font-size: 20px;
         line-height: 24px;
+    }
+
+    img{
+        width: 100%;
     }
 }
 
