@@ -225,7 +225,7 @@ const getUsers = async () => {
       </button>
     </aside>
     <div class="admin__view">
-      <div class="admin__view-item">
+      <div class="admin__view-item active">
         <div class="slider-admin">
           <div v-for="(slide, index) in slidesAdminArr" :key="slide.id" class="slider-admin__item">
             <div class="slider-admin__box">
@@ -286,7 +286,7 @@ const getUsers = async () => {
           <button @click="uploadSchedule" class="admin-button">Загрузить</button>
         </div>
       </div>
-      <div class="admin__view-item active">
+      <div class="admin__view-item">
           <div class="admin-users">
             <div class="admin-users__item">
                 <div class="admin-users__item-head">
