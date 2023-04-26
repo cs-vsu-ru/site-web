@@ -9,3 +9,7 @@ jobs:
   ci:
     uses: ./.github/workflows/call-dev_ci.yml
     secrets: inherit
+  cd:
+    uses: ./.github/workflows/call-deploy_dev.yml
+    secrets: inherit
+    needs: [ ci ]
