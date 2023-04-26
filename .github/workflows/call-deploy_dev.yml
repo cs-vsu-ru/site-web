@@ -1,0 +1,20 @@
+name: "Call: Deploy dev"
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: [ self-hosted, dev ]
+    environment:
+      name: dev
+      url: 'http://dev.fiori-vrn.online'
+    steps:
+      - name: Pull images
+        run: |
+          docker pull ghcr.io/cs-vsu-ru/site-web/web:latest
+      - name: Deploy dev environment
+        run: |
+          cd /home/www/runner/work/site-api/site-api
+          docker-compose up --force-recreate --build -d
