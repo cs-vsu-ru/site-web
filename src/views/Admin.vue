@@ -257,9 +257,10 @@ const getUsers = async () => {
         </div>
       </div>
       <div class="admin__view-item"></div>
-      <div class="admin__view-item">
+      <div class="admin__view-item new-view">
+          <router-link to="/admin/create_news" class="admin-button">Создать новость</router-link>
           <div class="news-all__field">
-              <div v-for="(newsSlide, index) in newsSlider" class="new">
+            <div v-for="(newsSlide, index) in newsSlider" class="new">
                 <div class="slider-admin__box">
                   <img v-if="currNews[index] === null" :src="newsSlide.imageURL" alt="" class="slider-admin__item-img">
                   <img v-else :src="currNews[index]" alt="" class="slider-admin__item-img">
@@ -490,6 +491,16 @@ const getUsers = async () => {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.new-view{
+  flex-direction: column;
+  gap: 20px;
+
+  .admin-button{
+    width: 50%;
+    align-self: center;
+  }
 }
 
 .admin-users{

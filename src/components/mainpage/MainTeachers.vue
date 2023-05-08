@@ -15,6 +15,7 @@
                 <div class="teacher__data">
                     <p class="teacher__data-name">{{ teacher.user.lastName + ' ' + teacher.user.firstName + ' ' + teacher.patronymic}}</p>
                     <p class="teacher__data-status">{{ teacher.post }}</p>
+                  <a :href="'mailto:' + teacher.user.email" class="teacher__data-email">{{ teacher.user.email }}</a>
                 </div>
             </router-link>
         </div>
@@ -94,6 +95,15 @@ const teacherList = async () => {
                     text-align: center;
                 }
 
+                &-email{
+                    font-size: 18px;
+                    line-height: 21px;
+                    text-align: center;
+                    margin-top: -15px;
+                    color: $pr1;
+                    font-weight: 600;
+                }
+
                 &:after{
                     content: '';
                     position: absolute;
@@ -101,7 +111,7 @@ const teacherList = async () => {
                     height: 2px;
                     width: 100%;
                     left: 0;
-                    top: 70%;
+                    top: 55%;
                 }
             }
         }

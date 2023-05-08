@@ -15,6 +15,7 @@ import Students from "@/views/Students"
 import Partners from "@/views/Partners"
 import Address from "@/views/Address"
 import Confident from "@/views/Confident"
+import CreateNews from "@/views/CreateNews";
 
 const routes = [
   {
@@ -116,6 +117,24 @@ const routes = [
     path: '/confident',
     name: 'Confident',
     component: Confident
+  },
+  {
+    path: '/admin/create_news',
+    name: 'CreateNews',
+    component: CreateNews,
+    beforeEnter: async (to, from, next) => {
+      const store = userAuth()
+
+      if (store.getIsAuth !== '') {
+        await axios.get('account')
+            .then((accData) => {
+              accData.data.mainRole === 'ROLE_ADMIN' ? next() : next('/')
+            })
+      }
+      else {
+        next('/')
+      }
+    }
   }
 
 ]
