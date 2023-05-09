@@ -20,10 +20,10 @@
             }"
             :modules="[Navigation]"
         >
-          <SwiperSlide v-for="newsSlide in newsSlider.slice(0, 8)">
+          <SwiperSlide v-for="newsSlide in newsSlider.reverse().slice(0, 8)">
             <router-link :to="'/news/new/' + newsSlide.id" class="new">
               <img :src="newsSlide.imageURL" alt="" class="new__image">
-              <p class="new__date">3 марта</p>
+              <p class="new__date">{{ new Date(newsSlide.publicationDate).getDate() + ' ' + monthAssoc[newsSlide.publicationDate.split('-').reverse()[1]] }}</p>
               <p class="new__text">{{ newsSlide.title }}</p>
             </router-link>
           </SwiperSlide>
@@ -53,7 +53,20 @@ import axios from "axios";
 
 const prevEl = ref(null)
 const nextEl = ref(null)
-
+const monthAssoc = ref({
+  '01': 'января',
+  '02': 'февраля',
+  '03': 'марта',
+  '04': 'апреля',
+  '05': 'мая',
+  '06': 'июня',
+  '07': 'июля',
+  '08': 'августа',
+  '09': 'сентября',
+  '10': 'октября',
+  '11': 'ноября',
+  '12': 'декабря'
+})
 const newsSlider = ref([])
 
 onMounted(() => {

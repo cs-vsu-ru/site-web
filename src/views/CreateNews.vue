@@ -46,7 +46,8 @@ const createNews = async () => {
         await axios.post('articles', {
           title: newsTitle.value,
           imageURL: urlData.data,
-          content: newsContent.value
+          content: newsContent.value,
+          publicationDate: new Date().toJSON().slice(0,10).replace(/-/g,'-')
         })
       })
 }

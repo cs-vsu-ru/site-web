@@ -1,20 +1,28 @@
 <template>
   <section class="static">
-    <h1>О кафедре</h1>
+    <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+      <h1>О кафедре</h1>
+      <button :class="{visible: !isEditorActive}" @click="isEditorActive = true" v-if="userRole === 'ROLE_ADMIN'" class="edit-button admin-button">Редактировать</button>
+    </div>
     <ckeditor
         :editor="editor"
         v-model="aboutModel"
         :config="editorConfig"
         @ready="onReady"
+        v-if="isEditorActive && userRole === 'ROLE_ADMIN'"
+        class="static__editor"
     ></ckeditor>
+    <button v-if="isEditorActive && userRole === 'ROLE_ADMIN'" @click="saveStatic()" style="margin: 10px 0 10px auto;" class="admin-button">Сохранить</button>
   </section>
 </template>
 
 <script setup>
-  import {ref} from "vue";
+import {onMounted, ref} from "vue";
   import DecoupledEditor from "@ckeditor/ckeditor5-build-decoupled-document";
   import CustomUploader from "@/services/customUploader";
+  import axios from "axios";
 
+  const staticInfo = ref(null)
   const userRole = ref('')
   const aboutModel = ref('')
   const isEditorActive = ref(false)
@@ -30,6 +38,11 @@
     language: 'ru'
   })
 
+  onMounted(() => {
+    checkRole()
+    getStatic()
+  })
+
   const onReady = (editor) => {
     editor.ui.getEditableElement().parentElement.insertBefore(
         editor.ui.view.toolbar.element,
@@ -40,9 +53,29 @@
       return new CustomUploader(loader)
     }
   }
+
+  const checkRole = async () => {
+    await axios.get('account')
+        .then((items) => {
+          userRole.value = items.data.mainRole
+        })
+  }
+
+  const getStatic = async () => {
+    await axios.get('static-pages')
+        .then((staticData) => {
+          staticInfo.value = staticData.data
+        })
+  }
+
+  const saveStatic = async () => {
+
+  }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
+@import "@/assets/styles/_variables.scss";
+
 .static{
   max-width: 1440px;
   margin: 0 auto;
@@ -54,6 +87,11 @@
   p{
     font-size: 22px;
     line-height: 24px;
+  }
+
+  &__editor{
+    border: 1px solid $pr1;
+    min-height: 350px;
   }
 }
 </style>

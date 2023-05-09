@@ -2,9 +2,9 @@
   <section class="news-all">
       <h1 class="news-all__title">Новости</h1>
       <div class="news-all__field">
-          <router-link :to="'/news/new/' + newsSlide.id" v-for="newsSlide in newsSlider" class="new">
+          <router-link :to="'/news/new/' + newsSlide.id" v-for="newsSlide in newsSlider.reverse()" class="new">
               <img :src="newsSlide.imageURL" alt="" class="new__image">
-              <p class="new__date" v-if="newsSlide.publicationDate">{{ newsSlide.publicationDate.split('-').reverse()[0] + ' ' + monthAssoc[newsSlide.publicationDate.split('-').reverse()[1]] }}</p>
+              <p class="new__date" v-if="newsSlide.publicationDate">{{ new Date(newsSlide.publicationDate).getDate() + ' ' + monthAssoc[newsSlide.publicationDate.split('-').reverse()[1]] }}</p>
               <p class="new__text">{{ newsSlide.title }}</p>
           </router-link>
       </div>

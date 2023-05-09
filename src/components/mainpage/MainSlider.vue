@@ -12,7 +12,7 @@
           }"
           :modules="[Navigation]"
       >
-        <SwiperSlide v-for="slide in slidesArr">
+        <SwiperSlide v-for="slide in slidesArr.reverse()">
           <a :href="slide.urlTo" class="event">
             <div class="event__text">
               <p class="event__text-value">{{ slide.title }}</p>
