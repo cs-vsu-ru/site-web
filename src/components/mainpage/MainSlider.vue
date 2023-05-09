@@ -1,7 +1,7 @@
 <template>
   <section class="main">
     <div class="section-header">
-      <h1 class="section-header__title">Кафедра Информационных систем</h1>
+      <h1 class="section-header__title">Кафедра "Информационные системы"</h1>
     </div>
     <div class="main__slider">
       <Swiper
@@ -15,7 +15,6 @@
         <SwiperSlide v-for="slide in slidesArr">
           <a :href="slide.urlTo" class="event">
             <div class="event__text">
-              <p class="event__text-name">События</p>
               <p class="event__text-value">{{ slide.title }}</p>
             </div>
             <img :src="slide.imageURL" alt="" class="event__image">

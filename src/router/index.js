@@ -16,6 +16,8 @@ import Partners from "@/views/Partners"
 import Address from "@/views/Address"
 import Confident from "@/views/Confident"
 import CreateNews from "@/views/CreateNews";
+import AllEvents from "@/views/AllEvents";
+import EventPage from "@/views/EventPage"
 
 const routes = [
   {
@@ -135,6 +137,16 @@ const routes = [
         next('/')
       }
     }
+  },
+  {
+    path: '/events',
+    name: 'AllEvents',
+    component: AllEvents
+  },
+  {
+    path: '/events/event/:id',
+    name: 'EventPage',
+    component: EventPage
   }
 
 ]

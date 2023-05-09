@@ -4,7 +4,7 @@
       <div class="header__top-container">
         <router-link class="logo" to="/">
           <img src="./../../assets/img/logo.png" alt="" class="logo__image">
-          <p class="logo__title">Кафедра Информационных систем</p>
+          <p class="logo__title">Кафедра информационных систем</p>
         </router-link>
         <button v-if="!isAuth" @click="dialogState = true" class="login">
           <svg class="login__icon" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -41,20 +41,21 @@
         v-model="dialogState"
         :max-width="500"
     >
-        <div class="login-modal">
+        <form @submit.prevent="auth" class="login-modal">
             <img src="../../assets/img/auth_logo.png" alt="" class="login-modal__logo">
             <div class="login-modal__inputs">
                 <div class="login-modal__inputs-item">
                     <p class="login-modal__inputs-item_name">Логин</p>
-                    <input type="text" class="login-modal__inputs-item_input" v-model="login">
+                    <input type="text" class="login-modal__inputs-item_input" v-model="login" required minlength="4">
                 </div>
                 <div class="login-modal__inputs-item">
                     <p class="login-modal__inputs-item_name">Пароль</p>
-                    <input type="password" class="login-modal__inputs-item_input" v-model="password">
+                    <input type="password" class="login-modal__inputs-item_input" v-model="password" required minlength="4">
                 </div>
             </div>
-            <button @click="auth" class="login-modal__submit">Вход</button>
-        </div>
+            <p class="login-modal__error">{{ authError }}</p>
+            <button type="submit" class="login-modal__submit">Вход</button>
+        </form>
     </GDialog>
   </header>
 </template>
@@ -72,6 +73,7 @@ const login = ref('')
 const password = ref('')
 const profileId = ref(0)
 const profileRole = ref('')
+const authError = ref('')
 
 const isAuth = computed(() => store.getIsAuth)
 
@@ -88,7 +90,12 @@ const auth = async () => {
       .then((token) => {
           store.setAuth(token.data.jwtToken.id_token, token.data.mainRole)
           window.location.replace('/')
-      })
+      },
+          (err) => {
+            console.log(err.response.data.detail)
+            authError.value = err.response.data.detail
+          }
+      )
 }
 
 const logout = () => {
@@ -197,6 +204,7 @@ const accountInfo = async () => {
     flex-direction: column;
     gap: 30px;
     padding: 17px 20px;
+    position: relative;
 
     &__logo{
       width: 316px;
@@ -231,8 +239,20 @@ const accountInfo = async () => {
           background: $sc3;
           border: 1px solid $sc2;
           border-radius: 10px;
+          transition: 0.3s;
+
+          &:focus{
+            border-color: $pr1;
+          }
         }
       }
+    }
+
+    &__error{
+      color: crimson;
+      position: absolute;
+      left: 40px;
+      bottom: 60px;
     }
 
     &__submit{

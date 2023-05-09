@@ -20,12 +20,21 @@ const newsDisabler = ref([])
 const currNews = ref([])
 const scheduleUrl = ref(null)
 const userList = ref([])
+const eventArr = ref([])
 
 onMounted(() => {
     getSlidesForAdmin()
     newsList()
     getUsers()
+    eventList()
 })
+
+const eventList = async () => {
+  await axios.get('events')
+      .then((events) => {
+        eventArr.value = events.data
+      })
+}
 
 const getSlidesForAdmin = async () => {
     await axios.get('sliders')
@@ -256,7 +265,17 @@ const getUsers = async () => {
           <button @click="newSlide = true" class="slider-admin__add admin-button">Добавить слайд</button>
         </div>
       </div>
-      <div class="admin__view-item"></div>
+      <div class="admin__view-item">
+        <div class="events__field">
+          <router-link v-for="event in eventArr.slice(0, 4)" :to="'/events/event/' + event.id" class="event">
+            <div class="event__date">
+              <p class="event__date-day">{{ event.startDate.split('-').reverse().join('.') }}</p>
+              <p class="event__date-time">{{ event.startTime }}</p>
+            </div>
+            <p class="event__name">{{ event.title }}</p>
+          </router-link>
+        </div>
+      </div>
       <div class="admin__view-item new-view">
           <router-link to="/admin/create_news" class="admin-button">Создать новость</router-link>
           <div class="news-all__field">

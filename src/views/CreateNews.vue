@@ -1,8 +1,12 @@
 <script setup>
-import {ref} from "vue";
+import {onMounted, ref} from "vue";
 import axios from "axios";
 import DecoupledEditor from "@ckeditor/ckeditor5-build-decoupled-document";
 import CustomUploader from "@/services/customUploader";
+
+onMounted(async () => {
+  await axios.get('pages')
+})
 
 const editor = ref(DecoupledEditor)
 const editorConfig = ref({
