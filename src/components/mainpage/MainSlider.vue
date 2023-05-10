@@ -12,7 +12,7 @@
           }"
           :modules="[Navigation]"
       >
-        <SwiperSlide v-for="slide in slidesArr.reverse()">
+        <SwiperSlide v-for="slide in slidesArr">
           <a :href="slide.urlTo" class="event">
             <div class="event__text">
               <p class="event__text-value">{{ slide.title }}</p>
@@ -53,6 +53,7 @@ const getSlides = async () => {
   await axios.get('sliders')
       .then((slideData) => {
         slidesArr.value = slideData.data
+        slidesArr.value.reverse()
       })
 }
 </script>

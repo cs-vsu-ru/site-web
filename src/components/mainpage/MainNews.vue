@@ -20,7 +20,7 @@
             }"
             :modules="[Navigation]"
         >
-          <SwiperSlide v-for="newsSlide in newsSlider.reverse().slice(0, 8)">
+          <SwiperSlide v-for="newsSlide in newsSlider">
             <router-link :to="'/news/new/' + newsSlide.id" class="new">
               <img :src="newsSlide.imageURL" alt="" class="new__image">
               <p class="new__date">{{ new Date(newsSlide.publicationDate).getDate() + ' ' + monthAssoc[newsSlide.publicationDate.split('-').reverse()[1]] }}</p>
@@ -77,6 +77,7 @@ const newsList = async () => {
     await axios.get('articles')
         .then((news) => {
             newsSlider.value = news.data
+            newsSlider.value.reverse().slice(0, 8)
         })
 }
 </script>

@@ -14,9 +14,6 @@ import MainTeachers from "@/components/mainpage/MainTeachers.vue";
 import {onMounted} from "vue";
 import axios from "axios";
 
-onMounted(async () => {
-    await axios.get('lessons')
-})
 </script>
 
 <style lang="scss" scoped>
