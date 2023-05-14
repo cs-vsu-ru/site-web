@@ -6,13 +6,16 @@
     </div>
     <ckeditor
         :editor="editor"
-        v-model="aboutModel"
+        v-model="staticInfo.contentAbout"
         :config="editorConfig"
         @ready="onReady"
         v-if="isEditorActive && userRole === 'ROLE_ADMIN'"
         class="static__editor"
     ></ckeditor>
-    <button v-if="isEditorActive && userRole === 'ROLE_ADMIN'" @click="saveStatic()" style="margin: 10px 0 10px auto;" class="admin-button">Сохранить</button>
+    <button v-if="isEditorActive && userRole === 'ROLE_ADMIN'" @click="saveStatic" style="margin: 10px 0 10px auto;" class="admin-button">Сохранить</button>
+    <div class="new-editor" v-if="staticInfo && !isEditorActive" v-html="staticInfo.contentAbout">
+
+    </div>
   </section>
 </template>
 
@@ -64,12 +67,17 @@ import {onMounted, ref} from "vue";
   const getStatic = async () => {
     await axios.get('static-pages')
         .then((staticData) => {
-          staticInfo.value = staticData.data
+          staticInfo.value = staticData.data[0]
+
+          console.log(staticInfo.value.contentAbout)
         })
   }
 
   const saveStatic = async () => {
-
+    await axios.put('static-page/1', {
+      id: 1,
+      contentAbout: staticInfo.value.contentAbout
+    })
   }
 </script>
 
@@ -87,6 +95,10 @@ import {onMounted, ref} from "vue";
   p{
     font-size: 22px;
     line-height: 24px;
+  }
+
+  img{
+    width: 100%;
   }
 
   &__editor{

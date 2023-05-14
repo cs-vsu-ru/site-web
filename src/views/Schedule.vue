@@ -1,7 +1,10 @@
 <template>
-  <section class="schedule" v-if="destination">
+  <section class="schedule" v-if="destination && htmlSchedule">
       <h1 class="schedule__title">Расписание</h1>
-      <h3 style="font-size: 26px">{{ destination.user.lastName + ' ' + destination.user.firstName + ' ' + destination.patronymic }}</h3>
+      <h3 style="font-size: 26px">{{ destination.lastName + ' ' + destination.firstName + ' ' + destination.patronymic }}</h3>
+      <div v-if="example" v-html="example">
+
+      </div>
       <table class="schedule__table">
           <thead>
             <tr>
@@ -57,10 +60,21 @@ const destinationId = computed(() => route.params.id)
 const destination = computed(() => {
     return accountInfo.value.find(item => item.id == destinationId.value)
 })
+const htmlSchedule = computed(async () => {
+  const res = await axios.get('filterTimetable', {
+      params: {
+        teacherName: destination.value?.lastName
+      }
+    })
 
-onMounted(async () => {
+  example.value = res.data
+
+  return res.data
+})
+const example = ref()
+
+onMounted( () => {
     schedule()
-    await axios.get('lessons')
 })
 
 const schedule = async () => {
@@ -72,7 +86,7 @@ const schedule = async () => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 @import "@/assets/styles/_variables.scss";
 
 .schedule{
@@ -96,4 +110,37 @@ const schedule = async () => {
     }
   }
 }
+
+.t1{
+  width: 100%;
+  border: 3px solid $pr1;
+  border-collapse: collapse;
+  margin-top: 20px;
+  table-layout: fixed;
+
+  .rownumber{
+    display: none;
+  }
+
+  thead{
+    display: none;
+  }
+
+  td, th{
+    text-align: center;
+    font-size: 20px;
+    line-height: 24px;
+    border: 1px solid $pr1;
+    border-collapse: collapse;
+    padding: 15px 0;
+    width: 100%;
+  }
+
+  tbody{
+    tr:first-child td{
+      font-weight: 700;
+    }
+  }
+}
+
 </style>

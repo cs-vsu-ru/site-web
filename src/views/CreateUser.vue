@@ -39,13 +39,11 @@ const createUser = async () => {
           academicDegree: degree.value,
           experience: yearsAll.value,
           professionalExperience: yearsSpec.value,
-          user: {
-            login: login.value,
-            firstName: firstName.value,
-            lastName: lastName.value,
-            email: email.value,
-            imageUrl: urlData.data,
-          }
+          login: login.value,
+          firstName: firstName.value,
+          lastName: lastName.value,
+          email: email.value,
+          imageUrl: urlData.data,
         })
       })
 }

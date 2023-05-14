@@ -2,12 +2,12 @@
   <section class="teachers-all">
       <h1 class="teachers-all__title">Сотрудники</h1>
       <div class="teachers__field">
-          <router-link :to="'/profile/' + teacher.user.id" v-for="teacher in teachersArr" class="teacher">
-              <img :src="teacher.user.imageUrl" alt="" class="teacher__photo">
+          <router-link :to="'/profile/' + teacher.id" v-for="teacher in teachersArr" class="teacher">
+              <img :src="teacher.imageUrl" alt="" class="teacher__photo">
               <div class="teacher__data">
-                  <p class="teacher__data-name">{{ teacher.user.lastName + ' ' + teacher.user.firstName + ' ' + teacher.patronymic}}</p>
+                  <p class="teacher__data-name">{{ teacher.lastName + ' ' + teacher.firstName + ' ' + teacher.patronymic}}</p>
                   <p class="teacher__data-status">{{ teacher.post }}</p>
-                  <a href="" class="teacher__data-email">{{ teacher.user.email }}</a>
+                  <a href="" class="teacher__data-email">{{ teacher.email }}</a>
               </div>
           </router-link>
       </div>

@@ -13,6 +13,7 @@
     "@ckeditor/ckeditor5-ckbox": "^37.1.0",
     "@ckeditor/ckeditor5-editor-classic": "^37.1.0",
     "@ckeditor/ckeditor5-essentials": "^37.1.0",
+    "@ckeditor/ckeditor5-image": "^37.1.0",
     "@ckeditor/ckeditor5-link": "^37.1.0",
     "@ckeditor/ckeditor5-paragraph": "^37.1.0",
     "@ckeditor/ckeditor5-upload": "^37.1.0",

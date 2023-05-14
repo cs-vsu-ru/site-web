@@ -233,6 +233,13 @@ const getUsers = async () => {
             userList.value = userData.data
         })
 }
+
+const deleteUser = async (userId) => {
+  await axios.delete('employees/' + userId)
+      .then(() => {
+        location.reload()
+      })
+}
 </script>
 
 <template>
@@ -330,9 +337,9 @@ const getUsers = async () => {
                 </div>
                 <div class="admin-users__item-list">
                     <div v-for="user in userList" class="user-item">
-                      <p class="user-item__name">{{ user.user.lastName + ' ' + user.user.firstName + ' ' + user.patronymic }}</p>
+                      <p class="user-item__name">{{ user.lastName + ' ' + user.firstName + ' ' + user.patronymic }}</p>
                       <button style="margin-left: auto;" class="admin-button">Редактировать</button>
-                      <button class="admin-button">Удалить</button>
+                      <button @click="deleteUser(user.id)" class="admin-button">Удалить</button>
                     </div>
                 </div>
             </div>
