@@ -8,7 +8,6 @@
             <router-link :to="'/schedule/' + destination.id" class="profile__left-buttons_item">Расписание преподавателя</router-link>
             <button class="profile__left-buttons_item">Научное руководство</button>
           </div>
-
       </div>
       <div class="profile__right">
           <p class="profile__right-name">{{ destination.lastName + ' ' + destination.firstName + ' ' + destination.patronymic }}</p>
@@ -19,6 +18,7 @@
               <span v-for="lesson in destination.teachings">{{ lesson.subject.name }}</span>
           </p>
       </div>
+      <button v-if="userRole === 'ROLE_ADMIN'" class="admin-button profile__edit">Редактировать</button>
   </section>
 </template>
 
@@ -28,6 +28,7 @@ import axios from "axios";
 import {useRoute} from "vue-router";
 
 const accountInfo = ref([])
+const userRole = ref()
 const route = useRoute()
 
 const destinationId = computed(() => route.params.id)
@@ -37,6 +38,7 @@ const destination = computed(() => {
 
 onMounted(() => {
     accountAPI()
+    checkRole()
 })
 
 const accountAPI = async () => {
@@ -45,6 +47,13 @@ const accountAPI = async () => {
             console.log(accId)
             accountInfo.value = accId.data
         })
+}
+
+const checkRole = async () => {
+  await axios.get('account')
+      .then((items) => {
+        userRole.value = items.data.mainRole
+      })
 }
 </script>
 
@@ -60,6 +69,7 @@ const accountAPI = async () => {
   display: flex;
   align-items: stretch;
   gap: 60px;
+  position: relative;
 
   &__left{
     background: #C2EEFF;
@@ -132,6 +142,17 @@ const accountAPI = async () => {
         font-size: 18px;
         line-height: 22px;
       }
+    }
+  }
+
+  &__edit{
+    position: absolute;
+    right: 30px;
+    top: 30px;
+    background: white;
+
+    &:hover{
+      background: $pr1;
     }
   }
 }

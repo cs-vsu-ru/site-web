@@ -55,6 +55,7 @@ const teacherList = async () => {
         align-items: stretch;
         justify-content: space-between;
         gap: 10px;
+        flex-wrap: wrap;
 
         .teacher{
             display: flex;

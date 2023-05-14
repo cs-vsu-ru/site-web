@@ -78,6 +78,9 @@ import {onMounted, ref} from "vue";
       id: 1,
       contentAbout: staticInfo.value.contentAbout
     })
+        .then(() => {
+          location.reload()
+        })
   }
 </script>
 
