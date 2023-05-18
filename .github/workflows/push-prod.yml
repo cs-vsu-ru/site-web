@@ -1,0 +1,11 @@
+name: "Push: prod"
+
+on:
+  push:
+    branches:    
+      - 'prod'
+
+jobs:
+  ci:
+    uses: ./.github/workflows/call-prod_ci.yml
+    secrets: inherit
