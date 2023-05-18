@@ -18,6 +18,9 @@ import Confident from "@/views/Confident"
 import CreateNews from "@/views/CreateNews";
 import AllEvents from "@/views/AllEvents";
 import EventPage from "@/views/EventPage"
+import FullSchedule from "@/views/FullSchedule"
+import CreateMail from "@/views/CreateMail"
+import CreateEvent from "@/views/CreateEvent";
 
 const routes = [
   {
@@ -147,6 +150,47 @@ const routes = [
     path: '/events/event/:id',
     name: 'EventPage',
     component: EventPage
+  },
+  {
+    path: '/full-schedule',
+    name: 'FullSchedule',
+    component: FullSchedule
+  },
+  {
+    path: '/create-mail',
+    name: 'CreateMail',
+    component: CreateMail,
+    beforeEnter: async (to, from, next) => {
+      const store = userAuth()
+
+      if (store.getIsAuth !== '') {
+        await axios.get('account')
+            .then((accData) => {
+              accData.data.mainRole === 'ROLE_ADMIN' ? next() : next('/')
+            })
+      }
+      else {
+        next('/')
+      }
+    }
+  },
+  {
+    path: '/create-event',
+    name: 'CreateEvent',
+    component: CreateEvent,
+    beforeEnter: async (to, from, next) => {
+      const store = userAuth()
+
+      if (store.getIsAuth !== '') {
+        await axios.get('account')
+            .then((accData) => {
+              accData.data.mainRole === 'ROLE_ADMIN' ? next() : next('/')
+            })
+      }
+      else {
+        next('/')
+      }
+    }
   }
 
 ]

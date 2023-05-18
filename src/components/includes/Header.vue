@@ -31,7 +31,7 @@
       <nav class="nav">
         <router-link class="nav__item hover-underline" to="/about">О кафедре</router-link>
         <router-link class="nav__item hover-underline" to="/education">Образование</router-link>
-        <router-link class="nav__item hover-underline" to="/">Расписание</router-link>
+        <router-link class="nav__item hover-underline" to="/full-schedule">Расписание</router-link>
         <router-link class="nav__item hover-underline" to="/students">Студентам и выпускникам</router-link>
         <router-link class="nav__item hover-underline" to="/teachers">Сотрудники</router-link>
         <router-link class="nav__item hover-underline" to="/partners">Партнеры</router-link>
@@ -89,7 +89,7 @@ const auth = async () => {
     })
       .then((token) => {
           store.setAuth(token.data.jwtToken.id_token, token.data.mainRole)
-          window.location.replace('/')
+          location.reload()
       },
           (err) => {
             console.log(err.response.data.detail)
