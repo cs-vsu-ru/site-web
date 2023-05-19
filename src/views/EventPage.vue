@@ -8,7 +8,7 @@
     <div class="event-dates">
       <p class="event-dates__date">
         Дата начала -
-        <input :disabled="!isEditorActive" id="event-date" v-model="destination.startDate" type="date" class="event-dates__item">
+        <input :disabled="!isEditorActive" max="2100-01-01" :min="new Date().toISOString().split('T')[0]" id="event-date" v-model="destination.startDate" type="date" class="event-dates__item">
       </p>
       <p class="event-dates__time">
         Время начала -

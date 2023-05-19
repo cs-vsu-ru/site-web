@@ -2,7 +2,7 @@
   <section class="events-all">
     <h1 class="events-all__title">Мероприятия</h1>
     <div class="events__field">
-      <router-link v-for="event in eventArr.slice(0, 4)" :to="'/events/event/' + event.id" class="event">
+      <router-link v-for="event in eventArr" :to="'/events/event/' + event.id" class="event">
         <div class="event__date">
           <p class="event__date-day">{{ event.startDate.split('-').reverse().join('.') }}</p>
           <p class="event__date-time">{{ event.startTime }}</p>

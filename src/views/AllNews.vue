@@ -2,7 +2,7 @@
   <section class="news-all">
       <h1 class="news-all__title">Новости</h1>
       <div class="news-all__field">
-          <router-link :to="'/news/new/' + newsSlide.id" v-for="newsSlide in newsSlider.reverse()" class="new">
+          <router-link :to="'/news/new/' + newsSlide.id" v-for="newsSlide in newsSlider" class="new">
               <img :src="newsSlide.imageURL" alt="" class="new__image">
               <p class="new__date" v-if="newsSlide.publicationDate">{{ new Date(newsSlide.publicationDate).getDate() + ' ' + monthAssoc[newsSlide.publicationDate.split('-').reverse()[1]] }}</p>
               <p class="new__text">{{ newsSlide.title }}</p>
@@ -38,7 +38,7 @@ onMounted(() => {
 const newsList = async () => {
     await axios.get('articles')
         .then((news) => {
-            newsSlider.value = news.data
+            newsSlider.value = news.data.reverse()
         })
 }
 </script>
