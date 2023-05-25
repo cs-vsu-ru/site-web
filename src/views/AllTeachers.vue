@@ -12,22 +12,28 @@
           </router-link>
       </div>
   </section>
+  <Loader v-if="isLoading" />
 </template>
 
 <script setup>
 import {onMounted, ref} from "vue";
 import axios from "axios";
+import Loader from "@/components/includes/Loader";
 
 let teachersArr = ref([])
+const isLoading = ref(false)
 
 onMounted(() => {
     teacherList()
 })
 
 const teacherList = async () => {
+    isLoading.value = true
+
     await axios.get('employees')
         .then((req) => {
             teachersArr.value = req.data
+            isLoading.value = false
         })
 }
 </script>
@@ -36,6 +42,10 @@ const teacherList = async () => {
 .teachers-all{
     max-width: 1440px;
     margin: 0 auto;
+
+    @media (min-width: 1024px) and (max-width: 1480px) {
+      max-width: calc(100% - 40px);
+    }
 
     &__title{
         margin-bottom: 40px;

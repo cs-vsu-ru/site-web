@@ -10,14 +10,25 @@
             </router-link>
         </div>
         <div class="teachers__field">
-            <router-link :to="'/profile/' + teacher.id" v-for="teacher in teachersArr.slice(0, 5)" class="teacher">
+          <swiper
+              :slides-per-view="5"
+              :autoplay="{
+                delay: 1500,
+                disableOnInteraction: false,
+              }"
+              :modules="[Autoplay]"
+          >
+            <swiper-slide v-for="teacher in teachersArr">
+              <router-link :to="'/profile/' + teacher.id" class="teacher">
                 <img :src="teacher.imageUrl" alt="" class="teacher__photo">
                 <div class="teacher__data">
-                    <p class="teacher__data-name">{{ teacher.lastName + ' ' + teacher.firstName + ' ' + teacher.patronymic}}</p>
-                    <p class="teacher__data-status">{{ teacher.post }}</p>
+                  <p class="teacher__data-name">{{ teacher.lastName + ' ' + teacher.firstName + ' ' + teacher.patronymic}}</p>
+                  <p class="teacher__data-status">{{ teacher.post }}</p>
                   <a :href="'mailto:' + teacher.email" class="teacher__data-email">{{ teacher.email }}</a>
                 </div>
-            </router-link>
+              </router-link>
+            </swiper-slide>
+          </swiper>
         </div>
     </section>
 </template>
@@ -25,6 +36,8 @@
 <script setup>
 import {onMounted, ref} from "vue";
 import axios from "axios";
+import { Swiper, SwiperSlide } from 'swiper/vue'
+import { Autoplay } from 'swiper'
 
 let teachersArr = ref([])
 
@@ -50,11 +63,14 @@ const teacherList = async () => {
     flex-direction: column;
     gap: 40px;
 
+    @media (min-width: 1024px) and (max-width: 1480px) {
+      max-width: calc(100% - 40px);
+    }
+
     &__field{
         display: flex;
         align-items: stretch;
-        justify-content: space-between;
-        gap: 10px;
+        gap: 22px;
         flex-wrap: wrap;
 
         .teacher{

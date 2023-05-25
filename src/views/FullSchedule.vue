@@ -13,11 +13,7 @@ onMounted( () => {
 const schedule = async () => {
   isLoading.value = true
 
-  await axios.get('filterTimetableForChair', {
-    params: {
-      employeeNames: 'Борисов, Коваль, Савинков, Ермаков'
-    }
-  })
+  await axios.get('full-schedule')
       .then((scheduleData) => {
         example.value = scheduleData.data
         isLoading.value = false
@@ -28,9 +24,17 @@ const schedule = async () => {
 <template>
   <section class="full-schedule">
     <h1>Расписание</h1>
-    <div v-if="example" v-html="example">
-
-    </div>
+    <table class="schedule__table">
+      <thead>
+        <tr>
+          <th v-for="teacher in example">
+            <router-link :to="'/schedule/' + teacher.id">
+              {{ teacher.shortName }}
+            </router-link>
+          </th>
+        </tr>
+      </thead>
+    </table>
   </section>
   <Loader v-if="isLoading"/>
 </template>

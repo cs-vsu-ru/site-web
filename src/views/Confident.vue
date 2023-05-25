@@ -84,12 +84,16 @@ const saveStatic = async () => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 @import "@/assets/styles/_variables.scss";
 
 .static{
   max-width: 1440px;
   margin: 0 auto;
+
+  @media (min-width: 1024px) and (max-width: 1480px) {
+    max-width: calc(100% - 40px);
+  }
 
   h1{
     margin-bottom: 30px;

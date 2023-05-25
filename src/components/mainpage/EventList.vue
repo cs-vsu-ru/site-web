@@ -49,12 +49,20 @@ const eventList = async () => {
   flex-direction: column;
   gap: 40px;
 
+  @media (min-width: 1024px) and (max-width: 1480px) {
+    max-width: calc(100% - 40px);
+  }
+
   &__field{
     display: flex;
     align-items: stretch;
     justify-content: space-between;
     gap: 20px;
     flex-wrap: wrap;
+
+    @media (min-width: 1024px) and (max-width: 1480px) {
+      justify-content: center;
+    }
 
     .event{
       display: flex;

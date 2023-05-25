@@ -36,7 +36,7 @@ const createMail = async () => {
     emails: newArr
   })
       .then(() => {
-        location.reload()
+        window.location.replace('/admin')
       })
 }
 </script>

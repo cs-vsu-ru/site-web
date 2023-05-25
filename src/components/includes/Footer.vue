@@ -39,6 +39,10 @@
       margin: 0 auto;
       padding: 35px 0;
 
+      @media (min-width: 1024px) and (max-width: 1480px) {
+        max-width: calc(100% - 40px);
+      }
+
       &-left{
         display: flex;
         flex-direction: column;
