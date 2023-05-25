@@ -95,6 +95,13 @@ import {onMounted, ref} from "vue";
     max-width: calc(100% - 40px);
   }
 
+  u{
+    text-decoration: underline !important;
+  }
+  s{
+    text-decoration: line-through !important;
+  }
+
 
   h1{
     margin-bottom: 30px;

@@ -40,6 +40,9 @@ const isLoading = ref(false)
 const mails = ref()
 const newsShow = ref([])
 const eventsShow = ref([])
+const assocStatus = ref({
+  'open': 'Открыта'
+})
 
 onMounted(() => {
     getSlidesForAdmin()
@@ -402,7 +405,7 @@ const deleteEvent = async (eventId, index) => {
                 </p>
               </td>
               <td>{{ mail.newsletterDate.split('T')[0].split('-').reverse().join('.') }}</td>
-              <td>{{ mail.status }}</td>
+              <td>{{ assocStatus[mail.status] }}</td>
             </tr>
           </tbody>
         </table>

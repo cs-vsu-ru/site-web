@@ -109,7 +109,7 @@ const checkRole = async () => {
 
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 @import "@/assets/styles/_variables.scss";
 
 .ce-toolbar__content, .ce-block__content{
@@ -120,6 +120,13 @@ const checkRole = async () => {
 .new-editor{
   max-width: 1440px;
   margin: 0 auto;
+
+  u{
+    text-decoration: underline !important;
+  }
+  s{
+    text-decoration: line-through !important;
+  }
 
 
   p{
