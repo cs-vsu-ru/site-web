@@ -47,13 +47,13 @@ const createUser = async () => {
         })
       })
       .then(() => {
-        location.reload()
+        window.location.replace('/admin')
       })
 }
 </script>
 
 <template>
-  <section class="user-create">
+  <form @submit="createUser" class="user-create">
       <h1 class="user-create__title">Создание пользователя</h1>
       <div class="user-create__field">
           <div class="user-create__field-left">
@@ -67,48 +67,48 @@ const createUser = async () => {
               <div class="user-data">
                   <div class="user-data__item">
                       <p class="user-data__item-name">Логин</p>
-                      <input v-model="login" type="text" class="user-data__item-input">
+                      <input v-model="login" type="text" class="user-data__item-input" required>
                   </div>
                   <div class="user-data__item">
                       <p class="user-data__item-name">Фамилия</p>
-                      <input v-model="lastName" type="text" class="user-data__item-input">
+                      <input v-model="lastName" type="text" class="user-data__item-input" required>
                   </div>
                   <div class="user-data__item">
                       <p class="user-data__item-name">Имя</p>
-                      <input v-model="firstName" type="text" class="user-data__item-input">
+                      <input v-model="firstName" type="text" class="user-data__item-input" required>
                   </div>
                   <div class="user-data__item">
                       <p class="user-data__item-name">Отчество</p>
-                      <input v-model="patronymic" type="text" class="user-data__item-input">
+                      <input v-model="patronymic" type="text" class="user-data__item-input" required>
                   </div>
                   <div class="user-data__item">
                       <p class="user-data__item-name">Стаж (общий)</p>
-                      <input v-model="yearsAll" type="text" class="user-data__item-input">
+                      <input v-model="yearsAll" type="date" class="user-data__item-input" required>
                   </div>
                   <div class="user-data__item">
                       <p class="user-data__item-name">Стаж (по специальности)</p>
-                      <input v-model="yearsSpec" type="text" class="user-data__item-input">
+                      <input v-model="yearsSpec" type="date" class="user-data__item-input" required>
                   </div>
                   <div class="user-data__item">
                       <p class="user-data__item-name">E-mail</p>
-                      <input v-model="email" type="text" class="user-data__item-input">
+                      <input v-model="email" type="text" class="user-data__item-input" required>
                   </div>
                   <div class="user-data__item">
                       <p class="user-data__item-name">Должность</p>
-                      <input v-model="job" type="text" class="user-data__item-input">
+                      <input v-model="job" type="text" class="user-data__item-input" required>
                   </div>
                   <div class="user-data__item">
                       <p class="user-data__item-name">Ученое звание</p>
-                      <input v-model="rank" type="text" class="user-data__item-input">
+                      <input v-model="rank" type="text" class="user-data__item-input" required>
                   </div>
                   <div class="user-data__item">
                       <p class="user-data__item-name">Ученая степень</p>
-                      <input v-model="degree" type="text" class="user-data__item-input">
+                      <input v-model="degree" type="text" class="user-data__item-input" required>
                   </div>
-                  <div class="user-data__item">
-                      <p class="user-data__item-name">Преподаваемые дисциплины</p>
-                      <input v-model="lessons" type="text" class="user-data__item-input">
-                  </div>
+<!--                  <div class="user-data__item">-->
+<!--                      <p class="user-data__item-name">Преподаваемые дисциплины</p>-->
+<!--                      <input v-model="lessons" type="text" class="user-data__item-input">-->
+<!--                  </div>-->
               </div>
               <div class="user-extension">
                 <p class="user-data__item-name">Дополнительная информация</p>
@@ -117,9 +117,9 @@ const createUser = async () => {
           </div>
       </div>
       <div class="user-create__buttons">
-        <button @click="createUser" class="user-create__buttons-item">Создать</button>
+        <button type="submit" class="user-create__buttons-item">Создать</button>
       </div>
-  </section>
+  </form>
 </template>
 
 <style lang="scss">
