@@ -27,13 +27,16 @@ const schedule = async () => {
     <table class="schedule__table">
       <thead>
         <tr>
-          <th v-for="teacher in example">
-            <router-link :to="'/schedule/' + teacher.id">
-              {{ teacher.shortName }}
-            </router-link>
-          </th>
+          <th>День недели</th>
+          <th>Время</th>
+          <th v-for="teacher in example">{{ teacher.shortName }}</th>
         </tr>
       </thead>
+      <tbody v-for="teacher in example">
+        <tr v-for="days in teacher.schedule">
+          <td></td>
+        </tr>
+      </tbody>
     </table>
   </section>
   <Loader v-if="isLoading"/>
