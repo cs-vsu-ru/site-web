@@ -50,12 +50,14 @@
       <button v-if="userRole === 'ROLE_ADMIN' && !activeEdit" @click="activeEdit = true; getLogin(destination.id)" class="admin-button profile__edit">Редактировать</button>
       <button v-if="userRole === 'ROLE_ADMIN' && activeEdit" @click="saveProfile" class="admin-button profile__edit">Сохранить</button>
   </section>
+  <Loader v-if="isLoading" />
 </template>
 
 <script setup>
 import {computed, onMounted, ref} from "vue";
 import axios from "axios";
 import {useRoute} from "vue-router";
+import Loader from "@/components/includes/Loader";
 
 const accountInfo = ref([])
 const userRole = ref()
@@ -63,6 +65,7 @@ const currUserId = ref()
 const planUrl = ref(null)
 const activeEdit = ref(false)
 const login = ref()
+const isLoading = ref(false)
 const route = useRoute()
 
 const destinationId = computed(() => route.params.id)
@@ -76,10 +79,13 @@ onMounted(() => {
 })
 
 const accountAPI = async () => {
+    isLoading.value = true
+
     await axios.get('employees')
         .then((accId) => {
             console.log(accId)
             accountInfo.value = accId.data
+            isLoading.value = false
         })
 }
 
@@ -156,6 +162,10 @@ const loadPlan = async () => {
   align-items: stretch;
   gap: 60px;
   position: relative;
+
+  @media (min-width: 1024px) and (max-width: 1480px) {
+    max-width: calc(100% - 40px);
+  }
 
   &__left{
     background: #C2EEFF;

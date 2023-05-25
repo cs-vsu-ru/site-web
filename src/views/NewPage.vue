@@ -102,9 +102,25 @@ const checkRole = async () => {
   margin: 0 auto;
 }
 
+.ck{
+  u{
+    text-decoration: underline !important;
+  }
+  s{
+    text-decoration: line-through !important;
+  }
+}
+
 .new-editor{
     max-width: 1440px;
     margin: 0 auto;
+
+  u{
+    text-decoration: underline !important;
+  }
+  s{
+    text-decoration: line-through !important;
+  }
 
     p{
         font-size: 20px;

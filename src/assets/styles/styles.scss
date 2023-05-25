@@ -140,3 +140,16 @@ h1, h2{
 .image-style-align-left{
   float: left;
 }
+
+.ck-content{
+  border: 1px solid $pr1 !important;
+
+}
+.ckeditor-all{
+  u{
+    text-decoration: underline !important;
+  }
+  s{
+    text-decoration: line-through !important;
+  }
+}

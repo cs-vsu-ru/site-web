@@ -14,6 +14,9 @@ const createEvent = async () => {
     startTime: eventTime.value,
     title: eventName.value
   })
+      .then(() => {
+        location.reload()
+      })
 }
 </script>
 

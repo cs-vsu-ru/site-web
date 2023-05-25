@@ -84,12 +84,24 @@ import {onMounted, ref} from "vue";
   }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 @import "@/assets/styles/_variables.scss";
 
 .static{
   max-width: 1440px;
   margin: 0 auto;
+
+  @media (min-width: 1024px) and (max-width: 1480px) {
+    max-width: calc(100% - 40px);
+  }
+
+  u{
+    text-decoration: underline !important;
+  }
+  s{
+    text-decoration: line-through !important;
+  }
+
 
   h1{
     margin-bottom: 30px;
@@ -107,6 +119,13 @@ import {onMounted, ref} from "vue";
   &__editor{
     border: 1px solid $pr1;
     min-height: 350px;
+
+    u{
+      text-decoration: underline;
+    }
+    s{
+      text-decoration: line-through;
+    }
   }
 }
 </style>

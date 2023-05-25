@@ -100,7 +100,7 @@ const auth = async () => {
 
 const logout = () => {
     store.setAuth('')
-    window.location.replace('/')
+    location.reload()
 }
 
 const accountInfo = async () => {
@@ -132,6 +132,10 @@ const accountInfo = async () => {
         margin: 0 auto;
         gap: 10px;
         padding: 22px 0;
+
+        @media (min-width: 1024px) and (max-width: 1480px) {
+          max-width: calc(100% - 40px);
+        }
 
         .logo{
           display: flex;
