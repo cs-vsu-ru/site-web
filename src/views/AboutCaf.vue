@@ -84,7 +84,7 @@ import {onMounted, ref} from "vue";
   }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 @import "@/assets/styles/_variables.scss";
 
 .static{
@@ -112,6 +112,13 @@ import {onMounted, ref} from "vue";
   &__editor{
     border: 1px solid $pr1;
     min-height: 350px;
+
+    u{
+      text-decoration: underline;
+    }
+    s{
+      text-decoration: line-through;
+    }
   }
 }
 </style>
