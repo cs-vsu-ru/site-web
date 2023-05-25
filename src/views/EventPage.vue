@@ -121,6 +121,7 @@ const checkRole = async () => {
   max-width: 1440px;
   margin: 0 auto;
 
+
   p{
     font-size: 20px;
     line-height: 24px;

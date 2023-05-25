@@ -46,6 +46,9 @@ const createUser = async () => {
           imageUrl: urlData.data,
         })
       })
+      .then(() => {
+        location.reload()
+      })
 }
 </script>
 

@@ -96,6 +96,10 @@ const newsList = async () => {
     flex-direction: column;
     gap: 40px;
 
+    @media (min-width: 1024px) and (max-width: 1480px) {
+      max-width: calc(100% - 40px);
+    }
+
     &-field{
       width: 100%;
       position: relative;

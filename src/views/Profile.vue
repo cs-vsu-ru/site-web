@@ -157,6 +157,10 @@ const loadPlan = async () => {
   gap: 60px;
   position: relative;
 
+  @media (min-width: 1024px) and (max-width: 1480px) {
+    max-width: calc(100% - 40px);
+  }
+
   &__left{
     background: #C2EEFF;
     padding: 20px;
