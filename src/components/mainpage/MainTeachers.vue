@@ -70,7 +70,7 @@ const teacherList = async () => {
     &__field{
         display: flex;
         align-items: stretch;
-        gap: 25px;
+        gap: 22px;
         flex-wrap: wrap;
 
         .teacher{

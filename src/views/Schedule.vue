@@ -98,6 +98,7 @@
         </form>
       </GDialog>
   </section>
+  <Loader v-if="isLoading" />
 </template>
 
 <script setup>
@@ -105,8 +106,10 @@ import {computed, onMounted, ref, toRaw} from "vue";
 import {useRoute} from "vue-router";
 import axios from "axios";
 import {GDialog} from "gitart-vue-dialog/dist/index";
+import Loader from "@/components/includes/Loader";
 
 const accountInfo = ref([])
+const isLoading = ref(false)
 const route = useRoute()
 
 const destinationId = computed(() => route.params.id)
@@ -142,10 +145,13 @@ const checkRole = async () => {
 }
 
 const schedule = async () => {
+    isLoading.value = true
+
     await axios.get('employees')
         .then((accId) => {
             console.log(accId)
             accountInfo.value = accId.data
+            isLoading.value = false
         })
 }
 
