@@ -1,0 +1,20 @@
+name: "Call: Deploy prod"
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: [ self-hosted, prod ]
+    environment:
+      name: prod
+      url: 'https://www.cs.vsu.ru'
+    steps:
+      - name: Pull images
+        run: |
+          docker pull ghcr.io/cs-vsu-ru/site-web/web:prod
+      - name: Deploy prod environment
+        run: |
+          cd /home/user/runner/work/site-api/site-api
+          docker-compose up --force-recreate --build -d
