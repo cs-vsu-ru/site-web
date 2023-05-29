@@ -25,7 +25,7 @@
                 </span>
               </span>
           </p>
-          <div v-if="currUserId === destination.id && destination.id !== 1" style="align-self:flex-start;" class="profile__right-plan">
+          <div v-if="currUserId === destination.id && destination.id !== 1 && destination.plan !== null" style="align-self:flex-start;" class="profile__right-plan">
             <p class="profile__right-item">Индивидуальный план</p>
             <a style="margin-top: 15px;" class="admin-button" :href="destination.plan">Скачать</a>
           </div>
@@ -144,6 +144,8 @@ const loadPlan = async () => {
             id: destination.value.id,
             plan: urlData.data
           })
+
+          location.reload()
         })
   }
 }

@@ -1,10 +1,9 @@
 <script setup>
 import {onMounted, ref} from "vue";
 import axios from "axios";
-import index from "vuex";
 import Loader from "@/components/includes/Loader";
 
-const tabTitles = ['Слайдер', 'Мероприятия', 'Новости', 'Расписание', 'Пользователи', 'Рассылка']
+const tabTitles = ['Слайдер', 'Мероприятия', 'Новости', 'Расписание', 'Сотрудники', 'Рассылка']
 
 const slidesAdminArr = ref([])
 const checkDisable = ref([])
@@ -41,8 +40,10 @@ const mails = ref()
 const newsShow = ref([])
 const eventsShow = ref([])
 const assocStatus = ref({
-  'open': 'Открыта'
+  'open': 'Открыта',
+  'close': 'Закрыта'
 })
+const newsUrl = ref()
 
 onMounted(() => {
     getSlidesForAdmin()
@@ -127,7 +128,7 @@ const addSlide = async () => {
             await axios.post('sliders', {
                 imageURL: urlData.data,
                 title: newText.value,
-                urlTo: 'https://www.vsu.ru/'
+                urlTo: newsUrl.value
             })
 
             location.reload()
@@ -275,6 +276,13 @@ const deleteEvent = async (eventId, index) => {
         eventsShow.value[index] = false
       })
 }
+
+const deleteMail = async (mailId) => {
+  await axios.delete('newsletter/' + mailId)
+      .then(() => {
+        location.reload()
+      })
+}
 </script>
 
 <template>
@@ -301,7 +309,7 @@ const deleteEvent = async (eventId, index) => {
               <label v-if="!checkDisable[index]" class="slider-admin__box-label" :for="slide.id"></label>
               <svg v-if="!checkDisable[index]" width="64px" height="64px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"></path> </g></svg>
             </div>
-            <div style="display: flex;flex-direction: column; justify-content: space-between; gap: 10px">
+            <div style="display: flex;flex-direction: column; justify-content: space-between; gap: 10px; width: 50%">
               <textarea v-model="slide.title" class="slider-admin__item-text" :disabled="checkDisable[index]"/>
               <input :disabled="checkDisable[index]" type="text" class="slider-admin__item-text" v-model="slide.urlTo" >
             </div>
@@ -319,7 +327,10 @@ const deleteEvent = async (eventId, index) => {
               <label for="new-slide" class="slider-admin__box-label"></label>
               <svg width="64px" height="64px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"></path> </g></svg>
             </div>
-            <textarea v-model="newText" class="slider-admin__item-text" placeholder="Введите текст для слайда"/>
+            <div style="display: flex;flex-direction: column; justify-content: space-between; gap: 10px; width: 50%">
+              <textarea v-model="newText" class="slider-admin__item-text" placeholder="Введите текст для слайда"/>
+              <input v-model="newsUrl" type="text" class="slider-admin__item-text" placeholder="Введите ссылку">
+            </div>
             <button @click="addSlide" class="slider-admin__item-save admin-button">Сохранить</button>
           </div>
           <button @click="newSlide = true" class="slider-admin__add admin-button">Добавить слайд</button>
@@ -374,7 +385,7 @@ const deleteEvent = async (eventId, index) => {
           <div class="admin-users">
             <div class="admin-users__item">
                 <div class="admin-users__item-head">
-                    <p class="admin-users__item-head_name">Пользователи</p>
+                    <p class="admin-users__item-head_name">Сотрудники</p>
                     <router-link to="/admin/create_user" class="admin-button">Добавить</router-link>
                 </div>
                 <div class="admin-users__item-list">
@@ -409,6 +420,12 @@ const deleteEvent = async (eventId, index) => {
               </td>
               <td>{{ mail.newsletterDate.split('T')[0].split('-').reverse().join('.') }}</td>
               <td>{{ assocStatus[mail.status] }}</td>
+              <td>
+                <div class="mail-moves">
+                  <svg data-v-54c38a05="" style="margin-right: 10px;" width="32" height="32" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><g data-v-54c38a05="" id="SVGRepo_bgCarrier" stroke-width="0"></g><g data-v-54c38a05="" id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g data-v-54c38a05="" id="SVGRepo_iconCarrier"><path data-v-54c38a05="" fill-rule="evenodd" clip-rule="evenodd" d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"></path></g></svg>
+                  <svg @click="deleteMail(mail.id)" data-v-54c38a05="" width="32" height="32" viewBox="0 -0.5 21 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0" data-v-54c38a05=""></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round" data-v-54c38a05=""></g><g id="SVGRepo_iconCarrier" data-v-54c38a05=""><title data-v-54c38a05="">delete [#1487]</title> <desc data-v-54c38a05="">Created with Sketch.</desc> <defs data-v-54c38a05=""></defs> <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" data-v-54c38a05=""><g id="Dribbble-Light-Preview" transform="translate(-179.000000, -360.000000)" fill="#00295F" data-v-54c38a05=""><g id="icons" transform="translate(56.000000, 160.000000)" data-v-54c38a05=""><path d="M130.35,216 L132.45,216 L132.45,208 L130.35,208 L130.35,216 Z M134.55,216 L136.65,216 L136.65,208 L134.55,208 L134.55,216 Z M128.25,218 L138.75,218 L138.75,206 L128.25,206 L128.25,218 Z M130.35,204 L136.65,204 L136.65,202 L130.35,202 L130.35,204 Z M138.75,204 L138.75,200 L128.25,200 L128.25,204 L123,204 L123,206 L126.15,206 L126.15,220 L140.85,220 L140.85,206 L144,206 L144,204 L138.75,204 Z" id="delete-[#1487]" data-v-54c38a05=""></path></g></g></g></g></svg>
+                </div>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -420,6 +437,26 @@ const deleteEvent = async (eventId, index) => {
 
 <style lang="scss" scoped>
 @import "@/assets/styles/_variables.scss";
+
+.mail-moves{
+  svg{
+    cursor: pointer;
+
+    &:first-child:hover{
+      fill: lightgreen;
+    }
+
+    &:last-child{
+      path{
+        transition: 0.2s;
+      }
+
+      &:hover path{
+        fill: crimson;
+      }
+    }
+  }
+}
 
 .admin{
   max-width: 1440px;
