@@ -14,6 +14,11 @@ import MainTeachers from "@/components/mainpage/MainTeachers.vue";
 import {onMounted} from "vue";
 import axios from "axios";
 
+onMounted(() => {
+  axios.get('parser/lessons/')
+  axios.get('subjects')
+})
+
 </script>
 
 <style lang="scss" scoped>

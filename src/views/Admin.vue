@@ -222,27 +222,30 @@ const uploadSchedule = async () => {
 
     formData.append('file', scheduleUrl.value.files[0])
 
-    await axios.post('uploadFile',
+    await axios.post('parser/lessons/parse/',
         formData,
         {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
         })
-        .then(async (schData) => {
-            let parseData = new FormData()
-
-            parseData.append('filepath', schData.data)
-
-            await axios.post('parseTimetable', parseData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            })
-                .then(() => {
-                  isLoading.value = false
-                })
+        .then(() => {
+          location.reload()
         })
+        // .then(async (schData) => {
+        //     let parseData = new FormData()
+        //
+        //     parseData.append('filepath', schData.data)
+        //
+        //     await axios.post('parser/lessons/parse/', parseData, {
+        //         headers: {
+        //             'Content-Type': 'multipart/form-data'
+        //         }
+        //     })
+        //         .then(() => {
+        //           isLoading.value = false
+        //         })
+        // })
 }
 
 const getUsers = async () => {

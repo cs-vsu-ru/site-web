@@ -49,7 +49,16 @@ const teacherList = async () => {
     await axios.get('employees')
         .then((req) => {
             teachersArr.value = req.data
+            shuffleArr(teachersArr.value)
         })
+}
+
+const shuffleArr = (array) => {
+  for (let i = array.length - 1; i > 0; i--) {
+    let j = Math.floor(Math.random() * (i + 1)); // случайный индекс от 0 до i
+
+    [array[i], array[j]] = [array[j], array[i]];
+  }
 }
 </script>
 
