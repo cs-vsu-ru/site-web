@@ -16,6 +16,7 @@ const lessons = ref('')
 const extraInf = ref('')
 const profileImg = ref(null)
 const imgUrl = ref(null)
+const role = ref('ROLE_USER')
 
 const checkImg = () => {
   profileImg.value = URL.createObjectURL(imgUrl.value.files[0])
@@ -44,6 +45,7 @@ const createUser = async () => {
           lastName: lastName.value,
           email: email.value,
           imageUrl: urlData.data,
+          mainRole: role.value
         })
       })
       .then(() => {
@@ -66,6 +68,14 @@ const createUser = async () => {
           <div class="user-create__field-right">
               <div class="user-data">
                   <div class="user-data__item">
+                    <p class="user-data__item-name">Роль</p>
+                    <select v-model="role" class="user-data__item-input" required>
+                      <option value="ROLE_USER">Пользователь</option>
+                      <option value="ROLE_MODERATOR">Модератор</option>
+                      <option value="ROLE_ADMIN">Админ</option>
+                    </select>
+                  </div>
+                  <div class="user-data__item">
                       <p class="user-data__item-name">Логин</p>
                       <input v-model="login" type="text" class="user-data__item-input" required>
                   </div>
@@ -83,11 +93,11 @@ const createUser = async () => {
                   </div>
                   <div class="user-data__item">
                       <p class="user-data__item-name">Стаж (общий)</p>
-                      <input v-model="yearsAll" type="date" class="user-data__item-input" required>
+                      <input v-model="yearsAll" type="date" class="user-data__item-input">
                   </div>
                   <div class="user-data__item">
                       <p class="user-data__item-name">Стаж (по специальности)</p>
-                      <input v-model="yearsSpec" type="date" class="user-data__item-input" required>
+                      <input v-model="yearsSpec" type="date" class="user-data__item-input">
                   </div>
                   <div class="user-data__item">
                       <p class="user-data__item-name">E-mail</p>
@@ -95,15 +105,15 @@ const createUser = async () => {
                   </div>
                   <div class="user-data__item">
                       <p class="user-data__item-name">Должность</p>
-                      <input v-model="job" type="text" class="user-data__item-input" required>
+                      <input v-model="job" type="text" class="user-data__item-input">
                   </div>
                   <div class="user-data__item">
                       <p class="user-data__item-name">Ученое звание</p>
-                      <input v-model="rank" type="text" class="user-data__item-input" required>
+                      <input v-model="rank" type="text" class="user-data__item-input">
                   </div>
                   <div class="user-data__item">
                       <p class="user-data__item-name">Ученая степень</p>
-                      <input v-model="degree" type="text" class="user-data__item-input" required>
+                      <input v-model="degree" type="text" class="user-data__item-input">
                   </div>
 <!--                  <div class="user-data__item">-->
 <!--                      <p class="user-data__item-name">Преподаваемые дисциплины</p>-->

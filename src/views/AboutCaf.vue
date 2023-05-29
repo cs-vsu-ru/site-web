@@ -102,6 +102,15 @@ import {onMounted, ref} from "vue";
     text-decoration: line-through !important;
   }
 
+  ul{
+    padding-left: 25px;
+    margin: 10px 0;
+
+    li{
+      font-size: 18px;
+    }
+  }
+
 
   h1{
     margin-bottom: 30px;
@@ -114,6 +123,10 @@ import {onMounted, ref} from "vue";
 
   img{
     width: 100%;
+  }
+
+  .image-style-align-left{
+    float: left;
   }
 
   &__editor{
