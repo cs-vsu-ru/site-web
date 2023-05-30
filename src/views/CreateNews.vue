@@ -52,18 +52,18 @@ const createNews = async () => {
           })
         })
         .then(() => {
-          location.reload()
+          location.replace('/is/news')
         })
   }
   else {
     await axios.post('articles', {
       title: newsTitle.value,
-      imageURL: 'http://www.cs.vsu.ru/is/api/files/000cbcf2-527e-4a1f-bd0c-98d170509a35pumpkin.jpg',
+      imageURL: 'https://i.imgur.com/fn32s4s.jpeg',
       content: newsContent.value,
       publicationDate: new Date().toJSON().slice(0,10).replace(/-/g,'-')
     })
         .then(() => {
-          location.reload()
+          location.replace('/is/news')
         })
   }
 }

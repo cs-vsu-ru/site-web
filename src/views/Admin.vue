@@ -158,7 +158,7 @@ const addSlide = async () => {
     }
     else {
       await axios.post('sliders', {
-        imageURL: 'http://www.cs.vsu.ru/is/api/files/000cbcf2-527e-4a1f-bd0c-98d170509a35pumpkin.jpg',
+        imageURL: 'https://i.imgur.com/fn32s4s.jpeg',
         title: newText.value,
         urlTo: newsUrl.value
       })
@@ -264,7 +264,7 @@ const uploadSchedule = async () => {
             }
         })
         .then(() => {
-          location.reload()
+          location.replace('/is/full-schedule')
         })
         // .then(async (schData) => {
         //     let parseData = new FormData()

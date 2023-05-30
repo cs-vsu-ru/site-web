@@ -65,7 +65,7 @@ const createUser = async () => {
       firstName: firstName.value,
       lastName: lastName.value,
       email: email.value,
-      imageUrl: 'http://www.cs.vsu.ru/is/api/files/000cbcf2-527e-4a1f-bd0c-98d170509a35pumpkin.jpg',
+      imageUrl: 'https://i.imgur.com/fn32s4s.jpeg',
       mainRole: role.value
     })
         .then(() => {
