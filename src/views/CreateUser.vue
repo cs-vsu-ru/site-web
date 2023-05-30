@@ -55,7 +55,7 @@ const createUser = async () => {
 </script>
 
 <template>
-  <form @submit="createUser" class="user-create">
+  <form @submit.prevent="createUser" class="user-create">
       <h1 class="user-create__title">Создание пользователя</h1>
       <div class="user-create__field">
           <div class="user-create__field-left">

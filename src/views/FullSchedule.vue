@@ -61,7 +61,9 @@ const saveSchedule = async () => {
         <tr>
           <th style="background: white">День</th>
           <th style="background: white">Время</th>
-          <th style="background: white; z-index: 2" v-for="name in example.employees">{{ name.name }}</th>
+          <th class="schedule-th" style="background: white; z-index: 2" v-for="name in example.employees">
+            <router-link class="schedule-link" :to="'/schedule/' + name.id">{{ name.name }}</router-link>
+          </th>
         </tr>
       </table>
       <table v-for="table in example.schedule" class="schedule__table cycle-table">
@@ -161,5 +163,21 @@ const saveSchedule = async () => {
   position: sticky;
   top: 0;
   border-bottom: 3px solid $pr1 !important;
+}
+
+.schedule-th{
+  height: 78px;
+}
+
+.schedule-link{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px 0;
+  height: 100%;
+
+  &:hover{
+    background: rgba(0, 41, 95, 0.3);
+  }
 }
 </style>

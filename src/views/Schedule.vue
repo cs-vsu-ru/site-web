@@ -51,18 +51,19 @@
           <div class="login-modal__inputs">
             <div class="login-modal__inputs-item">
               <p class="login-modal__inputs-item_name">Название предмета</p>
-              <input type="text" class="login-modal__inputs-item_input" v-model="subjectName" required>
+              <input type="text" class="login-modal__inputs-item_input" v-model="subjectName">
             </div>
             <div class="login-modal__inputs-item">
               <p class="login-modal__inputs-item_name">Курc и группы</p>
-              <input type="text" class="login-modal__inputs-item_input" v-model="courseNGroups" required>
+              <input type="text" class="login-modal__inputs-item_input" v-model="courseNGroups">
             </div>
             <div class="login-modal__inputs-item">
               <p class="login-modal__inputs-item_name">Аудитория</p>
-              <input type="text" class="login-modal__inputs-item_input" v-model="placement" required>
+              <input type="text" class="login-modal__inputs-item_input" v-model="placement">
             </div>
           </div>
           <button type="submit" class="login-modal__submit">Сохранить</button>
+          <button @click="deleteLesson" type="button" class="login-modal__submit delete">Удалить</button>
         </form>
       </GDialog>
   </section>
@@ -136,6 +137,20 @@ const saveSchedule = async () => {
     placement: placement.value,
     name: subjectName.value
   })
+      .then(() => {
+        location.reload()
+      })
+}
+
+const deleteLesson = async () => {
+  await axios.patch('parser/lessons/' + lessonId.value + '/', {
+    groups: '',
+    placement: '',
+    name: ''
+  })
+      .then(() => {
+        location.reload()
+      })
 }
 </script>
 
@@ -165,10 +180,6 @@ const saveSchedule = async () => {
       line-height: 24px;
       border: 1px solid $pr1;
       border-collapse: collapse;
-    }
-
-    th{
-      padding: 15px 0;
     }
 
     td:not(:first-child){
@@ -240,6 +251,10 @@ const saveSchedule = async () => {
 
 .schedule__box{
   position: relative;
+}
+
+.login-modal__submit.delete{
+  margin-top: -15px;
 }
 
 </style>
