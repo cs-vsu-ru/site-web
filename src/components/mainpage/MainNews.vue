@@ -96,7 +96,7 @@ const newsList = async () => {
     flex-direction: column;
     gap: 40px;
 
-    @media (min-width: 1024px) and (max-width: 1480px) {
+    @media (max-width: 1480px) {
       max-width: calc(100% - 40px);
     }
 
@@ -106,6 +106,7 @@ const newsList = async () => {
     }
   }
 }
+
 .new{
   display: flex;
   flex-direction: column;
@@ -147,6 +148,7 @@ const newsList = async () => {
     background: white;
     padding: 10px;
     border-radius: 0 10px 10px 0;
+    height: 188px;
   }
 }
 </style>

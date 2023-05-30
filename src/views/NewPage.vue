@@ -2,18 +2,18 @@
     <div style="max-width: 1440px; margin: 0 auto;" v-if="destination">
         <div style="display: flex; align-items: flex-start; justify-content: space-between;">
             <h1 style="margin-bottom: 40px;">{{ destination.title }}</h1>
-            <button :class="{visible: !isEditorActive}" @click="isEditorActive = true" v-if="userRole === 'ROLE_ADMIN'" class="edit-button admin-button">Редактировать</button>
+            <button :class="{visible: !isEditorActive}" @click="isEditorActive = true" v-if="userRole === 'ROLE_ADMIN' || userRole === 'ROLE_MODERATOR'" class="edit-button admin-button">Редактировать</button>
         </div>
         <ckeditor
             :editor="editor"
             v-model="destination.content"
             :config="editorConfig"
             @ready="onReady"
-            v-if="isEditorActive && userRole === 'ROLE_ADMIN'"
+            v-if="isEditorActive && (userRole === 'ROLE_ADMIN' || userRole === 'ROLE_MODERATOR')"
         >
 
         </ckeditor>
-        <button v-if="isEditorActive && userRole === 'ROLE_ADMIN'" @click="saveNew(destination.content)" style="margin: 10px 0 10px auto;" class="admin-button">Сохранить</button>
+        <button v-if="isEditorActive && (userRole === 'ROLE_ADMIN' || userRole === 'ROLE_MODERATOR')" @click="saveNew(destination.content)" style="margin: 10px 0 10px auto;" class="admin-button">Сохранить</button>
     </div>
     <div class="new-editor" v-if="destination && !isEditorActive" v-html="destination.content">
 

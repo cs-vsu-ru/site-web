@@ -21,6 +21,7 @@ import EventPage from "@/views/EventPage"
 import FullSchedule from "@/views/FullSchedule"
 import CreateMail from "@/views/CreateMail"
 import CreateEvent from "@/views/CreateEvent";
+import EditMail from "@/views/EditMail";
 
 const routes = [
   {
@@ -62,7 +63,7 @@ const routes = [
       if (store.getIsAuth !== '') {
         await axios.get('account')
             .then((accData) => {
-              accData.data.mainRole === 'ROLE_ADMIN' ? next() : next('/')
+              accData.data.mainRole === 'ROLE_ADMIN' || accData.data.mainRole === 'ROLE_MODERATOR' ? next() : next('/')
             })
       }
       else {
@@ -133,7 +134,7 @@ const routes = [
       if (store.getIsAuth !== '') {
         await axios.get('account')
             .then((accData) => {
-              accData.data.mainRole === 'ROLE_ADMIN' ? next() : next('/')
+              accData.data.mainRole === 'ROLE_ADMIN' || accData.data.mainRole === 'ROLE_MODERATOR' ? next() : next('/')
             })
       }
       else {
@@ -166,7 +167,7 @@ const routes = [
       if (store.getIsAuth !== '') {
         await axios.get('account')
             .then((accData) => {
-              accData.data.mainRole === 'ROLE_ADMIN' ? next() : next('/')
+              accData.data.mainRole === 'ROLE_ADMIN' || accData.data.mainRole === 'ROLE_MODERATOR' ? next() : next('/')
             })
       }
       else {
@@ -184,7 +185,25 @@ const routes = [
       if (store.getIsAuth !== '') {
         await axios.get('account')
             .then((accData) => {
-              accData.data.mainRole === 'ROLE_ADMIN' ? next() : next('/')
+              accData.data.mainRole === 'ROLE_ADMIN' || accData.data.mainRole === 'ROLE_MODERATOR' ? next() : next('/')
+            })
+      }
+      else {
+        next('/')
+      }
+    }
+  },
+  {
+    path: '/edit-mail/:id',
+    name: 'EditMail',
+    component: EditMail,
+    beforeEnter: async (to, from, next) => {
+      const store = userAuth()
+
+      if (store.getIsAuth !== '') {
+        await axios.get('account')
+            .then((accData) => {
+              accData.data.mainRole === 'ROLE_ADMIN' || accData.data.mainRole === 'ROLE_MODERATOR' ? next() : next('/')
             })
       }
       else {

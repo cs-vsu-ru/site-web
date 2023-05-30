@@ -33,26 +33,39 @@ const onReady = (editor) => {
 }
 
 const createNews = async () => {
-  let formData = new FormData()
+  if (imgUrl.value.files[0]) {
+    let formData = new FormData()
 
-  formData.append('file', imgUrl.value.files[0])
+    formData.append('file', imgUrl.value.files[0])
 
-  await axios.post('uploadFile', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    }
-  })
-      .then(async (urlData) => {
-        await axios.post('articles', {
-          title: newsTitle.value,
-          imageURL: urlData.data,
-          content: newsContent.value,
-          publicationDate: new Date().toJSON().slice(0,10).replace(/-/g,'-')
+    await axios.post('uploadFile', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+        .then(async (urlData) => {
+          await axios.post('articles', {
+            title: newsTitle.value,
+            imageURL: urlData.data,
+            content: newsContent.value,
+            publicationDate: new Date().toJSON().slice(0,10).replace(/-/g,'-')
+          })
         })
-      })
-      .then(() => {
-        location.reload()
-      })
+        .then(() => {
+          location.replace('/is/news')
+        })
+  }
+  else {
+    await axios.post('articles', {
+      title: newsTitle.value,
+      imageURL: 'https://i.imgur.com/fn32s4s.jpeg',
+      content: newsContent.value,
+      publicationDate: new Date().toJSON().slice(0,10).replace(/-/g,'-')
+    })
+        .then(() => {
+          location.replace('/is/news')
+        })
+  }
 }
 </script>
 

@@ -13,7 +13,7 @@
           Вход
         </button>
         <div v-else class="header-buttons">
-            <router-link v-if="profileRole === 'ROLE_ADMIN'" to="/admin" class="admin-button">Админ. панель</router-link>
+            <router-link v-if="profileRole === 'ROLE_ADMIN' || profileRole === 'ROLE_MODERATOR'" to="/admin" class="admin-button">Админ. панель</router-link>
             <router-link :to="'/profile/' + profileId" class="header-buttons__profile">
                 <svg width="30" height="30" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
                     <path d="M8.42308 7.32693C8.42308 6.02613 8.80881 4.75455 9.53149 3.67298C10.2542 2.59141 11.2813 1.74843 12.4831 1.25064C13.6849 0.75285 15.0073 0.622605 16.2831 0.876377C17.5589 1.13015 18.7308 1.75654 19.6506 2.67634C20.5704 3.59614 21.1968 4.76803 21.4506 6.04383C21.7043 7.31963 21.5741 8.64203 21.0763 9.8438C20.5785 11.0456 19.7355 12.0728 18.6539 12.7954C17.5724 13.5181 16.3008 13.9038 15 13.9038C13.2557 13.9038 11.5828 13.2109 10.3494 11.9775C9.116 10.7441 8.42308 9.07123 8.42308 7.32693ZM25.9615 29.25H4.03846C3.16631 29.25 2.32987 28.9035 1.71317 28.2868C1.09646 27.6701 0.75 26.8337 0.75 25.9615C0.75 23.3451 1.78939 20.8358 3.6395 18.9857C5.48962 17.1355 7.99892 16.0962 10.6154 16.0962H19.3846C22.0011 16.0962 24.5104 17.1355 26.3605 18.9857C28.2106 20.8358 29.25 23.3451 29.25 25.9615C29.25 26.8337 28.9035 27.6701 28.2868 28.2868C27.6701 28.9035 26.8337 29.25 25.9615 29.25Z"/>
@@ -92,7 +92,6 @@ const auth = async () => {
           location.reload()
       },
           (err) => {
-            console.log(err.response.data.detail)
             authError.value = err.response.data.detail
           }
       )
@@ -133,7 +132,7 @@ const accountInfo = async () => {
         gap: 10px;
         padding: 22px 0;
 
-        @media (min-width: 1024px) and (max-width: 1480px) {
+        @media (max-width: 1480px) {
           max-width: calc(100% - 40px);
         }
 

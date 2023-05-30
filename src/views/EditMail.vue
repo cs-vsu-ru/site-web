@@ -1,15 +1,38 @@
 <script setup>
-import {onMounted, ref} from "vue";
+import {computed, onMounted, ref} from "vue";
 import axios from "axios";
+import {useRoute} from "vue-router/dist/vue-router";
 
 const teacherList = ref()
 const teacherCheck = ref([])
-const mailTheme = ref()
-const mailContent = ref()
-const mailDate = ref()
+const mailInfo = ref()
+const route = useRoute()
+
+const getMail = async () => {
+  await axios.get('newsletters')
+      .then((mailData) => {
+        mailInfo.value = mailData.data
+      })
+}
+
+const getSelfMail = async () => {
+  await axios.get('newsletter/' + route.params.id)
+      .then((mailSelfData) => {
+        mailSelfData.data.emails.forEach(el => {
+          teacherCheck.value.push(el.email)
+        })
+      })
+}
+
+const destinationId = computed(() => route.params.id)
+const destination = computed(() => {
+  return mailInfo.value?.find(item => item.id == destinationId.value)
+})
 
 onMounted(() => {
   getTeachers()
+  getMail()
+  getSelfMail()
 })
 
 const getTeachers = async () => {
@@ -19,31 +42,34 @@ const getTeachers = async () => {
       })
 }
 
-const createMail = async () => {
-  let newArr = []
+const saveMail = async () => {
+  if (destination.value) {
+    let newArr = []
 
-  teacherCheck.value.forEach(el => {
-    newArr.push({
-      email: el
-    })
-  })
-
-  await axios.post('newsletter', {
-    newsletterDate: mailDate.value,
-    subject: mailTheme.value,
-    content: mailContent.value,
-    status: 'open',
-    emails: newArr
-  })
-      .then(() => {
-        window.location.replace('/is/admin')
+    teacherCheck.value.forEach(el => {
+      newArr.push({
+        email: el
       })
+    })
+
+    await axios.put('newsletter/' + destination.value.id, {
+      id: destination.value.id,
+      newsletterDate: destination.value.newsletterDate,
+      subject: destination.value.subject,
+      content: destination.value.content,
+      status: 'open',
+      emails: newArr
+    })
+        .then(() => {
+          window.location.replace('/is/admin')
+        })
+  }
 }
 </script>
 
 <template>
-  <section class="create-mail">
-    <h1>Создать рассылку</h1>
+  <section class="create-mail" v-if="destination">
+    <h1>Редактировать рассылку</h1>
     <div class="create-mail__field">
       <div class="recipients">
         <p class="recipients__title">Получатели</p>
@@ -59,20 +85,20 @@ const createMail = async () => {
       <div class="body">
         <div class="body__item">
           <p class="body__item-name">Тема</p>
-          <textarea v-model="mailTheme" class="body__item-area"></textarea>
+          <textarea v-model="destination.subject" class="body__item-area"></textarea>
         </div>
         <div style="align-self:flex-start;" class="body__item">
           <p class="body__item-name">Дата отправки</p>
-          <input v-model="mailDate" class="body__item-date" type="datetime-local">
+          <input v-model="destination.newsletterDate" class="body__item-date" type="datetime-local">
         </div>
         <div class="body__item">
           <p class="body__item-name">Сообщение</p>
-          <textarea v-model="mailContent" class="body__item-area desc"></textarea>
+          <textarea v-model="destination.content" class="body__item-area desc"></textarea>
         </div>
       </div>
     </div>
     <div class="create-mail__buttons">
-      <button @click="createMail" class="create-mail__buttons-item">Создать</button>
+      <button @click="saveMail" class="create-mail__buttons-item">Сохранить</button>
     </div>
   </section>
 </template>
