@@ -49,7 +49,7 @@ const eventList = async () => {
   flex-direction: column;
   gap: 40px;
 
-  @media (min-width: 1024px) and (max-width: 1480px) {
+  @media (max-width: 1480px) {
     max-width: calc(100% - 40px);
   }
 
@@ -60,7 +60,7 @@ const eventList = async () => {
     gap: 20px;
     flex-wrap: wrap;
 
-    @media (min-width: 1024px) and (max-width: 1480px) {
+    @media (max-width: 1480px) {
       justify-content: center;
     }
 
@@ -75,6 +75,11 @@ const eventList = async () => {
       width: 100%;
       border-radius: 10px;
       position: relative;
+      transition: 0.3s;
+
+      &:hover{
+        box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+      }
 
       &__date{
         display: flex;

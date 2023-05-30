@@ -17,6 +17,7 @@
                 disableOnInteraction: false,
               }"
               :modules="[Autoplay]"
+              class="test-class"
           >
             <swiper-slide v-for="teacher in teachersArr">
               <router-link :to="'/profile/' + teacher.id" class="teacher">
@@ -65,6 +66,10 @@ const shuffleArr = (array) => {
 <style lang="scss">
 @import "@/assets/styles/_variables.scss";
 
+.test-class{
+  align-items: stretch;
+}
+
 .teachers{
     max-width: 1440px;
     margin: 80px auto;
@@ -72,7 +77,7 @@ const shuffleArr = (array) => {
     flex-direction: column;
     gap: 40px;
 
-    @media (min-width: 1024px) and (max-width: 1480px) {
+    @media (max-width: 1480px) {
       max-width: calc(100% - 40px);
     }
 
@@ -105,6 +110,7 @@ const shuffleArr = (array) => {
                 border-radius: 10px;
                 position: relative;
                 width: 100%;
+                height: 222px;
 
                 &-name{
                     font-size: 24px;

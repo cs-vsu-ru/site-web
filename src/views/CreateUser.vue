@@ -16,41 +16,62 @@ const lessons = ref('')
 const extraInf = ref('')
 const profileImg = ref(null)
 const imgUrl = ref(null)
-const role = ref('ROLE_USER')
+const role = ref('ROLE_EMPLOYEE')
 
 const checkImg = () => {
   profileImg.value = URL.createObjectURL(imgUrl.value.files[0])
 }
 
 const createUser = async () => {
-  let formData = new FormData()
+  if (imgUrl.value.files[0]) {
+    let formData = new FormData()
 
-  formData.append('file', imgUrl.value.files[0])
+    formData.append('file', imgUrl.value.files[0])
 
-  await axios.post('uploadFile', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    }
-  })
-      .then(async (urlData) => {
-        await axios.post('employees', {
-          patronymic: patronymic.value,
-          post: job.value,
-          academicTitle: rank.value,
-          academicDegree: degree.value,
-          experience: yearsAll.value,
-          professionalExperience: yearsSpec.value,
-          login: login.value,
-          firstName: firstName.value,
-          lastName: lastName.value,
-          email: email.value,
-          imageUrl: urlData.data,
-          mainRole: role.value
+    await axios.post('uploadFile', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+        .then(async (urlData) => {
+          await axios.post('employees', {
+            patronymic: patronymic.value,
+            post: job.value,
+            academicTitle: rank.value,
+            academicDegree: degree.value,
+            experience: yearsAll.value,
+            professionalExperience: yearsSpec.value,
+            login: login.value,
+            firstName: firstName.value,
+            lastName: lastName.value,
+            email: email.value,
+            imageUrl: urlData.data,
+            mainRole: role.value
+          })
         })
-      })
-      .then(() => {
-        window.location.replace('/admin')
-      })
+        .then(() => {
+          window.location.replace('/is/admin')
+        })
+  }
+  else {
+    await axios.post('employees', {
+      patronymic: patronymic.value,
+      post: job.value,
+      academicTitle: rank.value,
+      academicDegree: degree.value,
+      experience: yearsAll.value,
+      professionalExperience: yearsSpec.value,
+      login: login.value,
+      firstName: firstName.value,
+      lastName: lastName.value,
+      email: email.value,
+      imageUrl: 'http://www.cs.vsu.ru/is/api/files/000cbcf2-527e-4a1f-bd0c-98d170509a35pumpkin.jpg',
+      mainRole: role.value
+    })
+        .then(() => {
+          window.location.replace('/is/admin')
+        })
+  }
 }
 </script>
 
@@ -70,7 +91,7 @@ const createUser = async () => {
                   <div class="user-data__item">
                     <p class="user-data__item-name">Роль</p>
                     <select v-model="role" class="user-data__item-input" required>
-                      <option value="ROLE_USER">Пользователь</option>
+                      <option value="ROLE_EMPLOYEE">Пользователь</option>
                       <option value="ROLE_MODERATOR">Модератор</option>
                       <option value="ROLE_ADMIN">Админ</option>
                     </select>
@@ -121,8 +142,7 @@ const createUser = async () => {
 <!--                  </div>-->
               </div>
               <div class="user-extension">
-                <p class="user-data__item-name">Дополнительная информация</p>
-                <textarea v-model="extraInf" class="user-data__item-input"></textarea>
+
               </div>
           </div>
       </div>

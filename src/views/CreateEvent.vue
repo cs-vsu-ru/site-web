@@ -15,7 +15,7 @@ const createEvent = async () => {
     title: eventName.value
   })
       .then(() => {
-        location.reload()
+        location.replace('/is/events')
       })
 }
 </script>

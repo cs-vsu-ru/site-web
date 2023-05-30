@@ -68,7 +68,7 @@ const getSlides = async () => {
   max-width: 1440px;
   margin: 0 auto;
 
-  @media (min-width: 1024px) and (max-width: 1480px) {
+  @media (max-width: 1480px) {
     max-width: calc(100% - 40px);
   }
 

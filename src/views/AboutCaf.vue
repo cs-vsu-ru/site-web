@@ -2,17 +2,17 @@
   <section class="static">
     <div style="display: flex; align-items: flex-start; justify-content: space-between;">
       <h1>О кафедре</h1>
-      <button :class="{visible: !isEditorActive}" @click="isEditorActive = true" v-if="userRole === 'ROLE_ADMIN'" class="edit-button admin-button">Редактировать</button>
+      <button :class="{visible: !isEditorActive}" @click="isEditorActive = true" v-if="userRole === 'ROLE_ADMIN' || userRole === 'ROLE_MODERATOR'" class="edit-button admin-button">Редактировать</button>
     </div>
     <ckeditor
         :editor="editor"
         v-model="staticInfo.contentAbout"
         :config="editorConfig"
         @ready="onReady"
-        v-if="isEditorActive && userRole === 'ROLE_ADMIN'"
+        v-if="isEditorActive && (userRole === 'ROLE_ADMIN' || userRole === 'ROLE_MODERATOR')"
         class="static__editor"
     ></ckeditor>
-    <button v-if="isEditorActive && userRole === 'ROLE_ADMIN'" @click="saveStatic" style="margin: 10px 0 10px auto;" class="admin-button">Сохранить</button>
+    <button v-if="isEditorActive && (userRole === 'ROLE_ADMIN' || userRole === 'ROLE_MODERATOR')" @click="saveStatic" style="margin: 10px 0 10px auto;" class="admin-button">Сохранить</button>
     <div class="new-editor" v-if="staticInfo && !isEditorActive" v-html="staticInfo.contentAbout">
 
     </div>
@@ -91,7 +91,7 @@ import {onMounted, ref} from "vue";
   max-width: 1440px;
   margin: 0 auto;
 
-  @media (min-width: 1024px) and (max-width: 1480px) {
+  @media (max-width: 1480px) {
     max-width: calc(100% - 40px);
   }
 
