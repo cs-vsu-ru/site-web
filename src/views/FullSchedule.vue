@@ -154,12 +154,12 @@ const deleteLesson = async () => {
 
   td{
     width: 500px;
-    height: 300px !important;
+    height: 200px !important;
   }
 
   table{
     margin-top: unset;
-    width: 1440px;
+    width: 4500px;
 
     &:nth-child(2){
       border-top: none;
@@ -195,6 +195,27 @@ const deleteLesson = async () => {
 
   &:hover{
     background: rgba(0, 41, 95, 0.3);
+  }
+}
+
+.block-all{
+  max-width: 1440px;
+  max-height: 800px;
+  width: 100%;
+  overflow-x: scroll;
+
+  &::-webkit-scrollbar{
+    width: 10px;
+    height: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb{
+    background: $pr1;
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-track{
+    background: $sc2;
   }
 }
 </style>

@@ -10,7 +10,11 @@
             prevEl: '.main__slider-nav_button.prev',
             nextEl: '.main__slider-nav_button.next',
           }"
-          :modules="[Navigation]"
+          :autoplay="{
+                delay: 2500,
+                disableOnInteraction: false,
+              }"
+          :modules="[Navigation, Autoplay]"
       >
         <SwiperSlide v-for="slide in slidesArr">
           <a :href="slide.urlTo" class="event">
@@ -39,7 +43,7 @@
 
 <script setup>
 import { Swiper, SwiperSlide } from 'swiper/vue'
-import { Navigation } from 'swiper'
+import { Navigation, Autoplay } from 'swiper'
 import axios from "axios";
 import {onMounted, ref} from "vue";
 
