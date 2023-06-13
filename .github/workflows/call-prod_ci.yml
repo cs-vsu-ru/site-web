@@ -28,8 +28,12 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build docker image via command
+        run: |
+          docker build -t tmp .
+          docker image ls | grep tmp
       - name: Build and push docker image
-        uses: docker/build-push-action@v3.3.1
+        uses: docker/build-push-action@v4.1.0
         with:
           context: .
           push: true
