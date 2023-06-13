@@ -5,7 +5,7 @@
           <router-link :to="'/profile/' + teacher.id" v-for="teacher in teachersArr" class="teacher">
               <img :src="teacher.imageUrl" alt="" class="teacher__photo">
               <div class="teacher__data">
-                  <p class="teacher__data-name">{{ teacher.lastName + ' ' + teacher.firstName + ' ' + teacher.patronymic}}</p>
+                  <p class="teacher__data-name">{{ teacher.lastName }} <br> {{ teacher.firstName }} <br> {{ teacher.patronymic}}</p>
                   <p class="teacher__data-status">{{ teacher.post }}</p>
                   <a href="" class="teacher__data-email">{{ teacher.email }}</a>
               </div>
