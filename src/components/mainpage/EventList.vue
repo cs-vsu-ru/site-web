@@ -1,7 +1,7 @@
 <template>
   <section class="events">
     <div class="section-header">
-      <h1 class="section-header__title">Мероприятия</h1>
+      <h1 class="section-header__title">Предстоящие мероприятия</h1>
       <router-link class="section-header__link" to="/events">
         Все мероприятия
         <svg width="40" height="9" viewBox="0 0 40 9" xmlns="http://www.w3.org/2000/svg">
@@ -10,7 +10,19 @@
       </router-link>
     </div>
     <div class="events__field">
-      <router-link v-for="event in eventArr.slice(0, 4)" :to="'/events/event/' + event.id" class="event">
+      <router-link v-for="event in eventsFuture.slice(0, 4)" :to="'/events/event/' + event.id" class="event">
+        <div class="event__date">
+          <p class="event__date-day">{{ event.startDate.split('-').reverse().join('.') }}</p>
+          <p class="event__date-time">{{ event.startTime }}</p>
+        </div>
+        <p class="event__name">{{ event.title }}</p>
+      </router-link>
+    </div>
+    <div class="section-header">
+      <h1 class="section-header__title">Прошедшие мероприятия</h1>
+    </div>
+    <div class="events__field">
+      <router-link v-for="event in eventsPass.slice(0, 4)" :to="'/events/event/' + event.id" class="event">
         <div class="event__date">
           <p class="event__date-day">{{ event.startDate.split('-').reverse().join('.') }}</p>
           <p class="event__date-time">{{ event.startTime }}</p>
@@ -25,7 +37,8 @@
 import {onMounted, ref} from "vue";
 import axios from "axios";
 
-const eventArr = ref([])
+const eventsPass = ref([])
+const eventsFuture = ref([])
 
 onMounted(() => {
     eventList()
@@ -34,7 +47,8 @@ onMounted(() => {
 const eventList = async () => {
     await axios.get('events')
         .then((events) => {
-            eventArr.value = events.data
+            eventsPass.value = events.data.completedEvents
+            eventsFuture.value = events.data.upcomingEvents
         })
 }
 </script>
