@@ -22,6 +22,7 @@ import FullSchedule from "@/views/FullSchedule"
 import CreateMail from "@/views/CreateMail"
 import CreateEvent from "@/views/CreateEvent";
 import EditMail from "@/views/EditMail";
+import Exams from "@/views/Exams";
 
 const routes = [
   {
@@ -210,7 +211,12 @@ const routes = [
         next('/')
       }
     }
-  }
+  },
+  {
+    path: '/exams',
+    name: 'Exams',
+    component: Exams
+  },
 
 ]
 
