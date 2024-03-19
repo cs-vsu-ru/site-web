@@ -1,13 +1,32 @@
 <script setup>
 import {ref} from "vue";
 import axios from "axios";
+import CustomUploader from "@/services/customUploader";
+import DecoupledEditor from "@ckeditor/ckeditor5-build-decoupled-document";
 
+const editor = ref(DecoupledEditor)
+const editorConfig = ref({
+  language: 'ru'
+})
 const eventName = ref()
 const eventDay = ref()
 const eventTime = ref()
-const eventDesc = ref()
+const eventDesc = ref('')
+
+
+const onReady = (editor) => {
+  editor.ui.getEditableElement().parentElement.insertBefore(
+      editor.ui.view.toolbar.element,
+      editor.ui.getEditableElement()
+  )
+
+  editor.plugins.get('FileRepository').createUploadAdapter = loader => {
+    return new CustomUploader(loader)
+  }
+}
 
 const createEvent = async () => {
+  console.log(eventDesc.value)
   await axios.post('events', {
     content: eventDesc.value,
     startDate: eventDay.value,
@@ -36,7 +55,14 @@ const createEvent = async () => {
         </div>
         <div class="body__item">
           <p class="body__item-name">Описание</p>
-          <textarea v-model="eventDesc" class="body__item-area desc"></textarea>
+            <ckeditor
+                :editor="editor"
+                v-model="eventDesc"
+                :config="editorConfig"
+                @ready="onReady"
+                class="event--editor"
+            >
+            </ckeditor>
         </div>
       </div>
     </div>
