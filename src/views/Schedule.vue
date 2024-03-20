@@ -1,3 +1,4 @@
+<!--does not work-->
 <template>
   <section class="schedule" v-if="destination && htmlSchedule">
       <h1 class="schedule__title">Расписание</h1>
