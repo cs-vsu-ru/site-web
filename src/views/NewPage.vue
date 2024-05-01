@@ -76,11 +76,9 @@ const onReady = (editor) => {
 const saveNew = async (content) => {
     await axios.put('articles/' + destinationId.value, {
         id: destinationId.value,
-        publicationDate: destination.value.publicationDate,
-        publicationTime: destination.value.publicationTime,
         content: content,
         title: destination.value.title,
-        imageURL: destination.value.imageURL,
+        imageLink: destination.value.imageURL,
     })
         .then(() => {
             location.reload()
