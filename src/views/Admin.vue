@@ -223,22 +223,18 @@ const saveNews = async (artId, pubDate, pubTime, content, title, imageURL, slide
             .then(async (urlData) => {
                 await axios.put('articles/' + artId, {
                     id: artId,
-                    publicationDate: pubDate,
-                    publicationTime: pubTime,
                     content: content,
                     title: title,
-                    imageURL: urlData.data
+                    imageLink: urlData.data
                 })
             })
     }
     else {
         await axios.put('articles/' + artId, {
             id: artId,
-            publicationDate: pubDate,
-            publicationTime: pubTime,
             content: content,
             title: title,
-            imageURL: imageURL
+            imageLink: imageURL
         })
     }
 }
