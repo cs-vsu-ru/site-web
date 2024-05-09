@@ -44,7 +44,7 @@ const createNews = async () => {
       }
     })
         .then(async (urlData) => {
-          await axios.post('articles', {
+          await axios.post('news', {
             title: newsTitle.value,
             imageLink: urlData.data,
             content: newsContent.value,
@@ -55,7 +55,7 @@ const createNews = async () => {
         })
   }
   else {
-    await axios.post('articles', {
+    await axios.post('news', {
       title: newsTitle.value,
       imageLink: 'https://i.imgur.com/fn32s4s.jpeg',
       content: newsContent.value,

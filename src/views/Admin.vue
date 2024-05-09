@@ -190,7 +190,7 @@ const tabsHandler = (tabIndex) => {
 }
 
 const newsList = async () => {
-    await axios.get('articles')
+    await axios.get('news')
         .then((news) => {
             newsSlider.value = news.data
             newsSlider.value.reverse()
@@ -221,7 +221,7 @@ const saveNews = async (artId, pubDate, pubTime, content, title, imageURL, slide
                 }
             })
             .then(async (urlData) => {
-                await axios.put('articles/' + artId, {
+                await axios.put('news/' + artId, {
                     id: artId,
                     content: content,
                     title: title,
@@ -230,7 +230,7 @@ const saveNews = async (artId, pubDate, pubTime, content, title, imageURL, slide
             })
     }
     else {
-        await axios.put('articles/' + artId, {
+        await axios.put('news/' + artId, {
             id: artId,
             content: content,
             title: title,
@@ -240,7 +240,7 @@ const saveNews = async (artId, pubDate, pubTime, content, title, imageURL, slide
 }
 
 const deleteNews = async (artId, index) => {
-    await axios.delete('articles/' + artId)
+    await axios.delete('news/' + artId)
         .then(() => {
           newsShow.value[index] = false
         })
