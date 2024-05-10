@@ -56,7 +56,7 @@ onMounted(() => {
 })
 
 const newsList = async () => {
-    await axios.get('articles')
+    await axios.get('news')
         .then((news) => {
             newsInfo.value = news.data
         })
@@ -74,7 +74,7 @@ const onReady = (editor) => {
 }
 
 const saveNew = async (content) => {
-    await axios.put('articles/' + destinationId.value, {
+    await axios.put('news/' + destinationId.value, {
         id: destinationId.value,
         content: content,
         title: destination.value.title,

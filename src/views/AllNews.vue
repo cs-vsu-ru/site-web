@@ -37,7 +37,7 @@ onMounted(() => {
 })
 
 const newsList = async () => {
-    await axios.get('articles')
+    await axios.get('news')
         .then((news) => {
             newsSlider.value = news.data.reverse()
         })
