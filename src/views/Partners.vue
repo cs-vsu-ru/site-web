@@ -24,7 +24,9 @@ import {onMounted, ref} from "vue";
 import DecoupledEditor from "@ckeditor/ckeditor5-build-decoupled-document";
 import CustomUploader from "@/services/customUploader";
 import axios from "axios";
+import {userAuth} from "@/store/userAuth";
 
+const store = userAuth()
 const staticInfo = ref(null)
 const userRole = ref('')
 const aboutModel = ref('')
@@ -58,6 +60,9 @@ const onReady = (editor) => {
 }
 
 const checkRole = async () => {
+  userRole.value = store.getRole()
+
+
   await axios.get('account')
       .then((items) => {
         userRole.value = items.data.mainRole
