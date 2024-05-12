@@ -22,7 +22,7 @@
         >
           <SwiperSlide v-for="newsSlide in newsSlider">
             <router-link :to="'/news/new/' + newsSlide.id" class="new">
-              <img :src="newsSlide.imageURL" alt="" class="new__image">
+              <img :src="newsSlide.imageLink" alt="" class="new__image">
               <p class="new__date">{{ new Date(newsSlide.publicationAt).getDate() + ' ' + monthAssoc[newsSlide.publicationAt.split('-').reverse()[1]] }}</p>
               <p class="new__text">{{ newsSlide.title }}</p>
             </router-link>
