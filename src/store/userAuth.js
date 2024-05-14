@@ -4,7 +4,7 @@ import { useStorage } from "@vueuse/core";
 export const userAuth = defineStore('auth', {
   state: () => ({
     isAuth: useStorage('token', ''),
-    pplRole: ''
+    pplRole: useStorage('role', ''),
   }),
 
   getters: {

@@ -64,11 +64,11 @@ const checkRole = async () => {
         let adminButtons = ['Слайдер', 'Мероприятия', 'Новости', 'Расписание', 'Сотрудники', 'Рассылка']
         let modButtons = ['Слайдер', 'Мероприятия', 'Новости', 'Расписание', 'Рассылка']
 
-        if (admRole.value === 'ROLE_ADMIN') {
+        if (admRole.value === 'ADMIN') {
           tabTitles.value = adminButtons
         }
 
-        if (admRole.value === 'ROLE_MODERATOR') {
+        if (admRole.value === 'MODERATOR') {
           tabTitles.value = modButtons
         }
       })
@@ -410,7 +410,7 @@ const deleteMail = async (mailId) => {
           <button @click="uploadSchedule" class="admin-button">Загрузить</button>
         </div>
       </div>
-      <div v-if="admRole === 'ROLE_ADMIN'" class="admin__view-item">
+      <div v-if="admRole === 'ADMIN'" class="admin__view-item">
           <div class="admin-users">
             <div class="admin-users__item">
                 <div class="admin-users__item-head">

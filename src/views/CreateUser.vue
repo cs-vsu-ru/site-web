@@ -92,8 +92,8 @@ const createUser = async () => {
                     <p class="user-data__item-name">Роль</p>
                     <select v-model="role" class="user-data__item-input" required>
                       <option value="ROLE_EMPLOYEE">Пользователь</option>
-                      <option value="ROLE_MODERATOR">Модератор</option>
-                      <option value="ROLE_ADMIN">Админ</option>
+                      <option value="MODERATOR">Модератор</option>
+                      <option value="ADMIN">Админ</option>
                     </select>
                   </div>
                   <div class="user-data__item">
