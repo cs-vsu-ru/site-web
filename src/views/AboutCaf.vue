@@ -2,17 +2,17 @@
   <section class="static">
     <div style="display: flex; align-items: flex-start; justify-content: space-between;">
       <h1>О кафедре</h1>
-      <button :class="{visible: !isEditorActive}" @click="isEditorActive = true" v-if="userRole === 'ROLE_ADMIN' || userRole === 'ROLE_MODERATOR'" class="edit-button admin-button">Редактировать</button>
+      <button :class="{visible: !isEditorActive}" @click="isEditorActive = true" v-if="userRole === 'ADMIN' || userRole === 'MODERATOR'" class="edit-button admin-button">Редактировать</button>
     </div>
     <ckeditor
         :editor="editor"
         v-model="staticInfo.contentAbout"
         :config="editorConfig"
         @ready="onReady"
-        v-if="isEditorActive && (userRole === 'ROLE_ADMIN' || userRole === 'ROLE_MODERATOR')"
+        v-if="isEditorActive && (userRole === 'ADMIN' || userRole === 'MODERATOR')"
         class="static__editor"
     ></ckeditor>
-    <button v-if="isEditorActive && (userRole === 'ROLE_ADMIN' || userRole === 'ROLE_MODERATOR')" @click="saveStatic" style="margin: 10px 0 10px auto;" class="admin-button">Сохранить</button>
+    <button v-if="isEditorActive && (userRole === 'ADMIN' || userRole === 'MODERATOR')" @click="saveStatic" style="margin: 10px 0 10px auto;" class="admin-button">Сохранить</button>
     <div class="new-editor" v-if="staticInfo && !isEditorActive" v-html="staticInfo.contentAbout">
 
     </div>
@@ -69,7 +69,7 @@ import {onMounted, ref} from "vue";
         .then((staticData) => {
           staticInfo.value = staticData.data[0]
 
-          console.log(staticInfo.value.contentAbout)
+          // console.log(staticInfo.value.contentAbout)
         })
   }
 
