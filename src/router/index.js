@@ -62,10 +62,12 @@ const routes = [
       const store = userAuth()
 
       if (store.getIsAuth !== '') {
-        await axios.get('account')
-            .then((accData) => {
-              accData.data.mainRole === 'ROLE_ADMIN' || accData.data.mainRole === 'ROLE_MODERATOR' ? next() : next('/')
-            })
+        let role = store.getRole
+        role === 'ADMIN' || role === 'MODERATOR' ? next() : next('/')
+        // await axios.get('account')
+        //     .then((accData) => {
+        //       accData.data.mainRole === 'ADMIN' || accData.data.mainRole === 'MODERATOR' ? next() : next('/')
+        //     })
       }
       else {
         next('/')
@@ -85,10 +87,12 @@ const routes = [
       const store = userAuth()
 
       if (store.getIsAuth !== '') {
-        await axios.get('account')
-            .then((accData) => {
-              accData.data.mainRole === 'ROLE_ADMIN' ? next() : next('/')
-            })
+        let role = store.getRole
+        role === 'ADMIN' || role === 'MODERATOR' ? next() : next('/')
+        // await axios.get('account')
+        //     .then((accData) => {
+        //       accData.data.mainRole === 'ADMIN' ? next() : next('/')
+        //     })
       }
       else {
         next('/')
@@ -133,10 +137,12 @@ const routes = [
       const store = userAuth()
 
       if (store.getIsAuth !== '') {
-        await axios.get('account')
-            .then((accData) => {
-              accData.data.mainRole === 'ROLE_ADMIN' || accData.data.mainRole === 'ROLE_MODERATOR' ? next() : next('/')
-            })
+        let role = store.getRole
+        role === 'ADMIN' || role === 'MODERATOR' ? next() : next('/')
+        // await axios.get('account')
+        //     .then((accData) => {
+        //       accData.data.mainRole === 'ADMIN' || accData.data.mainRole === 'MODERATOR' ? next() : next('/')
+        //     })
       }
       else {
         next('/')
@@ -166,10 +172,12 @@ const routes = [
       const store = userAuth()
 
       if (store.getIsAuth !== '') {
-        await axios.get('account')
-            .then((accData) => {
-              accData.data.mainRole === 'ROLE_ADMIN' || accData.data.mainRole === 'ROLE_MODERATOR' ? next() : next('/')
-            })
+        let role = store.getRole
+        role === 'ADMIN' || role === 'MODERATOR' ? next() : next('/')
+        // await axios.get('account')
+        //     .then((accData) => {
+        //       accData.data.mainRole === 'ADMIN' || accData.data.mainRole === 'MODERATOR' ? next() : next('/')
+        //     })
       }
       else {
         next('/')
@@ -184,10 +192,12 @@ const routes = [
       const store = userAuth()
 
       if (store.getIsAuth !== '') {
-        await axios.get('account')
-            .then((accData) => {
-              accData.data.mainRole === 'ROLE_ADMIN' || accData.data.mainRole === 'ROLE_MODERATOR' ? next() : next('/')
-            })
+        let role = store.getRole
+        role === 'ADMIN' || role === 'MODERATOR' ? next() : next('/')
+        // await axios.get('account')
+        //     .then((accData) => {
+        //       accData.data.mainRole === 'ADMIN' || accData.data.mainRole === 'MODERATOR' ? next() : next('/')
+        //     })
       }
       else {
         next('/')
@@ -202,10 +212,12 @@ const routes = [
       const store = userAuth()
 
       if (store.getIsAuth !== '') {
-        await axios.get('account')
-            .then((accData) => {
-              accData.data.mainRole === 'ROLE_ADMIN' || accData.data.mainRole === 'ROLE_MODERATOR' ? next() : next('/')
-            })
+        let role = store.getRole
+        role === 'ADMIN' || role === 'MODERATOR' ? next() : next('/')
+        // await axios.get('account')
+        //     .then((accData) => {
+        //       accData.data.mainRole === 'ADMIN' || accData.data.mainRole === 'MODERATOR' ? next() : next('/')
+        //     })
       }
       else {
         next('/')

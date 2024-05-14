@@ -2,17 +2,17 @@
   <section class="static">
     <div style="display: flex; align-items: flex-start; justify-content: space-between;">
       <h1>Образование</h1>
-      <button :class="{visible: !isEditorActive}" @click="isEditorActive = true" v-if="userRole === 'ROLE_ADMIN' || userRole === 'ROLE_MODERATOR'" class="edit-button admin-button">Редактировать</button>
+      <button :class="{visible: !isEditorActive}" @click="isEditorActive = true" v-if="userRole === 'ADMIN' || userRole === 'MODERATOR'" class="edit-button admin-button">Редактировать</button>
     </div>
     <ckeditor
         :editor="editor"
         v-model="staticInfo.contentEducation"
         :config="editorConfig"
         @ready="onReady"
-        v-if="isEditorActive && (userRole === 'ROLE_ADMIN' || userRole === 'ROLE_MODERATOR')"
+        v-if="isEditorActive && (userRole === 'ADMIN' || userRole === 'MODERATOR')"
         class="static__editor"
     ></ckeditor>
-    <button v-if="isEditorActive && (userRole === 'ROLE_ADMIN' || userRole === 'ROLE_MODERATOR')" @click="saveStatic" style="margin: 10px 0 10px auto;" class="admin-button">Сохранить</button>
+    <button v-if="isEditorActive && (userRole === 'ADMIN' || userRole === 'MODERATOR')" @click="saveStatic" style="margin: 10px 0 10px auto;" class="admin-button">Сохранить</button>
     <div class="new-editor" v-if="staticInfo && !isEditorActive" v-html="staticInfo.contentEducation">
 
     </div>
@@ -24,7 +24,9 @@ import {onMounted, ref} from "vue";
 import DecoupledEditor from "@ckeditor/ckeditor5-build-decoupled-document";
 import CustomUploader from "@/services/customUploader";
 import axios from "axios";
+import {userAuth} from "@/store/userAuth";
 
+const store = userAuth()
 const staticInfo = ref(null)
 const userRole = ref('')
 const aboutModel = ref('')
@@ -58,6 +60,7 @@ const onReady = (editor) => {
 }
 
 const checkRole = async () => {
+  userRole.value = store.getRole()
   await axios.get('account')
       .then((items) => {
         userRole.value = items.data.mainRole
