@@ -369,7 +369,7 @@ const deleteMail = async (mailId) => {
         <router-link to="/create-event" style="position: absolute; right: 0" class="admin-button">Создать мероприятие</router-link>
         <div style="margin-top: 50px;" class="admin-event">
           <div class="admin-event__field" v-for="(event, index) in eventArr" v-show="eventsShow[index]">
-            <router-link :to="'/events/event/' + event.id" class="event">
+            <router-link :to="'/events/' + event.id" class="event">
               <div class="event__date">
                 <p class="event__date-day">{{ event.startDate.split('-').reverse().join('.') }}</p>
                 <p class="event__date-time">{{ event.startTime }}</p>

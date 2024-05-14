@@ -63,14 +63,34 @@ const destination = computed(() => {
 })
 
 onMounted(() => {
-  newsList()
+  getEvent()
   checkRole()
 })
 
-const newsList = async () => {
-  await axios.get('events')
-      .then((news) => {
-        newsInfo.value = news.data
+const formatDateToString = (eventDate) => {
+  const dateObject = new Date(eventDate);
+  return `${dateObject.getDate().toString().padStart(2, "0")}.${(
+      dateObject.getMonth() + 1
+  )
+      .toString()
+      .padStart(2, "0")}.${dateObject.getFullYear()}`;
+}
+
+const formatTimeToString = (eventDate) => {
+  const dateObject = new Date(eventDate);
+  return `${dateObject
+      .getHours()
+      .toString()
+      .padStart(2, "0")}:${dateObject
+      .getMinutes()
+      .toString()
+      .padStart(2, "0")}`;
+
+}
+const getEvent = async () => {
+  await axios.get('events/${destinationId}')
+      .then((event) => {
+        newsInfo.value = event.data
       })
 }
 
@@ -101,10 +121,10 @@ const saveNew = async (content) => {
 }
 
 const checkRole = async () => {
-  await axios.get('account')
-      .then((items) => {
-        userRole.value = items.data.mainRole
-      })
+  // await axios.get('account')
+  //     .then((items) => {
+  //       userRole.value = items.data.mainRole
+  //     })
 }
 
 </script>
