@@ -20,11 +20,11 @@
           <p v-if="destination.post" class="profile__right-item">Должность <span>{{ destination.post }}</span></p>
           <p v-if="destination.academicTitle && destination.academicDegree" class="profile__right-item">Ученое звание / Ученая степень <span>{{ destination.academicTitle }} / {{ destination.academicDegree }}</span></p>
           <p v-if="destination.experience && destination.professionalExperience" class="profile__right-item">Стаж <span>Общий - {{ Math.floor((new Date() - new Date(destination.experience)) / 1000 / 24 / 60 / 60 / 365) }} / По специальности - {{ Math.floor((new Date() - new Date(destination.professionalExperience)) / 1000 / 24 / 60 / 60 / 365) }}</span></p>
-          <div v-if="currUserId === destination.id && destination.id !== 1 && userRole !== 'ROLE_ADMIN' && destination.plan !== null" style="align-self:flex-start;" class="profile__right-plan">
+          <div v-if="currUserId === destination.id && destination.id !== 1 && userRole !== 'ADMIN' && destination.plan !== null" style="align-self:flex-start;" class="profile__right-plan">
             <p class="profile__right-item">Индивидуальный план</p>
             <a style="margin-top: 15px;" class="admin-button" :href="destination.plan">Скачать</a>
           </div>
-        <div v-if="userRole === 'ROLE_ADMIN' && destination.id !== 1" style="align-self:flex-start;" class="profile__right-plan">
+        <div v-if="userRole === 'ADMIN' && destination.id !== 1" style="align-self:flex-start;" class="profile__right-plan">
           <p class="profile__right-item">Индивидуальный план</p>
           <a v-if="destination.plan !== null" style="margin-top: 15px;" class="admin-button" :href="destination.plan">Скачать текущий план</a>
           <input ref="planUrl" style="margin-top: 10px;" type="file">
@@ -34,8 +34,8 @@
       <div v-else class="profile__right">
         <select class="profile__right-item" v-model="login.mainRole">
           <option value="ROLE_EMPLOYEE">Пользователь</option>
-          <option value="ROLE_MODERATOR">Модератор</option>
-          <option value="ROLE_ADMIN">Администратор</option>
+          <option value="MODERATOR">Модератор</option>
+          <option value="ADMIN">Администратор</option>
         </select>
         <input class="profile__right-item" v-model="destination.lastName">
         <input class="profile__right-item" v-model="destination.firstName">
@@ -44,8 +44,8 @@
         <p class="profile__right-item">Ученое звание / Ученая степень <span><input class="profile__right-item" v-model="destination.academicTitle"> / <input class="profile__right-item" v-model="destination.academicDegree"></span></p>
         <p class="profile__right-item">Стаж <span>Общий - <input type="date" class="profile__right-item" v-model="destination.experience"> / По специальности - <input type="date" class="profile__right-item" v-model="destination.professionalExperience"></span></p>
       </div>
-      <button v-if="userRole === 'ROLE_ADMIN' && !activeEdit" @click="activeEdit = true; getLogin(destination.id)" class="admin-button profile__edit">Редактировать</button>
-      <button v-if="userRole === 'ROLE_ADMIN' && activeEdit" @click="saveProfile" class="admin-button profile__edit">Сохранить</button>
+      <button v-if="userRole === 'ADMIN' && !activeEdit" @click="activeEdit = true; getLogin(destination.id)" class="admin-button profile__edit">Редактировать</button>
+      <button v-if="userRole === 'ADMIN' && activeEdit" @click="saveProfile" class="admin-button profile__edit">Сохранить</button>
   </section>
   <Loader v-if="isLoading" />
 </template>
