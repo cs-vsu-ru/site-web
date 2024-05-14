@@ -1,23 +1,27 @@
 <template>
-    <div style="max-width: 1440px; margin: 0 auto;" v-if="destination">
-        <div style="display: flex; align-items: flex-start; justify-content: space-between;">
-            <h1 style="margin-bottom: 40px;">{{ destination.title }}</h1>
-            <button :class="{visible: !isEditorActive}" @click="isEditorActive = true" v-if="userRole === 'ADMIN' || userRole === 'MODERATOR'" class="edit-button admin-button">Редактировать</button>
-        </div>
-        <ckeditor
-            :editor="editor"
-            v-model="destination.content"
-            :config="editorConfig"
-            @ready="onReady"
-            v-if="isEditorActive && (userRole === 'ADMIN' || userRole === 'MODERATOR')"
-        >
-
-        </ckeditor>
-        <button v-if="isEditorActive && (userRole === 'ADMIN' || userRole === 'MODERATOR')" @click="saveNew(destination.content)" style="margin: 10px 0 10px auto;" class="admin-button">Сохранить</button>
+  <div style="max-width: 1440px; margin: 0 auto;" v-if="destination">
+    <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+      <h1 style="margin-bottom: 40px;">{{ destination.title }}</h1>
+      <button :class="{visible: !isEditorActive}" @click="isEditorActive = true"
+              v-if="userRole === 'ADMIN' || userRole === 'MODERATOR'" class="edit-button admin-button">Редактировать
+      </button>
     </div>
-    <div class="new-editor" v-if="destination && !isEditorActive" v-html="destination.content">
+    <ckeditor
+        :editor="editor"
+        v-model="destination.content"
+        :config="editorConfig"
+        @ready="onReady"
+        v-if="isEditorActive && (userRole === 'ADMIN' || userRole === 'MODERATOR')"
+    >
 
-    </div>
+    </ckeditor>
+    <button v-if="isEditorActive && (userRole === 'ADMIN' || userRole === 'MODERATOR')"
+            @click="saveNew(destination.content)" style="margin: 10px 0 10px auto;" class="admin-button">Сохранить
+    </button>
+  </div>
+  <div class="new-editor" v-if="destination && !isEditorActive" v-html="destination.content">
+
+  </div>
 </template>
 
 <script setup>
@@ -27,114 +31,112 @@ import CustomUploader from "@/services/customUploader";
 import {computed, onMounted, ref} from "vue";
 import {useRoute} from "vue-router";
 import axios from "axios";
+import {userAuth} from "@/store/userAuth";
 
 const userRole = ref('')
 const isEditorActive = ref(false)
 const editor = ref(DecoupledEditor)
 const editorConfig = ref({
-    // toolbar: [
-    //     'undo', 'redo',
-    //     '|', 'heading',
-    //     '|', 'bold', 'italic',
-    //     '|', 'link', 'uploadImage', 'insertTable', 'mediaEmbed',
-    //     '|', 'bulletedList', 'numberedList', 'outdent', 'indent'
-    // ],
-    language: 'ru'
+  // toolbar: [
+  //     'undo', 'redo',
+  //     '|', 'heading',
+  //     '|', 'bold', 'italic',
+  //     '|', 'link', 'uploadImage', 'insertTable', 'mediaEmbed',
+  //     '|', 'bulletedList', 'numberedList', 'outdent', 'indent'
+  // ],
+  language: 'ru'
 })
 
 const route = useRoute()
 const newsInfo = ref([])
 
+const store = userAuth()
 const destinationId = computed(() => route.params.id)
 const destination = computed(() => {
-    return newsInfo.value.find(item => item.id == destinationId.value)
+  return newsInfo.value.find(item => item.id == destinationId.value)
 })
 
 onMounted(() => {
-    newsList()
-    checkRole()
+  userRole.value = store.getRole
+  newsList()
+
 })
 
 const newsList = async () => {
-    await axios.get('news')
-        .then((news) => {
-            newsInfo.value = news.data
-        })
+  await axios.get('news')
+      .then((news) => {
+        newsInfo.value = news.data
+      })
 }
 
 const onReady = (editor) => {
-    editor.ui.getEditableElement().parentElement.insertBefore(
-        editor.ui.view.toolbar.element,
-        editor.ui.getEditableElement()
-    )
+  editor.ui.getEditableElement().parentElement.insertBefore(
+      editor.ui.view.toolbar.element,
+      editor.ui.getEditableElement()
+  )
 
-    editor.plugins.get('FileRepository').createUploadAdapter = loader => {
-        return new CustomUploader(loader)
-    }
+  editor.plugins.get('FileRepository').createUploadAdapter = loader => {
+    return new CustomUploader(loader)
+  }
 }
 
 const saveNew = async (content) => {
-    await axios.put('news/' + destinationId.value, {
-        id: destinationId.value,
-        content: content,
-        title: destination.value.title,
-        imageLink: destination.value.imageURL,
-    })
-        .then(() => {
-            location.reload()
-        })
-}
-
-const checkRole = async () => {
-    await axios.get('account')
-        .then((items) => {
-            userRole.value = items.data.mainRole
-        })
+  await axios.put('news/' + destinationId.value, {
+    id: destinationId.value,
+    content: content,
+    title: destination.value.title,
+    imageLink: destination.value.imageURL,
+  })
+      .then(() => {
+        location.reload()
+      })
 }
 
 </script>
 
 <style lang="scss">
-.ce-toolbar__content, .ce-block__content{
+.ce-toolbar__content, .ce-block__content {
   max-width: 1440px;
   margin: 0 auto;
 }
 
-.ck{
-  u{
+.ck {
+  u {
     text-decoration: underline !important;
   }
-  s{
+
+  s {
     text-decoration: line-through !important;
   }
 }
 
-.new-editor{
-    max-width: 1440px;
-    margin: 0 auto;
+.new-editor {
+  max-width: 1440px;
+  margin: 0 auto;
 
-  u{
+  u {
     text-decoration: underline !important;
   }
-  s{
+
+  s {
     text-decoration: line-through !important;
   }
 
-    p{
-        font-size: 20px;
-        line-height: 24px;
-    }
+  p {
+    font-size: 20px;
+    line-height: 24px;
+  }
 
-    img{
-        width: 100%;
-    }
+  img {
+    width: 100%;
+  }
 }
 
-.edit-button{
-    display: none;
+.edit-button {
+  display: none;
 
-    &.visible{
-        display: flex;
-    }
+  &.visible {
+    display: flex;
+  }
 }
 </style>

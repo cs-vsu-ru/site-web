@@ -44,7 +44,7 @@ const editorConfig = ref({
 })
 
 onMounted(() => {
-  checkRole()
+  userRole.value = store.getRole()
   getStatic()
 })
 
@@ -57,16 +57,6 @@ const onReady = (editor) => {
   editor.plugins.get('FileRepository').createUploadAdapter = loader => {
     return new CustomUploader(loader)
   }
-}
-
-const checkRole = async () => {
-  userRole.value = store.getRole()
-
-
-  await axios.get('account')
-      .then((items) => {
-        userRole.value = items.data.mainRole
-      })
 }
 
 const getStatic = async () => {

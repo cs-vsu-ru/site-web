@@ -39,7 +39,9 @@ import CustomUploader from "@/services/customUploader";
 import {computed, onMounted, ref} from "vue";
 import {useRoute} from "vue-router";
 import axios from "axios";
+import {userAuth} from "@/store/userAuth";
 
+const store = userAuth()
 const userRole = ref('')
 const isEditorActive = ref(false)
 const editor = ref(DecoupledEditor)
@@ -63,8 +65,8 @@ const destination = computed(() => {
 })
 
 onMounted(() => {
+  userRole.value = store.getRole
   getEvent()
-  checkRole()
 })
 
 const formatDateToString = (eventDate) => {
@@ -118,13 +120,6 @@ const saveNew = async (content) => {
       .then(() => {
         location.reload()
       })
-}
-
-const checkRole = async () => {
-  // await axios.get('account')
-  //     .then((items) => {
-  //       userRole.value = items.data.mainRole
-  //     })
 }
 
 </script>
