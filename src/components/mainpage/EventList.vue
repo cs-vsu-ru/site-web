@@ -12,7 +12,7 @@
     <div class="events__field">
       <router-link v-for="event in eventsFuture.slice(0, 4)" :to="'/events/event/' + event.id" class="event">
         <div class="event__date">
-          <p class="event__date-day">{{ event.startDate.split('-').reverse().join('.') }}</p>
+          <p class="event__date-day">{{ new Date(event.startDateTime).split('-').reverse().join('.') }}</p>
           <p class="event__date-time">{{ event.startTime }}</p>
         </div>
         <p class="event__name">{{ event.title }}</p>
@@ -39,18 +39,46 @@ import axios from "axios";
 
 const eventsPass = ref([])
 const eventsFuture = ref([])
-
+const currentDate = new Date();
 onMounted(() => {
     eventList()
 })
 
 const eventList = async () => {
+  const upcomingEvents = [];
+  const pastEvents = [];
     await axios.get('events')
         .then((events) => {
-            eventsPass.value = events.data.completedEvents
-            eventsFuture.value = events.data.upcomingEvents
+          events.data.forEach((event) => {
+            const startDateTime = new Date(event.startDateTime);
+            const endDateTime = event.endDateTime ? new Date(event.endDateTime) : null;
+
+            if (endDateTime === null) {
+              upcomingEvents.push(event);
+            } else if (endDateTime < currentDate) {
+              pastEvents.push(event);
+            } else if (startDateTime < currentDate && endDateTime >= currentDate) {
+              pastEvents.push(event);
+            } else {
+              upcomingEvents.push(event);
+            }
+          })
+          eventsPass.value = pastEvents
+          eventsFuture.value = upcomingEvents
+          // getPassEvents()
+          // getCurrentAndFutureEvents()
+
         })
 }
+
+// const getPassEvents = (events) => {
+//   pastEvents.value = events.data.
+//
+// }
+//
+// const getCurrentAndFutureEvents = () => {
+//   upcomingEvents.value = events.data.upcomingEvents
+// }
 </script>
 
 <style lang="scss">
