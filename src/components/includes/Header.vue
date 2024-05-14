@@ -77,7 +77,6 @@ const profileRole = ref('')
 const authError = ref('')
 
 const isAuth = computed(() => store.getIsAuth)
-// const profileRole = computed(() => store.getRole)
 
 onMounted(() => {
     accountInfo()
