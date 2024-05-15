@@ -44,7 +44,7 @@ const editorConfig = ref({
 })
 
 onMounted(() => {
-  userRole.value = store.getRole()
+  userRole.value = store.getRole
   getStatic()
 })
 

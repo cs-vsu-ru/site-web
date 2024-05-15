@@ -125,7 +125,7 @@ const lessonId = ref()
 const exportTable = ref()
 
 onMounted(() => {
-  userRole.value = store.getRole()
+  userRole.value = store.getRole
   schedule()
 })
 
