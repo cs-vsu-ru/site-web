@@ -2,7 +2,9 @@
 import {onMounted, ref, toRaw} from "vue";
 import axios from "axios";
 import Loader from "@/components/includes/Loader";
+import {userAuth} from "@/store/userAuth";
 
+const store = userAuth()
 const example = ref()
 const isLoading = ref(false)
 const userRole = ref('')
@@ -14,16 +16,9 @@ const lessonId = ref()
 
 
 onMounted( () => {
-  checkRole()
+  userRole.value = store.getRole
   schedule()
 })
-
-const checkRole = async () => {
-  await axios.get('account')
-      .then((items) => {
-        userRole.value = items.data.mainRole
-      })
-}
 
 
 const schedule = async () => {

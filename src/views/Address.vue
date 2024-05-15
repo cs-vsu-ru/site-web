@@ -24,7 +24,9 @@ import {onMounted, ref} from "vue";
 import DecoupledEditor from "@ckeditor/ckeditor5-build-decoupled-document";
 import CustomUploader from "@/services/customUploader";
 import axios from "axios";
+import {userAuth} from "@/store/userAuth";
 
+const store = userAuth()
 const staticInfo = ref(null)
 const userRole = ref('')
 const aboutModel = ref('')
@@ -42,7 +44,7 @@ const editorConfig = ref({
 })
 
 onMounted(() => {
-  checkRole()
+  userRole.value = store.getRole
   getStatic()
 })
 
@@ -55,13 +57,6 @@ const onReady = (editor) => {
   editor.plugins.get('FileRepository').createUploadAdapter = loader => {
     return new CustomUploader(loader)
   }
-}
-
-const checkRole = async () => {
-  await axios.get('account')
-      .then((items) => {
-        userRole.value = items.data.mainRole
-      })
 }
 
 const getStatic = async () => {

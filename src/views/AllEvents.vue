@@ -2,20 +2,20 @@
   <section class="events-all">
     <h1 class="section-header__title">Предстоящие мероприятия</h1>
     <div class="events__field">
-      <router-link v-for="event in eventsFuture" :to="'/events/event/' + event.id" class="event">
+      <router-link v-for="event in eventsFuture" :to="'/events/' + event.id" class="event">
         <div class="event__date">
-          <p class="event__date-day">{{ event.startDate.split('-').reverse().join('.') }}</p>
-          <p class="event__date-time">{{ event.startTime }}</p>
+          <p class="event__date-day">{{ formatDateToString(event.startDateTime) }}</p>
+          <p class="event__date-time">{{ formatTimeToString(event.startDateTime) }}</p>
         </div>
         <p class="event__name">{{ event.title }}</p>
       </router-link>
     </div>
     <h1 class="section-header__title">Прошедшие мероприятия</h1>
     <div class="events__field">
-      <router-link v-for="event in eventsPass" :to="'/events/event/' + event.id" class="event">
+      <router-link v-for="event in eventsPass" :to="'/events/' + event.id" class="event">
         <div class="event__date">
-          <p class="event__date-day">{{ event.startDate.split('-').reverse().join('.') }}</p>
-          <p class="event__date-time">{{ event.startTime }}</p>
+          <p class="event__date-day">{{ formatDateToString(event.startDateTime) }}</p>
+          <p class="event__date-time">{{ formatTimeToString(event.startDateTime) }}</p>
         </div>
         <p class="event__name">{{ event.title }}</p>
       </router-link>
@@ -29,17 +29,52 @@ import axios from "axios";
 
 const eventsPass = ref([])
 const eventsFuture = ref([])
-
+const currentDate = new Date();
 onMounted(() => {
   eventList()
 })
 
+
+const formatDateToString = (eventDate) => {
+  const dateObject = new Date(eventDate);
+  return `${dateObject.getDate().toString().padStart(2, "0")}.${(
+      dateObject.getMonth() + 1
+  )
+      .toString()
+      .padStart(2, "0")}.${dateObject.getFullYear()}`;
+}
+
+const formatTimeToString = (eventDate) => {
+  const dateObject = new Date(eventDate);
+  return `${dateObject
+      .getHours()
+      .toString()
+      .padStart(2, "0")}:${dateObject
+      .getMinutes()
+      .toString()
+      .padStart(2, "0")}`;
+
+}
+
+const upcomingEvents = (events) => {
+  return events.filter(event => {
+    const startDate = new Date(event.startDateTime);
+    return startDate > currentDate;
+  });
+};
+
+const pastEvents = (events) => {
+  return events.filter(event => {
+    const startDate = new Date(event.startDateTime);
+    return startDate <= currentDate;
+  });
+};
 const eventList = async () => {
-    await axios.get('events')
-        .then((events) => {
-            eventsPass.value = events.data.completedEvents
-            eventsFuture.value = events.data.upcomingEvents
-        })
+  await axios.get('events')
+      .then((events) => {
+        eventsPass.value = pastEvents(events.data)
+        eventsFuture.value = upcomingEvents(events.data)
+      })
 }
 </script>
 

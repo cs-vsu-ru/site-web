@@ -10,8 +10,9 @@
             </router-link>
         </div>
         <div class="teachers__field">
+          <!-- !!!!!!! length from emps.size-->
           <swiper
-              :slides-per-view="5"
+              :slides-per-view="2"
               :autoplay="{
                 delay: 1500,
                 disableOnInteraction: false,

@@ -1,53 +1,75 @@
 <template>
   <section class="profile" v-if="destination">
-      <div class="profile__left">
-          <div class="profile__left-block">
-              <img v-if="profileImg !== null" :src="profileImg" alt="" class="profile__left-block_image">
-              <img v-else :src="destination.imageUrl" alt="" class="profile__left-block_image">
-          </div>
-          <div class="profile__left-buttons">
-            <input v-on:change="checkImg" ref="imgUrl" type="file" accept="image/png, image/jpeg, image/jpg" style="display: none" id="edit_profile_image">
-            <label for="edit_profile_image" v-if="activeEdit" class="profile__left-buttons_item">Изменить фото</label>
-            <router-link v-else :to="'/schedule/' + destination.id" class="profile__left-buttons_item">Расписание преподавателя</router-link>
-<!--            <button class="profile__left-buttons_item">Научное руководство</button>-->
-            <a v-if="!activeEdit" class="profile__left-buttons_email" :href="'mailto: ' + destination.email">{{ destination.email }}</a>
-            <input class="profile__left-buttons_email" v-else v-model="destination.email" type="text">
-            <input class="profile__left-buttons_email" v-if="activeEdit && login" v-model="login.login" type="text">
-          </div>
+    <div class="profile__left">
+      <div class="profile__left-block">
+        <img v-if="profileImg !== null" :src="profileImg" alt="" class="profile__left-block_image">
+        <img v-else :src="destination.imageUrl" alt="" class="profile__left-block_image">
       </div>
-      <div v-if="!activeEdit" class="profile__right">
-          <p class="profile__right-name">{{ destination.lastName + ' ' + destination.firstName + ' ' + destination.patronymic }}</p>
-          <p v-if="destination.post" class="profile__right-item">Должность <span>{{ destination.post }}</span></p>
-          <p v-if="destination.academicTitle && destination.academicDegree" class="profile__right-item">Ученое звание / Ученая степень <span>{{ destination.academicTitle }} / {{ destination.academicDegree }}</span></p>
-          <p v-if="destination.experience && destination.professionalExperience" class="profile__right-item">Стаж <span>Общий - {{ Math.floor((new Date() - new Date(destination.experience)) / 1000 / 24 / 60 / 60 / 365) }} / По специальности - {{ Math.floor((new Date() - new Date(destination.professionalExperience)) / 1000 / 24 / 60 / 60 / 365) }}</span></p>
-          <div v-if="currUserId === destination.id && destination.id !== 1 && userRole !== 'ADMIN' && destination.plan !== null" style="align-self:flex-start;" class="profile__right-plan">
-            <p class="profile__right-item">Индивидуальный план</p>
-            <a style="margin-top: 15px;" class="admin-button" :href="destination.plan">Скачать</a>
-          </div>
-        <div v-if="userRole === 'ADMIN' && destination.id !== 1" style="align-self:flex-start;" class="profile__right-plan">
-          <p class="profile__right-item">Индивидуальный план</p>
-          <a v-if="destination.plan !== null" style="margin-top: 15px;" class="admin-button" :href="destination.plan">Скачать текущий план</a>
-          <input ref="planUrl" style="margin-top: 10px;" type="file">
-          <button @click="loadPlan" style="margin-top: 15px;" class="admin-button">Загрузить</button>
-        </div>
+      <div class="profile__left-buttons">
+        <input v-on:change="checkImg" ref="imgUrl" type="file" accept="image/png, image/jpeg, image/jpg"
+               style="display: none" id="edit_profile_image">
+        <label for="edit_profile_image" v-if="activeEdit" class="profile__left-buttons_item">Изменить фото</label>
+        <router-link v-else :to="'/schedule/' + destination.id" class="profile__left-buttons_item">Расписание
+          преподавателя
+        </router-link>
+        <!--            <button class="profile__left-buttons_item">Научное руководство</button>-->
+        <a v-if="!activeEdit" class="profile__left-buttons_email"
+           :href="'mailto: ' + destination.email">{{ destination.email }}</a>
+        <input class="profile__left-buttons_email" v-else v-model="destination.email" type="text">
+        <input class="profile__left-buttons_email" v-if="activeEdit && login" v-model="login.login" type="text">
       </div>
-      <div v-else class="profile__right">
-        <select class="profile__right-item" v-model="login.mainRole">
-          <option value="ROLE_EMPLOYEE">Пользователь</option>
-          <option value="MODERATOR">Модератор</option>
-          <option value="ADMIN">Администратор</option>
-        </select>
-        <input class="profile__right-item" v-model="destination.lastName">
-        <input class="profile__right-item" v-model="destination.firstName">
-        <input class="profile__right-item" v-model="destination.patronymic">
-        <p class="profile__right-item">Должность <input class="profile__right-item" v-model="destination.post"></p>
-        <p class="profile__right-item">Ученое звание / Ученая степень <span><input class="profile__right-item" v-model="destination.academicTitle"> / <input class="profile__right-item" v-model="destination.academicDegree"></span></p>
-        <p class="profile__right-item">Стаж <span>Общий - <input type="date" class="profile__right-item" v-model="destination.experience"> / По специальности - <input type="date" class="profile__right-item" v-model="destination.professionalExperience"></span></p>
+    </div>
+    <div v-if="!activeEdit" class="profile__right">
+      <p class="profile__right-name">
+        {{ destination.lastName + ' ' + destination.firstName + ' ' + destination.patronymic }}</p>
+      <p v-if="destination.post" class="profile__right-item">Должность <span>{{ destination.post }}</span></p>
+      <p v-if="destination.academicTitle && destination.academicDegree" class="profile__right-item">Ученое звание /
+        Ученая степень <span>{{ destination.academicTitle }} / {{ destination.academicDegree }}</span></p>
+      <p v-if="destination.experience && destination.professionalExperience" class="profile__right-item">Стаж <span>Общий - {{
+          Math.floor((new Date() - new Date(destination.experience)) / 1000 / 24 / 60 / 60 / 365)
+        }} / По специальности - {{
+          Math.floor((new Date() - new Date(destination.professionalExperience)) / 1000 / 24 / 60 / 60 / 365)
+        }}</span></p>
+      <div
+          v-if="currUserId === destination.id && destination.id !== 1 && userRole !== 'ADMIN' && destination.plan !== null"
+          style="align-self:flex-start;" class="profile__right-plan">
+        <p class="profile__right-item">Индивидуальный план</p>
+        <a style="margin-top: 15px;" class="admin-button" :href="destination.plan">Скачать</a>
       </div>
-      <button v-if="userRole === 'ADMIN' && !activeEdit" @click="activeEdit = true; getLogin(destination.id)" class="admin-button profile__edit">Редактировать</button>
-      <button v-if="userRole === 'ADMIN' && activeEdit" @click="saveProfile" class="admin-button profile__edit">Сохранить</button>
+      <div v-if="userRole === 'ADMIN' && destination.id !== 1" style="align-self:flex-start;"
+           class="profile__right-plan">
+        <p class="profile__right-item">Индивидуальный план</p>
+        <a v-if="destination.plan !== null" style="margin-top: 15px;" class="admin-button" :href="destination.plan">Скачать
+          текущий план</a>
+        <input ref="planUrl" style="margin-top: 10px;" type="file">
+        <button @click="loadPlan" style="margin-top: 15px;" class="admin-button">Загрузить</button>
+      </div>
+    </div>
+    <div v-else class="profile__right">
+      <select class="profile__right-item" v-model="login.mainRole">
+        <option value="ROLE_EMPLOYEE">Пользователь</option>
+        <option value="MODERATOR">Модератор</option>
+        <option value="ADMIN">Администратор</option>
+      </select>
+      <input class="profile__right-item" v-model="destination.lastName">
+      <input class="profile__right-item" v-model="destination.firstName">
+      <input class="profile__right-item" v-model="destination.patronymic">
+      <p class="profile__right-item">Должность <input class="profile__right-item" v-model="destination.post"></p>
+      <p class="profile__right-item">Ученое звание / Ученая степень <span><input class="profile__right-item"
+                                                                                 v-model="destination.academicTitle"> / <input
+          class="profile__right-item" v-model="destination.academicDegree"></span></p>
+      <p class="profile__right-item">Стаж <span>Общий - <input type="date" class="profile__right-item"
+                                                               v-model="destination.experience"> / По специальности - <input
+          type="date" class="profile__right-item" v-model="destination.professionalExperience"></span></p>
+    </div>
+    <button v-if="userRole === 'ADMIN' && !activeEdit" @click="activeEdit = true; getLogin(destination.id)"
+            class="admin-button profile__edit">Редактировать
+    </button>
+    <button v-if="userRole === 'ADMIN' && activeEdit" @click="saveProfile" class="admin-button profile__edit">
+      Сохранить
+    </button>
   </section>
-  <Loader v-if="isLoading" />
+  <Loader v-if="isLoading"/>
 </template>
 
 <script setup>
@@ -69,12 +91,12 @@ const profileImg = ref(null)
 
 const destinationId = computed(() => route.params.id)
 const destination = computed(() => {
-    return accountInfo.value.find(item => item.id == destinationId.value)
+  return accountInfo.value.find(item => item.id == destinationId.value)
 })
 
 onMounted(() => {
-    accountAPI()
-    checkRole()
+  accountAPI()
+  checkRole()
 })
 
 const checkImg = () => {
@@ -82,20 +104,20 @@ const checkImg = () => {
 }
 
 const accountAPI = async () => {
-    isLoading.value = true
+  isLoading.value = true
 
-    await axios.get('employees')
-        .then((accId) => {
-            console.log(accId)
-            accountInfo.value = accId.data
-            isLoading.value = false
-        })
+  await axios.get('employees')
+      .then((accId) => {
+        console.log(accId)
+        accountInfo.value = accId.data
+        isLoading.value = false
+      })
 }
 
 const checkRole = async () => {
+  userRole.value = store.getRole()
   await axios.get('account')
       .then((items) => {
-        userRole.value = items.data.mainRole
         currUserId.value = items.data.id
       })
 }
@@ -139,8 +161,7 @@ const saveProfile = async () => {
           .then(() => {
             location.reload()
           })
-    }
-    else {
+    } else {
       await axios.patch('employees/' + destination.value.id, {
         id: destination.value.id,
         academicDegree: destination.value.academicDegree,
@@ -189,7 +210,7 @@ const loadPlan = async () => {
 <style lang="scss" scoped>
 @import "@/assets/styles/_variables.scss";
 
-.profile{
+.profile {
   max-width: 1440px;
   margin: 0 auto 40px;
   background: $pr3;
@@ -204,33 +225,33 @@ const loadPlan = async () => {
     max-width: calc(100% - 40px);
   }
 
-  &__left{
+  &__left {
     background: #C2EEFF;
     padding: 20px;
     max-width: 385px;
     width: 100%;
     border-radius: 25px;
 
-    &-block{
+    &-block {
       width: 345px;
       height: 345px;
       background: $sc3;
       border-radius: 15px;
 
-      &_image{
+      &_image {
         width: 345px;
         height: 345px;
         object-fit: contain;
       }
     }
 
-    &-buttons{
+    &-buttons {
       display: flex;
       flex-direction: column;
       gap: 10px;
       margin-top: 30px;
 
-      &_item{
+      &_item {
         font-size: 18px;
         line-height: 21px;
         background: $sc3;
@@ -238,13 +259,13 @@ const loadPlan = async () => {
         padding: 10px 0;
         text-align: center;
 
-        &:hover{
+        &:hover {
           color: white;
           background: $pr1;
         }
       }
 
-      &_email{
+      &_email {
         font-size: 22px;
         line-height: 24px;
         text-align: center;
@@ -255,7 +276,7 @@ const loadPlan = async () => {
     }
   }
 
-  &__right{
+  &__right {
     background: #C2EEFF;
     width: 100%;
     border-radius: 25px;
@@ -264,13 +285,13 @@ const loadPlan = async () => {
     flex-direction: column;
     gap: 20px;
 
-    &-name{
+    &-name {
       font-size: 40px;
       line-height: 47px;
       color: $pr1;
     }
 
-    &-item{
+    &-item {
       font-size: 24px;
       line-height: 28px;
       display: flex;
@@ -280,26 +301,26 @@ const loadPlan = async () => {
       flex-wrap: wrap;
       color: $pr1;
 
-      & span{
+      & span {
         font-size: 18px;
         line-height: 22px;
       }
     }
   }
 
-  &__edit{
+  &__edit {
     position: absolute;
     right: 30px;
     top: 30px;
     background: white;
 
-    &:hover{
+    &:hover {
       background: $pr1;
     }
   }
 }
 
-input.profile__right-name{
+input.profile__right-name {
   background: white;
   width: 80%;
   border-radius: 10px;
@@ -307,7 +328,7 @@ input.profile__right-name{
   border: 1px solid $pr1;
 }
 
-input.profile__right-item, input.profile__left-buttons_email, select.profile__right-item{
+input.profile__right-item, input.profile__left-buttons_email, select.profile__right-item {
   background: white;
   width: 80%;
   border-radius: 10px;

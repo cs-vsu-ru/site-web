@@ -1,31 +1,32 @@
 <template>
   <section class="events">
-    <div class="section-header">
+    <div v-if="eventsFuture.length > 0" class="section-header">
       <h1 class="section-header__title">Предстоящие мероприятия</h1>
       <router-link class="section-header__link" to="/events">
         Все мероприятия
         <svg width="40" height="9" viewBox="0 0 40 9" xmlns="http://www.w3.org/2000/svg">
-          <path d="M1.00908 5.30969H36.3673L33.2593 7.67647C32.8557 7.98789 32.8557 8.48616 33.2593 8.76644C33.663 9.07786 34.3088 9.07786 34.6721 8.76644L39.8789 4.71799C40.0404 4.59343 40.0404 4.40657 39.8789 4.28201L34.6721 0.233564C34.2684 -0.0778547 33.6226 -0.0778547 33.2593 0.233564C32.8557 0.544983 32.8557 1.04325 33.2593 1.32353L36.3673 3.69031H1.00908C0.443996 3.69031 0 4.03287 0 4.46886C0 4.96713 0.443996 5.30969 1.00908 5.30969Z"/>
+          <path
+              d="M1.00908 5.30969H36.3673L33.2593 7.67647C32.8557 7.98789 32.8557 8.48616 33.2593 8.76644C33.663 9.07786 34.3088 9.07786 34.6721 8.76644L39.8789 4.71799C40.0404 4.59343 40.0404 4.40657 39.8789 4.28201L34.6721 0.233564C34.2684 -0.0778547 33.6226 -0.0778547 33.2593 0.233564C32.8557 0.544983 32.8557 1.04325 33.2593 1.32353L36.3673 3.69031H1.00908C0.443996 3.69031 0 4.03287 0 4.46886C0 4.96713 0.443996 5.30969 1.00908 5.30969Z"/>
         </svg>
       </router-link>
     </div>
     <div class="events__field">
-      <router-link v-for="event in eventsFuture.slice(0, 4)" :to="'/events/event/' + event.id" class="event">
+      <router-link v-for="event in eventsFuture.slice(0, 4)" :to="'/events/' + event.id" class="event">
         <div class="event__date">
-          <p class="event__date-day">{{ event.startDate.split('-').reverse().join('.') }}</p>
-          <p class="event__date-time">{{ event.startTime }}</p>
+          <p class="event__date-day">{{ formatDateToString(event.startDateTime) }}</p>
+          <p class="event__date-time">{{ formatTimeToString(event.startDateTime) }}</p>
         </div>
         <p class="event__name">{{ event.title }}</p>
       </router-link>
     </div>
-    <div class="section-header">
+    <div v-if="eventsPass.length > 0" class="section-header">
       <h1 class="section-header__title">Прошедшие мероприятия</h1>
     </div>
     <div class="events__field">
-      <router-link v-for="event in eventsPass.slice(0, 4)" :to="'/events/event/' + event.id" class="event">
+      <router-link v-for="event in eventsPass.slice(0, 4)" :to="'/events/' + event.id" class="event">
         <div class="event__date">
-          <p class="event__date-day">{{ event.startDate.split('-').reverse().join('.') }}</p>
-          <p class="event__date-time">{{ event.startTime }}</p>
+          <p class="event__date-day">{{ formatDateToString(event.startDateTime) }}</p>
+          <p class="event__date-time">{{ formatTimeToString(event.startDateTime) }}</p>
         </div>
         <p class="event__name">{{ event.title }}</p>
       </router-link>
@@ -40,23 +41,60 @@ import axios from "axios";
 const eventsPass = ref([])
 const eventsFuture = ref([])
 
+
+const currentDate = new Date();
 onMounted(() => {
-    eventList()
+  eventList()
 })
 
+const formatDateToString = (eventDate) => {
+  const dateObject = new Date(eventDate);
+  return `${dateObject.getDate().toString().padStart(2, "0")}.${(
+      dateObject.getMonth() + 1
+  )
+      .toString()
+      .padStart(2, "0")}.${dateObject.getFullYear()}`;
+}
+
+const formatTimeToString = (eventDate) => {
+  const dateObject = new Date(eventDate);
+  return `${dateObject
+      .getHours()
+      .toString()
+      .padStart(2, "0")}:${dateObject
+      .getMinutes()
+      .toString()
+      .padStart(2, "0")}`;
+
+}
+
+
+const upcomingEvents = (events) => {
+  return events.filter(event => {
+    const startDate = new Date(event.startDateTime);
+    return startDate > currentDate;
+  });
+};
+
+const pastEvents = (events) => {
+  return events.filter(event => {
+    const startDate = new Date(event.startDateTime);
+    return startDate <= currentDate;
+  });
+};
 const eventList = async () => {
-    await axios.get('events')
-        .then((events) => {
-            eventsPass.value = events.data.completedEvents
-            eventsFuture.value = events.data.upcomingEvents
-        })
+  await axios.get('events')
+      .then((events) => {
+        eventsPass.value = pastEvents(events.data)
+        eventsFuture.value = upcomingEvents(events.data)
+      })
 }
 </script>
 
 <style lang="scss">
 @import "./src/assets/styles/variables";
 
-.events{
+.events {
   max-width: 1440px;
   margin: 80px auto;
   display: flex;
@@ -67,7 +105,7 @@ const eventList = async () => {
     max-width: calc(100% - 40px);
   }
 
-  &__field{
+  &__field {
     display: flex;
     align-items: stretch;
     justify-content: space-between;
@@ -78,7 +116,7 @@ const eventList = async () => {
       justify-content: center;
     }
 
-    .event{
+    .event {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -91,37 +129,37 @@ const eventList = async () => {
       position: relative;
       transition: 0.3s;
 
-      &:hover{
+      &:hover {
         box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
       }
 
-      &__date{
+      &__date {
         display: flex;
         align-items: flex-end;
         flex-direction: column;
         gap: 14px;
 
-        &-day{
+        &-day {
           font-size: 36px;
           font-weight: 500;
           line-height: 42px;
         }
 
-        &-time{
+        &-time {
           font-size: 30px;
           line-height: 35px;
           color: $pr1;
         }
       }
 
-      &__name{
+      &__name {
         font-size: 30px;
         line-height: 35px;
         max-width: 200px;
         width: 100%;
       }
 
-      &:after{
+      &:after {
         content: '';
         position: absolute;
         height: 100%;
