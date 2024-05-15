@@ -68,29 +68,25 @@ const formatTimeToString = (eventDate) => {
 
 }
 
+
+const upcomingEvents = (events) => {
+  return events.filter(event => {
+    const startDate = new Date(event.startDateTime);
+    return startDate > currentDate;
+  });
+};
+
+const pastEvents = (events) => {
+  return events.filter(event => {
+    const startDate = new Date(event.startDateTime);
+    return startDate <= currentDate;
+  });
+};
 const eventList = async () => {
-  const upcomingEvents = [];
-  const pastEvents = [];
   await axios.get('events')
       .then((events) => {
-        events.data.forEach((event) => {
-          console.log(event.startDateTime)
-          const startDateTime = new Date(event.startDateTime);
-          const endDateTime = event.endDateTime ? new Date(event.endDateTime) : null;
-
-          if (endDateTime === null) {
-            upcomingEvents.push(event);
-          } else if (endDateTime < currentDate) {
-            pastEvents.push(event);
-          } else if (startDateTime < currentDate && endDateTime >= currentDate) {
-            pastEvents.push(event);
-          } else {
-            upcomingEvents.push(event);
-          }
-        })
-        eventsPass.value = pastEvents
-        eventsFuture.value = upcomingEvents
-
+        eventsPass.value = pastEvents(events.data)
+        eventsFuture.value = upcomingEvents(events.data)
       })
 }
 </script>

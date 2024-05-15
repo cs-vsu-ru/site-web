@@ -1,23 +1,23 @@
 <template>
-  <div class="event-main" style="max-width: 1440px; margin: 0 auto;" v-if="destination">
+  <div class="event-main" style="max-width: 1440px; margin: 0 auto;" v-if="eventInfo">
     <div style="display: flex; align-items: flex-start; justify-content: space-between;">
-      <h1 v-if="!isEditorActive" style="margin-bottom: 40px;">{{ destination.title }}</h1>
-      <textarea v-else class="editor-text-area" v-model="destination.title"></textarea>
+      <h1 v-if="!isEditorActive" style="margin-bottom: 40px;">{{ eventInfo.title }}</h1>
+      <textarea v-else class="editor-text-area" v-model="eventInfo.title"></textarea>
       <button :class="{visible: !isEditorActive}" @click="isEditorActive = true" v-if="userRole === 'ADMIN' || userRole === 'MODERATOR'" class="edit-button admin-button">Редактировать</button>
     </div>
     <div class="event-dates">
       <p class="event-dates__date">
         Дата начала -
-        <input :disabled="!isEditorActive" max="2100-01-01" :min="new Date().toISOString().split('T')[0]" id="event-date" v-model="destination.startDate" type="date" class="event-dates__item">
+        <input :disabled="!isEditorActive" max="2100-01-01" :min="new Date().toISOString().split('T')[0]" id="event-date" v-model="formattedStartDate" type="date" class="event-dates__item">
       </p>
       <p class="event-dates__time">
         Время начала -
-        <input :disabled="!isEditorActive" id="event-time" v-model="destination.startTime" type="time" class="event-dates__item">
+        <input :disabled="!isEditorActive" id="event-time" v-model="formattedStartTime" type="time" class="event-dates__item">
       </p>
     </div>
     <ckeditor
         :editor="editor"
-        v-model="destination.content"
+        v-model="eventInfo.content"
         :config="editorConfig"
         @ready="onReady"
         v-if="isEditorActive && (userRole === 'ADMIN' || userRole === 'MODERATOR')"
@@ -25,9 +25,9 @@
     >
 
     </ckeditor>
-    <button v-if="isEditorActive && (userRole === 'ADMIN' || userRole === 'MODERATOR')" @click="saveNew(destination.content)" style="margin: 10px 0 10px auto;" class="admin-button">Сохранить</button>
+    <button v-if="isEditorActive && (userRole === 'ADMIN' || userRole === 'MODERATOR')" @click="saveNew(eventInfo.content)" style="margin: 10px 0 10px auto;" class="admin-button">Сохранить</button>
   </div>
-  <div class="new-editor" v-if="destination && !isEditorActive" v-html="destination.content">
+  <div class="new-editor" v-if="eventInfo && !isEditorActive" v-html="eventInfo.content">
 
   </div>
 </template>
@@ -57,26 +57,46 @@ const editorConfig = ref({
 })
 
 const route = useRoute()
-const newsInfo = ref([])
+const eventInfo = ref([])
 
-const destinationId = computed(() => route.params.id)
-const destination = computed(() => {
-  return newsInfo.value.find(item => item.id == destinationId.value)
-})
+
 
 onMounted(() => {
   userRole.value = store.getRole
   getEvent()
 })
 
+const formattedStartDate = computed({
+  get() {
+    return formatDateToString(eventInfo.value.startDateTime);
+  },
+  set(value) {
+    eventInfo.value.startDateTime = setDateFromString(value);
+  }
+});
+
 const formatDateToString = (eventDate) => {
   const dateObject = new Date(eventDate);
-  return `${dateObject.getDate().toString().padStart(2, "0")}.${(
-      dateObject.getMonth() + 1
-  )
-      .toString()
-      .padStart(2, "0")}.${dateObject.getFullYear()}`;
+  const year = dateObject.getFullYear();
+  const month = (dateObject.getMonth() + 1).toString().padStart(2, '0');
+  const day = dateObject.getDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
+
+const setDateFromString = (dateString) => {
+  const [year, month, day] = dateString.split('-');
+  return new Date(year, month - 1, day);
+}
+
+const formattedStartTime = computed({
+  get() {
+    return formatTimeToString(eventInfo.value.startDateTime);
+  },
+  set(value) {
+    const dateString = formatDateToString(eventInfo.value.startDateTime);
+    eventInfo.value.startDateTime = setTimeFromString(`${dateString}T${value}`);
+  }
+});
 
 const formatTimeToString = (eventDate) => {
   const dateObject = new Date(eventDate);
@@ -89,10 +109,21 @@ const formatTimeToString = (eventDate) => {
       .padStart(2, "0")}`;
 
 }
+
+const setTimeFromString = (dateTimeString) => {
+  const [dateString, timeString] = dateTimeString.split('T');
+  const [year, month, day] = dateString.split('-');
+  const [hours, minutes] = timeString.split(':');
+  const currentDate = new Date();
+  currentDate.setFullYear(year, month - 1, day);
+  currentDate.setHours(hours, minutes, 0, 0);
+  return currentDate.toISOString();
+}
 const getEvent = async () => {
-  await axios.get('events/${destinationId}')
+  const eventId = route.params.id;
+  await axios.get(`events/${eventId}`)
       .then((event) => {
-        newsInfo.value = event.data
+        eventInfo.value = event.data
       })
 }
 
@@ -108,14 +139,13 @@ const onReady = (editor) => {
 }
 
 const saveNew = async (content) => {
-  await axios.put('events/' + destinationId.value, {
-    id: destinationId.value,
-    publicationDate: destination.value.publicationDate,
-    publicationTime: destination.value.publicationTime,
-    startDate: destination.value.startDate,
-    startTime: destination.value.startTime,
+  const eventId = route.params.id;
+  await axios.put('events/' + eventId, {
+    id: eventId,
     content: content,
-    title: destination.value.title,
+    title: eventInfo.value.title,
+    startDateTime: eventInfo.value.startDateTime,
+    endDateTime: eventInfo.value.endDateTime,
   })
       .then(() => {
         location.reload()
