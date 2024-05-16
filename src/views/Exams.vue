@@ -73,7 +73,7 @@ const getStatic = async () => {
 }
 
 const saveStatic = async () => {
-  await axios.put('static-page/1', {
+  await axios.put('static-pages/1', {
     id: 1,
     contentExams: staticInfo.value.contentExams
   })
