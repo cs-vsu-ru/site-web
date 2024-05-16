@@ -83,6 +83,27 @@ const eventList = async () => {
       })
 }
 
+const formatDateToString = (eventDate) => {
+  const dateObject = new Date(eventDate);
+  return `${dateObject.getDate().toString().padStart(2, "0")}.${(
+      dateObject.getMonth() + 1
+  )
+      .toString()
+      .padStart(2, "0")}.${dateObject.getFullYear()}`;
+}
+
+const formatTimeToString = (eventDate) => {
+  const dateObject = new Date(eventDate);
+  return `${dateObject
+      .getHours()
+      .toString()
+      .padStart(2, "0")}:${dateObject
+      .getMinutes()
+      .toString()
+      .padStart(2, "0")}`;
+
+}
+
 const getSlidesForAdmin = async () => {
   await axios.get('sliders')
       .then((slidesData) => {
@@ -412,8 +433,8 @@ const deleteMail = async (mailId) => {
           <div class="admin-event__field" v-for="(event, index) in eventArr" v-show="eventsShow[index]">
             <router-link :to="'/events/' + event.id" class="event">
               <div class="event__date">
-                <p class="event__date-day">{{ event.startDate.split('-').reverse().join('.') }}</p>
-                <p class="event__date-time">{{ event.startTime }}</p>
+                <p class="event__date-day">{{ formatDateToString(event.startDateTime) }}</p>
+                <p class="event__date-time">{{ formatTimeToString(event.startDateTime) }}</p>
               </div>
               <p class="event__name">{{ event.title }}</p>
             </router-link>
@@ -460,7 +481,7 @@ const deleteMail = async (mailId) => {
               </svg>
             </div>
             <p class="new__date">{{
-                new Date(newsSlide.publicationDate).getDate() + ' ' + monthAssoc[newsSlide.publicationDate.split('-').reverse()[1]]
+                new Date(newsSlide.publicationAt).getDate() + ' ' + monthAssoc[newsSlide.publicationAt.split('-').reverse()[1]]
               }}</p>
             <textarea maxlength="110" v-model="newsSlide.title" class="new__input" :disabled="!newsDisabler[index]"/>
             <div class="news-admin__buttons">
