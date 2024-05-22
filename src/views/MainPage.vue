@@ -15,8 +15,8 @@ import {onMounted} from "vue";
 import axios from "axios";
 
 onMounted(() => {
-  axios.get('parser/lessons/')
-  axios.get('subjects')
+  // axios.get('parser/lessons/')
+  // axios.get('subjects')
   // axios.get('scientific-leaderships')
 })
 

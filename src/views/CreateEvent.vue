@@ -9,8 +9,12 @@ const editorConfig = ref({
   language: 'ru'
 })
 const eventName = ref()
-const eventDay = ref()
-const eventTime = ref()
+const eventStartDay = ref()
+const eventStartTime = ref()
+const eventFinishDay = ref()
+const eventFinishTime = ref()
+const startDateTime = ref()
+const endDateTime = ref()
 const eventDesc = ref('')
 
 
@@ -26,18 +30,34 @@ const onReady = (editor) => {
 }
 
 const createEvent = async () => {
-  console.log(eventDesc.value)
+  startDateTime.value = toIsoString(eventStartDay.value, eventStartTime.value)
+  endDateTime.value = toIsoString(eventFinishDay.value, eventFinishTime.value)
+  if (startDateTime > endDateTime) return
   await axios.post('events', {
     content: eventDesc.value,
-    startDate: eventDay.value,
-    startTime: eventTime.value,
+    startDateTime: startDateTime.value,
+    endDateTime: endDateTime.value,
     title: eventName.value
   })
       .then(() => {
         location.replace('/is/events')
       })
 }
+
+const toIsoString = (dateString, timeString) => {
+  const dateParts = dateString.split('-')
+  const timeParts = timeString.split(':')
+  const dateObject = new Date(
+      parseInt(dateParts[0], 10), // Год
+      parseInt(dateParts[1], 10) - 1, // Месяц (нумерация с 0)
+      parseInt(dateParts[2], 10), // День
+      parseInt(timeParts[0], 10), // Часы
+      parseInt(timeParts[1], 10), // Минуты
+  );
+  return dateObject.toISOString()
+}
 </script>
+
 
 <template>
   <section class="create-event">
@@ -50,8 +70,13 @@ const createEvent = async () => {
         </div>
         <div style="align-self:flex-start;" class="body__item">
           <p class="body__item-name">Дата проведения</p>
-          <input v-model="eventDay" class="body__item-date" type="date">
-          <input v-model="eventTime" class="body__item-date" type="time">
+          <input v-model="eventStartDay" class="body__item-date" type="date">
+          <input v-model="eventStartTime" class="body__item-date" type="time">
+        </div>
+        <div style="align-self:flex-start;" class="body__item">
+          <p class="body__item-name">Дата окончания</p>
+          <input v-model="eventFinishDay" class="body__item-date" type="date">
+          <input v-model="eventFinishTime" class="body__item-date" type="time">
         </div>
         <div class="body__item">
           <p class="body__item-name">Описание</p>
