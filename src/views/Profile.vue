@@ -44,12 +44,6 @@
         <input ref="planUrl" style="margin-top: 10px;" type="file">
         <button @click="loadPlan" style="margin-top: 15px;" class="admin-button">Загрузить</button>
       </div>
-      <div>
-        <label>
-          <input type="checkbox" v-model="destination.hasLessons" class="my-checkbox">
-          {{ 'Создать расписание' }}
-        </label>
-      </div>
     </div>
     <div v-else class="profile__right">
       <select class="profile__right-item" v-model="login.role">
@@ -67,6 +61,12 @@
       <p class="profile__right-item">Стаж <span>Общий - <input type="date" class="profile__right-item"
                                                                v-model="destination.experience"> / По специальности - <input
           type="date" class="profile__right-item" v-model="destination.professionalExperience"></span></p>
+      <div class="profile__checkbox">
+        <label>
+          <input type="checkbox" v-model="destination.hasLessons" class="my-checkbox">
+          {{ 'Создать расписание' }}
+        </label>
+      </div>
     </div>
     <button v-if="userRole === 'ADMIN' && !activeEdit" @click="activeEdit = true; getLogin(destination.id)"
             class="admin-button profile__edit">Редактировать
@@ -161,7 +161,7 @@ const saveProfile = async () => {
               post: destination.value.post,
               professionalExperience: destination.value.professionalExperience,
               login: login.value.login,
-              hasLessons: false,
+              hasLessons: destination.value.hasLessons,
               role: login.value.role
             })
           })
@@ -182,7 +182,7 @@ const saveProfile = async () => {
         post: destination.value.post,
         professionalExperience: destination.value.professionalExperience,
         login: login.value.login,
-        hasLessons: false,
+        hasLessons: destination.value.hasLessons,
         role: login.value.role
       })
           .then(() => {
@@ -325,6 +325,9 @@ const loadPlan = async () => {
     &:hover {
       background: $pr1;
     }
+  }
+  &__checkbox{
+    padding-top: 10px;
   }
 }
 

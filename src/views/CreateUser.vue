@@ -16,7 +16,8 @@ const lessons = ref('')
 const extraInf = ref('')
 const profileImg = ref(null)
 const imgUrl = ref(null)
-const role = ref('ROLE_EMPLOYEE')
+const role = ref('EMPLOYEE')
+const hasLessons = ref('')
 
 const checkImg = () => {
   profileImg.value = URL.createObjectURL(imgUrl.value.files[0])
@@ -46,7 +47,8 @@ const createUser = async () => {
             lastName: lastName.value,
             email: email.value,
             imageUrl: urlData.data,
-            mainRole: role.value
+            mainRole: role.value,
+            hasLessons: hasLessons.value,
           })
         })
         .then(() => {
@@ -66,7 +68,8 @@ const createUser = async () => {
       lastName: lastName.value,
       email: email.value,
       imageUrl: 'https://i.imgur.com/fn32s4s.jpeg',
-      mainRole: role.value
+      mainRole: role.value,
+      hasLessons: hasLessons.value,
     })
         .then(() => {
           window.location.replace('/is/admin')
@@ -136,6 +139,12 @@ const createUser = async () => {
                       <p class="user-data__item-name">Ученая степень</p>
                       <input v-model="degree" type="text" class="user-data__item-input">
                   </div>
+                <div class="user-data__checkbox">
+                  <label>
+                    <input type="checkbox" v-model="hasLessons" class="my-checkbox">
+                    {{ 'Создать расписание' }}
+                  </label>
+                </div>
 <!--                  <div class="user-data__item">-->
 <!--                      <p class="user-data__item-name">Преподаваемые дисциплины</p>-->
 <!--                      <input v-model="lessons" type="text" class="user-data__item-input">-->
@@ -245,6 +254,9 @@ const createUser = async () => {
                   border-color: $pr1;
                 }
               }
+            }
+            &__checkbox{
+              padding-top: 10px;
             }
           }
 

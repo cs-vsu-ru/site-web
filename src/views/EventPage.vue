@@ -15,6 +15,16 @@
         <input :disabled="!isEditorActive" id="event-time" v-model="formattedStartTime" type="time" class="event-dates__item">
       </p>
     </div>
+    <div class="event-dates">
+      <p class="event-dates__date">
+        Дата окончания -
+        <input :disabled="!isEditorActive" max="2100-01-01" :min="new Date().toISOString().split('T')[0]" id="event-date" v-model="formattedEndDate" type="date" class="event-dates__item">
+      </p>
+      <p class="event-dates__time">
+        Время окончания -
+        <input :disabled="!isEditorActive" id="event-time" v-model="formattedEndTime" type="time" class="event-dates__item">
+      </p>
+    </div>
     <ckeditor
         :editor="editor"
         v-model="eventInfo.content"
@@ -75,6 +85,15 @@ const formattedStartDate = computed({
   }
 });
 
+const formattedEndDate = computed({
+  get() {
+    return formatDateToString(eventInfo.value.endDateTime);
+  },
+  set(value) {
+    eventInfo.value.endtDateTime = setDateFromString(value);
+  }
+});
+
 const formatDateToString = (eventDate) => {
   const dateObject = new Date(eventDate);
   const year = dateObject.getFullYear();
@@ -95,6 +114,16 @@ const formattedStartTime = computed({
   set(value) {
     const dateString = formatDateToString(eventInfo.value.startDateTime);
     eventInfo.value.startDateTime = setTimeFromString(`${dateString}T${value}`);
+  }
+});
+
+const formattedEndTime = computed({
+  get() {
+    return formatTimeToString(eventInfo.value.endDateTime);
+  },
+  set(value) {
+    const dateString = formatDateToString(eventInfo.value.endDateTime);
+    eventInfo.value.endDateTime = setTimeFromString(`${dateString}T${value}`);
   }
 });
 
