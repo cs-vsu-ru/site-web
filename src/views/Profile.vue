@@ -97,7 +97,6 @@ const imgUrl = ref()
 const profileImg = ref(null)
 
 const store = userAuth()
-// надо было писать на flutter
 const destinationId = computed(() => route.params.id)
 const destination = computed(() => {
   return accountInfo.value.find(item => item.id == destinationId.value)

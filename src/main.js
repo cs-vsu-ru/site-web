@@ -6,9 +6,15 @@ import axios from "axios"
 import { GDialog } from 'gitart-vue-dialog'
 import 'gitart-vue-dialog/dist/style.css'
 import CKEditor from '@ckeditor/ckeditor5-vue';
+import {userAuth} from "@/store/userAuth";
 
 axios.defaults.baseURL = process.env.VUE_APP_BASE_DEV_URL
 axios.defaults.headers['Authorization'] = `Bearer ${localStorage.getItem('token')}`
+
+
+const pinia = createPinia()
+
+createApp(App).use(pinia).use(router).use(CKEditor).component('GDialog', GDialog).mount('#app')
 
 axios.interceptors.response.use(
     response => {
@@ -19,14 +25,13 @@ axios.interceptors.response.use(
         // If the request resulted in an error, check the status
         if (error.response && error.response.status === 500) {
             // If the status is 500, redirect to the login page or refresh the token
-            // router.push('/login')
+            console.log('500')
+            const store = userAuth()
+            store.setAuth('', '')
+            location.reload()
         } else {
             // If the status is not 500, reject the promise with the error
             return Promise.reject(error)
         }
     }
 )
-
-const pinia = createPinia()
-
-createApp(App).use(pinia).use(router).use(CKEditor).component('GDialog', GDialog).mount('#app')

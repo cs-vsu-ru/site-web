@@ -40,7 +40,8 @@
         <router-link class="nav__item hover-underline" to="/exams">Консультации и экзамены</router-link>
         <router-link class="nav__item hover-underline" to="/students">Студентам</router-link>
         <router-link class="nav__item hover-underline" to="/teachers">Сотрудники</router-link>
-        <router-link class="nav__item hover-underline" to="/partners">Важное</router-link>
+        <router-link class="nav__item hover-underline" to="/important">Важное</router-link>
+        <router-link class="nav__item hover-underline" to="/miscellaneous">Разное</router-link>
       </nav>
     </div>
     <GDialog
@@ -84,6 +85,8 @@ const authError = ref('')
 const isAuth = computed(() => store.getIsAuth)
 
 onMounted(() => {
+  console.log("AAAAAA")
+  console.log(store.getRole)
   if (store.getRole !== '') {
     accountInfo()
   }
@@ -108,6 +111,7 @@ const auth = async () => {
 const logout = () => {
   store.setAuth('', '')
   location.reload()
+
 }
 
 const accountInfo = async () => {
@@ -118,7 +122,7 @@ const accountInfo = async () => {
           profileId.value = profId.data.id
         })
   } catch (error) {
-    if (error.response && error.response.status === 500) {
+    if (error.response.status === 500 && store.getRole !== '') {
       console.error('A 500 error occurred:', error.message)
       logout()
     } else {

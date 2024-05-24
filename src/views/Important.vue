@@ -1,19 +1,19 @@
 <template>
   <section class="static">
     <div style="display: flex; align-items: flex-start; justify-content: space-between;">
-      <h1>Партнеры</h1>
+      <h1>Важное</h1>
       <button :class="{visible: !isEditorActive}" @click="isEditorActive = true" v-if="userRole === 'ADMIN' || userRole === 'MODERATOR'" class="edit-button admin-button">Редактировать</button>
     </div>
     <ckeditor
         :editor="editor"
-        v-model="staticInfo.contentPartners"
+        v-model="staticInfo.contentImportant"
         :config="editorConfig"
         @ready="onReady"
         v-if="isEditorActive && (userRole === 'ADMIN' || userRole === 'MODERATOR')"
         class="static__editor"
     ></ckeditor>
     <button v-if="isEditorActive && (userRole === 'ADMIN' || userRole === 'MODERATOR')" @click="saveStatic" style="margin: 10px 0 10px auto;" class="admin-button">Сохранить</button>
-    <div class="new-editor" v-if="staticInfo && !isEditorActive" v-html="staticInfo.contentPartners">
+    <div class="new-editor" v-if="staticInfo && !isEditorActive" v-html="staticInfo.contentImportant">
 
     </div>
   </section>
@@ -64,14 +64,14 @@ const getStatic = async () => {
       .then((staticData) => {
         staticInfo.value = staticData.data[0]
 
-        console.log(staticInfo.value.contentPartners)
+        console.log(staticInfo.value.contentImportant)
       })
 }
 
 const saveStatic = async () => {
   await axios.put('static-pages/1', {
     id: 1,
-    contentPartners: staticInfo.value.contentPartners
+    contentImportant: staticInfo.value.contentImportant
   })
       .then(() => {
         location.reload()
