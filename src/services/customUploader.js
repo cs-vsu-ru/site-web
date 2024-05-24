@@ -9,7 +9,7 @@ class CustomUploader {
         const data = new FormData()
         data.append('file', await this.loader.file)
 
-        const res = await axios.post('uploadFile', data, {
+        const res = await axios.post('upload-file', data, {
             'Content-Type': 'multipart/form-data'
         })
 

@@ -29,7 +29,7 @@ const createUser = async () => {
 
     formData.append('file', imgUrl.value.files[0])
 
-    await axios.post('uploadFile', formData, {
+    await axios.post('upload-file', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
