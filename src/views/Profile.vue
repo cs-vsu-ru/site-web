@@ -46,8 +46,8 @@
       </div>
     </div>
     <div v-else class="profile__right">
-      <select class="profile__right-item" v-model="login.role">
-        <option value="ROLE_EMPLOYEE">Пользователь</option>
+      <select class="profile__right-item" v-model="login.mainRole">
+        <option value="USER">Пользователь</option>
         <option value="MODERATOR">Модератор</option>
         <option value="ADMIN">Администратор</option>
       </select>
