@@ -12,7 +12,6 @@ import CreateUser from "@/views/CreateUser.vue";
 import AboutCaf from "@/views/AboutCaf"
 import Education from "@/views/Education"
 import Students from "@/views/Students"
-import Partners from "@/views/Partners"
 import Address from "@/views/Address"
 import Confident from "@/views/Confident"
 import CreateNews from "@/views/CreateNews";
@@ -23,6 +22,8 @@ import CreateMail from "@/views/CreateMail"
 import CreateEvent from "@/views/CreateEvent";
 import EditMail from "@/views/EditMail";
 import Exams from "@/views/Exams";
+import Miscellaneous from "@/views/Miscellaneous.vue";
+import Important from "@/views/Important.vue";
 
 const routes = [
   {
@@ -115,9 +116,14 @@ const routes = [
     component: Students
   },
   {
-    path: '/partners',
-    name: 'Partners',
-    component: Partners
+    path: '/important',
+    name: 'Important',
+    component: Important
+  },
+  {
+    path: '/miscellaneous',
+    name: 'Miscellaneous',
+    component: Miscellaneous
   },
   {
     path: '/address',
