@@ -122,7 +122,7 @@ const saveChanges = async (slideId, imageURL, title, urlTo, slideIdx) => {
 
     formData.append('file', previewUrl.value[slideIdx].files[0])
 
-    await axios.post('uploadFile',
+    await axios.post('upload-file',
         formData,
         {
           headers: {
@@ -157,7 +157,7 @@ const addSlide = async () => {
 
     formData.append('file', addUrl.value.files[0])
 
-    await axios.post('uploadFile',
+    await axios.post('upload-file',
         formData,
         {
           headers: {
@@ -230,7 +230,7 @@ const saveNews = async (artId, pubDate, pubTime, content, title, imageURL, slide
 
     formData.append('file', newUrl.value[slideIdx].files[0])
 
-    await axios.post('uploadFile',
+    await axios.post('upload-file',
         formData,
         {
           headers: {

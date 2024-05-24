@@ -140,8 +140,8 @@ const saveProfile = async () => {
       let formData = new FormData()
 
       formData.append('file', imgUrl.value.files[0])
-а
-      await axios.post('uploadFile', formData, {
+
+      await axios.post('upload-file', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -197,7 +197,7 @@ const loadPlan = async () => {
 
     formData.append('file', planUrl.value.files[0])
 
-    await axios.post('uploadFile', formData, {
+    await axios.post('upload-file', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
