@@ -16,7 +16,7 @@ const lessons = ref('')
 const extraInf = ref('')
 const profileImg = ref(null)
 const imgUrl = ref(null)
-const role = ref('EMPLOYEE')
+const role = ref('USER')
 const hasLessons = ref('')
 
 const checkImg = () => {
@@ -94,7 +94,7 @@ const createUser = async () => {
                   <div class="user-data__item">
                     <p class="user-data__item-name">Роль</p>
                     <select v-model="role" class="user-data__item-input" required>
-                      <option value="ROLE_EMPLOYEE">Пользователь</option>
+                      <option value="USER">Пользователь</option>
                       <option value="MODERATOR">Модератор</option>
                       <option value="ADMIN">Админ</option>
                     </select>
