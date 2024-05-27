@@ -161,7 +161,7 @@ const saveProfile = async () => {
               professionalExperience: destination.value.professionalExperience,
               login: login.value.login,
               hasLessons: destination.value.hasLessons,
-              role: login.value.role
+              mainRole: login.value.mainRole
             })
           })
           .then(() => {
@@ -182,7 +182,7 @@ const saveProfile = async () => {
         professionalExperience: destination.value.professionalExperience,
         login: login.value.login,
         hasLessons: destination.value.hasLessons,
-        role: login.value.role
+        mainRole: login.value.mainRole
       })
           .then(() => {
             location.reload()
