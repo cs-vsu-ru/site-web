@@ -269,7 +269,7 @@ const uploadSchedule = async () => {
 
   formData.append('file', scheduleUrl.value.files[0])
 
-  await parserAxios.post('parser/lessons/parse/',
+  await parserAxios.post('lessons/parse/',
       formData,
       {
         headers: {
