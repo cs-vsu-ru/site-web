@@ -4,7 +4,7 @@
     <h3 style="font-size: 26px">{{
         destination.lastName + ' ' + destination.firstName + ' ' + destination.patronymic
       }}</h3>
-    <a :href="'https://www.cs.vsu.ru/is/api/parser/lessons/by_employee/' + destination.id + '/xlsx/'"
+    <a :href="parserAxios.defaults.baseURL + 'lessons/by_employee/' + destination.id + '/xlsx/'"
        class="admin-button schedule-load">Скачать расписание</a>
     <div class="schedule__box">
       <table ref="exportTable" class="schedule__table" v-if="example">
@@ -109,7 +109,7 @@ const destination = computed(() => {
   return accountInfo.value.find(item => item.id == destinationId.value)
 })
 const htmlSchedule = computed(async () => {
-  const res = await parserAxios.get('parser/lessons/by_employee/' + destination.value?.id + '/')
+  const res = await parserAxios.get('lessons/by_employee/' + destination.value?.id + '/')
 
   example.value = res.data
 
@@ -148,7 +148,7 @@ const openModal = (name, courseName, place, id) => {
 }
 
 const saveSchedule = async () => {
-  await parserAxios.patch('parser/lessons/' + lessonId.value + '/', {
+  await parserAxios.patch('lessons/' + lessonId.value + '/', {
     groups: courseNGroups.value,
     placement: placement.value,
     name: subjectName.value
@@ -159,7 +159,7 @@ const saveSchedule = async () => {
 }
 
 const deleteLesson = async () => {
-  await parserAxios.patch('parser/lessons/' + lessonId.value + '/', {
+  await parserAxios.patch('lessons/' + lessonId.value + '/', {
     groups: '',
     placement: '',
     name: ''

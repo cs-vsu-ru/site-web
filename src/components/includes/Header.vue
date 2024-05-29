@@ -53,11 +53,11 @@
         <div class="login-modal__inputs">
           <div class="login-modal__inputs-item">
             <p class="login-modal__inputs-item_name">Логин</p>
-            <input type="text" class="login-modal__inputs-item_input" v-model="login" required minlength="4">
+            <input type="text" class="login-modal__inputs-item_input" v-model="login" required>
           </div>
           <div class="login-modal__inputs-item">
             <p class="login-modal__inputs-item_name">Пароль</p>
-            <input type="password" class="login-modal__inputs-item_input" v-model="password" required minlength="4">
+            <input type="password" class="login-modal__inputs-item_input" v-model="password" required>
           </div>
         </div>
         <p class="login-modal__error">{{ authError }}</p>

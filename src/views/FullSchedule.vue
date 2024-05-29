@@ -25,7 +25,7 @@ onMounted( () => {
 const schedule = async () => {
   isLoading.value = true
 
-  await parserAxios.get('parser/lessons/')
+  await parserAxios.get('lessons/')
       .then((scheduleData) => {
         example.value = scheduleData.data
         isLoading.value = false
@@ -41,7 +41,7 @@ const openModal = (name, courseName, place, id) => {
 }
 
 const saveSchedule = async () => {
-  await parserAxios.patch('parser/lessons/' + lessonId.value + '/', {
+  await parserAxios.patch('lessons/' + lessonId.value + '/', {
     groups: courseNGroups.value,
     placement: placement.value,
     name: subjectName.value
@@ -52,7 +52,7 @@ const saveSchedule = async () => {
 }
 
 const deleteLesson = async () => {
-  await parserAxios.patch('parser/lessons/' + lessonId.value + '/', {
+  await parserAxios.patch('lessons/' + lessonId.value + '/', {
     groups: '',
     placement: '',
     name: ''
@@ -66,7 +66,7 @@ const deleteLesson = async () => {
 <template>
   <section v-if="example" class="full-schedule">
     <h1>Расписание</h1>
-    <a href="https://www.cs.vsu.ru/is/api/parser/lessons/xlsx/" class="admin-button schedule-load">Скачать расписание</a>
+    <a v-bind:href="parserAxios.defaults.baseURL + 'lessons/xlsx/'" class="admin-button schedule-load">Скачать расписание</a>
     <div class="block-all">
       <table class="schedule__table sticky-table">
         <tr>
