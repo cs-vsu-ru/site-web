@@ -1,24 +1,28 @@
 <template>
   <section class="events-all">
-    <h1 class="section-header__title">Предстоящие мероприятия</h1>
-    <div class="events__field">
-      <router-link v-for="event in eventsFuture" :to="'/events/' + event.id" class="event">
-        <div class="event__date">
-          <p class="event__date-day">{{ formatDateToString(event.startDateTime) }}</p>
-          <p class="event__date-time">{{ formatTimeToString(event.startDateTime) }}</p>
-        </div>
-        <p class="event__name">{{ event.title }}</p>
-      </router-link>
+    <div v-if="eventsFuture.length > 0">
+      <h1 class="section-header__title">Предстоящие мероприятия</h1>
+      <div class="events__field">
+        <router-link v-for="event in eventsFuture" :to="'/events/' + event.id" class="event">
+          <div class="event__date">
+            <p class="event__date-day">{{ formatDateToString(event.startDateTime) }}</p>
+            <p class="event__date-time">{{ formatTimeToString(event.startDateTime) }}</p>
+          </div>
+          <p class="event__name">{{ event.title }}</p>
+        </router-link>
+      </div>
     </div>
-    <h1 class="section-header__title">Прошедшие мероприятия</h1>
-    <div class="events__field">
-      <router-link v-for="event in eventsPass" :to="'/events/' + event.id" class="event">
-        <div class="event__date">
-          <p class="event__date-day">{{ formatDateToString(event.startDateTime) }}</p>
-          <p class="event__date-time">{{ formatTimeToString(event.startDateTime) }}</p>
-        </div>
-        <p class="event__name">{{ event.title }}</p>
-      </router-link>
+    <div v-if="eventsPass.length > 0">
+      <h1 class="section-header__title">Прошедшие мероприятия</h1>
+      <div class="events__field">
+        <router-link v-for="event in eventsPass" :to="'/events/' + event.id" class="event">
+          <div class="event__date">
+            <p class="event__date-day">{{ formatDateToString(event.startDateTime) }}</p>
+            <p class="event__date-time">{{ formatTimeToString(event.startDateTime) }}</p>
+          </div>
+          <p class="event__name">{{ event.title }}</p>
+        </router-link>
+      </div>
     </div>
   </section>
 </template>
@@ -80,14 +84,14 @@ const eventList = async () => {
 
 <style lang="scss" scoped>
 
-.events-all{
+.events-all {
   max-width: 1440px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 40px;
 
-  &__field{
+  &__field {
     display: flex;
     align-items: stretch;
     flex-wrap: wrap;

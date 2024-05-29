@@ -90,7 +90,7 @@ const formattedEndDate = computed({
     return formatDateToString(eventInfo.value.endDateTime);
   },
   set(value) {
-    eventInfo.value.endtDateTime = setDateFromString(value);
+    eventInfo.value.endDateTime = setDateFromString(value);
   }
 });
 
