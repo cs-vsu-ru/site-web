@@ -2,7 +2,9 @@
   <section class="static">
     <div style="display: flex; align-items: flex-start; justify-content: space-between;">
       <h1>О кафедре</h1>
-      <button :class="{visible: !isEditorActive}" @click="isEditorActive = true" v-if="userRole === 'ADMIN' || userRole === 'MODERATOR'" class="edit-button admin-button">Редактировать</button>
+      <button :class="{visible: !isEditorActive}" @click="isEditorActive = true"
+              v-if="userRole === 'ADMIN' || userRole === 'MODERATOR'" class="edit-button admin-button">Редактировать
+      </button>
     </div>
     <ckeditor
         :editor="editor"
@@ -12,7 +14,9 @@
         v-if="isEditorActive && (userRole === 'ADMIN' || userRole === 'MODERATOR')"
         class="static__editor"
     ></ckeditor>
-    <button v-if="isEditorActive && (userRole === 'ADMIN' || userRole === 'MODERATOR')" @click="saveStatic" style="margin: 10px 0 10px auto;" class="admin-button">Сохранить</button>
+    <button v-if="isEditorActive && (userRole === 'ADMIN' || userRole === 'MODERATOR')" @click="saveStatic"
+            style="margin: 10px 0 10px auto;" class="admin-button">Сохранить
+    </button>
     <div class="new-editor" v-if="staticInfo && !isEditorActive" v-html="staticInfo.contentAbout">
 
     </div>
@@ -21,68 +25,68 @@
 
 <script setup>
 import {onMounted, ref} from "vue";
-  import DecoupledEditor from "@ckeditor/ckeditor5-build-decoupled-document";
-  import CustomUploader from "@/services/customUploader";
-  import axios from "axios";
+import DecoupledEditor from "@ckeditor/ckeditor5-build-decoupled-document";
+import CustomUploader from "@/services/customUploader";
+import axios from "axios";
 import {userAuth} from "@/store/userAuth";
 
-  const store = userAuth()
-  const staticInfo = ref(null)
-  const userRole = ref('')
-  const aboutModel = ref('')
-  const isEditorActive = ref(false)
-  const editor = ref(DecoupledEditor)
-  const editorConfig = ref({
-    // toolbar: [
-    //     'undo', 'redo',
-    //     '|', 'heading',
-    //     '|', 'bold', 'italic',
-    //     '|', 'link', 'uploadImage', 'insertTable', 'mediaEmbed',
-    //     '|', 'bulletedList', 'numberedList', 'outdent', 'indent'
-    // ],
-    language: 'ru'
+const store = userAuth()
+const staticInfo = ref(null)
+const userRole = ref('')
+const aboutModel = ref('')
+const isEditorActive = ref(false)
+const editor = ref(DecoupledEditor)
+const editorConfig = ref({
+  // toolbar: [
+  //     'undo', 'redo',
+  //     '|', 'heading',
+  //     '|', 'bold', 'italic',
+  //     '|', 'link', 'uploadImage', 'insertTable', 'mediaEmbed',
+  //     '|', 'bulletedList', 'numberedList', 'outdent', 'indent'
+  // ],
+  language: 'ru'
+})
+
+onMounted(() => {
+  userRole.value = store.getRole
+  getStatic()
+})
+
+const onReady = (editor) => {
+  editor.ui.getEditableElement().parentElement.insertBefore(
+      editor.ui.view.toolbar.element,
+      editor.ui.getEditableElement()
+  )
+
+  editor.plugins.get('FileRepository').createUploadAdapter = loader => {
+    return new CustomUploader(loader)
+  }
+}
+
+const getStatic = async () => {
+  await axios.get('static-pages')
+      .then((staticData) => {
+        staticInfo.value = staticData.data[0]
+
+        // console.log(staticInfo.value.contentAbout)
+      })
+}
+
+const saveStatic = async () => {
+  await axios.put('static-pages/1', {
+    id: 1,
+    contentAbout: staticInfo.value.contentAbout
   })
-
-  onMounted(() => {
-    userRole.value = store.getRole
-    getStatic()
-  })
-
-  const onReady = (editor) => {
-    editor.ui.getEditableElement().parentElement.insertBefore(
-        editor.ui.view.toolbar.element,
-        editor.ui.getEditableElement()
-    )
-
-    editor.plugins.get('FileRepository').createUploadAdapter = loader => {
-      return new CustomUploader(loader)
-    }
-  }
-
-  const getStatic = async () => {
-    await axios.get('static-pages')
-        .then((staticData) => {
-          staticInfo.value = staticData.data[0]
-
-          // console.log(staticInfo.value.contentAbout)
-        })
-  }
-
-  const saveStatic = async () => {
-    await axios.put('static-pages/1', {
-      id: 1,
-      contentAbout: staticInfo.value.contentAbout
-    })
-        .then(() => {
-          location.reload()
-        })
-  }
+      .then(() => {
+        location.reload()
+      })
+}
 </script>
 
 <style lang="scss">
 @import "@/assets/styles/_variables.scss";
 
-.static{
+.static {
   max-width: 1440px;
   margin: 0 auto;
 
@@ -90,48 +94,50 @@ import {userAuth} from "@/store/userAuth";
     max-width: calc(100% - 40px);
   }
 
-  u{
+  u {
     text-decoration: underline !important;
   }
-  s{
+
+  s {
     text-decoration: line-through !important;
   }
 
-  ul{
+  ul {
     padding-left: 25px;
     margin: 10px 0;
 
-    li{
+    li {
       font-size: 18px;
     }
   }
 
 
-  h1{
+  h1 {
     margin-bottom: 30px;
   }
 
-  p{
+  p {
     font-size: 22px;
     line-height: 24px;
   }
 
-  img{
+  img {
     width: 100%;
   }
 
-  .image-style-align-left{
+  .image-style-align-left {
     float: left;
   }
 
-  &__editor{
+  &__editor {
     border: 1px solid $pr1;
     min-height: 350px;
 
-    u{
+    u {
       text-decoration: underline;
     }
-    s{
+
+    s {
       text-decoration: line-through;
     }
   }

@@ -1,6 +1,7 @@
 <script setup>
 import {onMounted, ref, toRaw} from "vue";
 import axios from "axios";
+import {parserAxios} from "@/main";
 import Loader from "@/components/includes/Loader";
 import {userAuth} from "@/store/userAuth";
 
@@ -24,7 +25,7 @@ onMounted( () => {
 const schedule = async () => {
   isLoading.value = true
 
-  await axios.get('parser/lessons/')
+  await parserAxios.get('parser/lessons/')
       .then((scheduleData) => {
         example.value = scheduleData.data
         isLoading.value = false
@@ -40,7 +41,7 @@ const openModal = (name, courseName, place, id) => {
 }
 
 const saveSchedule = async () => {
-  await axios.patch('parser/lessons/' + lessonId.value + '/', {
+  await parserAxios.patch('parser/lessons/' + lessonId.value + '/', {
     groups: courseNGroups.value,
     placement: placement.value,
     name: subjectName.value
@@ -51,7 +52,7 @@ const saveSchedule = async () => {
 }
 
 const deleteLesson = async () => {
-  await axios.patch('parser/lessons/' + lessonId.value + '/', {
+  await parserAxios.patch('parser/lessons/' + lessonId.value + '/', {
     groups: '',
     placement: '',
     name: ''

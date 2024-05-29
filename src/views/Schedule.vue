@@ -98,6 +98,7 @@ import axios from "axios";
 import {GDialog} from "gitart-vue-dialog/dist/index";
 import Loader from "@/components/includes/Loader";
 import {userAuth} from "@/store/userAuth";
+import {parserAxios} from "@/main";
 
 const accountInfo = ref([])
 const isLoading = ref(false)
@@ -108,7 +109,7 @@ const destination = computed(() => {
   return accountInfo.value.find(item => item.id == destinationId.value)
 })
 const htmlSchedule = computed(async () => {
-  const res = await axios.get('parser/lessons/by_employee/' + destination.value?.id + '/')
+  const res = await parserAxios.get('parser/lessons/by_employee/' + destination.value?.id + '/')
 
   example.value = res.data
 
@@ -147,7 +148,7 @@ const openModal = (name, courseName, place, id) => {
 }
 
 const saveSchedule = async () => {
-  await axios.patch('parser/lessons/' + lessonId.value + '/', {
+  await parserAxios.patch('parser/lessons/' + lessonId.value + '/', {
     groups: courseNGroups.value,
     placement: placement.value,
     name: subjectName.value
@@ -158,7 +159,7 @@ const saveSchedule = async () => {
 }
 
 const deleteLesson = async () => {
-  await axios.patch('parser/lessons/' + lessonId.value + '/', {
+  await parserAxios.patch('parser/lessons/' + lessonId.value + '/', {
     groups: '',
     placement: '',
     name: ''

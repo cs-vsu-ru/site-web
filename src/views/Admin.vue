@@ -1,6 +1,7 @@
 <script setup>
 import {onMounted, ref} from "vue";
 import axios from "axios";
+import {parserAxios} from "@/main";
 import Loader from "@/components/includes/Loader";
 import {userAuth} from "@/store/userAuth";
 
@@ -268,7 +269,7 @@ const uploadSchedule = async () => {
 
   formData.append('file', scheduleUrl.value.files[0])
 
-  await axios.post('parser/lessons/parse/',
+  await parserAxios.post('parser/lessons/parse/',
       formData,
       {
         headers: {
