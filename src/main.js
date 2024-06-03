@@ -26,11 +26,13 @@ axios.interceptors.response.use(
     error => {
         // If the request resulted in an error, check the status
         if (error.response && error.response.status === 500) {
-            // If the status is 500, redirect to the login page or refresh the token
+            // If the status is 500 and user not null - logout and reload
             console.log('500')
             const store = userAuth()
-            store.setAuth('', '')
-            location.reload()
+            if (store.getRole !== '') {
+                store.setAuth('', '')
+                location.reload()
+            }
         } else {
             // If the status is not 500, reject the promise with the error
             return Promise.reject(error)

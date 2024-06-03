@@ -85,7 +85,6 @@ const authError = ref('')
 const isAuth = computed(() => store.getIsAuth)
 
 onMounted(() => {
-  console.log("AAAAAA")
   console.log(store.getRole)
   if (store.getRole !== '') {
     accountInfo()
