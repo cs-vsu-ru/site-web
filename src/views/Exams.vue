@@ -1,7 +1,7 @@
 <template>
   <section class="static">
     <div style="display: flex; align-items: flex-start; justify-content: space-between;">
-      <h1>Консультации и экзамены</h1>
+      <h1>Учебный процесс</h1>
       <button :class="{visible: !isEditorActive}" @click="isEditorActive = true"
               v-if="userRole === 'ADMIN' || userRole === 'MODERATOR'" class="edit-button admin-button">Редактировать
       </button>

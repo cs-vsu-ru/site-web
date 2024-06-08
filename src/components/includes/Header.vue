@@ -37,7 +37,7 @@
         <router-link class="nav__item hover-underline" to="/about">О кафедре</router-link>
         <router-link class="nav__item hover-underline" to="/education">Образование</router-link>
         <router-link class="nav__item hover-underline" to="/full-schedule">Расписание</router-link>
-        <router-link class="nav__item hover-underline" to="/exams">Консультации и экзамены</router-link>
+        <router-link class="nav__item hover-underline" to="/exams">Учебный процесс</router-link>
         <router-link class="nav__item hover-underline" to="/students">Студентам</router-link>
         <router-link class="nav__item hover-underline" to="/teachers">Сотрудники</router-link>
         <router-link class="nav__item hover-underline" to="/important">Важное</router-link>
