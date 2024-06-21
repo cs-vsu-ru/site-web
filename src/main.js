@@ -1,26 +1,27 @@
-import { createApp } from 'vue'
-import { createPinia } from "pinia";
+import {createApp} from 'vue'
+import {createPinia} from "pinia";
 import App from './App.vue'
 import router from './router'
 import axios from "axios"
-import { GDialog } from 'gitart-vue-dialog'
+import {GDialog} from 'gitart-vue-dialog'
 import 'gitart-vue-dialog/dist/style.css'
 import CKEditor from '@ckeditor/ckeditor5-vue';
 import {userAuth} from "@/store/userAuth";
 
-axios.defaults.baseURL = 'https://www.cs.vsu.ru/is/inf-sys-server/api/'
-axios.defaults.headers['Authorization'] = `Bearer ${localStorage.getItem('token')}`
-
-
 const pinia = createPinia()
-
 createApp(App).use(pinia).use(router).use(CKEditor).component('GDialog', GDialog).mount('#app')
+const store = userAuth()
+axios.defaults.baseURL = 'https://www.cs.vsu.ru/is/inf-sys-server/api/'
+axios.defaults.headers['Authorization'] = `Bearer ${store.getIsAuth}`
+
 export const parserAxios = axios.create({
     baseURL: 'https://www.cs.vsu.ru/is/inf-sys-parser/api/'
 });
 axios.interceptors.response.use(
     response => {
         // If the request was successful, just return the response
+        console.log('token')
+        console.log(store.getIsAuth)
         return response
     },
     error => {
@@ -28,7 +29,6 @@ axios.interceptors.response.use(
         if (error.response && error.response.status === 500) {
             // If the status is 500 and user not null - logout and reload
             console.log('500')
-            const store = userAuth()
             if (store.getRole !== '') {
                 store.setAuth('', '')
                 location.reload()
