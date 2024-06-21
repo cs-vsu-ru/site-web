@@ -8,12 +8,14 @@ import 'gitart-vue-dialog/dist/style.css'
 import CKEditor from '@ckeditor/ckeditor5-vue';
 import {userAuth} from "@/store/userAuth";
 
-const pinia = createPinia()
-createApp(App).use(pinia).use(router).use(CKEditor).component('GDialog', GDialog).mount('#app')
-const store = userAuth()
 axios.defaults.baseURL = 'https://www.cs.vsu.ru/is/inf-sys-server/api/'
-axios.defaults.headers['Authorization'] = `Bearer ${store.getIsAuth}`
+let token = localStorage.getItem('token') == null ? '' : localStorage.getItem('token')
+axios.defaults.headers['Authorization'] = `Bearer ${token}`
 
+
+const pinia = createPinia()
+
+createApp(App).use(pinia).use(router).use(CKEditor).component('GDialog', GDialog).mount('#app')
 export const parserAxios = axios.create({
     baseURL: 'https://www.cs.vsu.ru/is/inf-sys-parser/api/'
 });
@@ -27,6 +29,7 @@ axios.interceptors.response.use(
         if (error.response && error.response.status === 500) {
             // If the status is 500 and user not null - logout and reload
             console.log('500')
+            const store = userAuth()
             if (store.getRole !== '') {
                 store.setAuth('', '')
                 location.reload()
