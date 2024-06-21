@@ -20,8 +20,6 @@ export const parserAxios = axios.create({
 axios.interceptors.response.use(
     response => {
         // If the request was successful, just return the response
-        console.log('token')
-        console.log(store.getIsAuth)
         return response
     },
     error => {
