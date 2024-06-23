@@ -36,7 +36,8 @@
         <p class="profile__right-item">Индивидуальный план</p>
         <a style="margin-top: 15px;" class="admin-button" :href="destination.plan">Скачать</a>
       </div>
-      <div v-if="userRole === 'ADMIN' && destination.id !== 1" style="align-self:flex-start;"
+      <div v-if="(userRole === 'ADMIN' || currUserId === destination.id) && destination.id !== 1"
+           style="align-self:flex-start;"
            class="profile__right-plan">
         <p class="profile__right-item">Индивидуальный план</p>
         <a v-if="destination.plan !== null" style="margin-top: 15px;" class="admin-button" :href="destination.plan">Скачать
@@ -46,11 +47,13 @@
       </div>
     </div>
     <div v-else class="profile__right">
-      <select class="profile__right-item" v-model="login.mainRole">
-        <option value="USER">Пользователь</option>
-        <option value="MODERATOR">Модератор</option>
-        <option value="ADMIN">Администратор</option>
-      </select>
+      <div v-if="userRole === 'ADMIN'">
+        <select class="profile__right-item" v-model="login.mainRole">
+          <option value="USER">Пользователь</option>
+          <option value="MODERATOR">Модератор</option>
+          <option value="ADMIN">Администратор</option>
+        </select>
+      </div>
       <input class="profile__right-item" v-model="destination.lastName">
       <input class="profile__right-item" v-model="destination.firstName">
       <input class="profile__right-item" v-model="destination.patronymic">
@@ -68,10 +71,12 @@
         </label>
       </div>
     </div>
-    <button v-if="userRole === 'ADMIN' && !activeEdit" @click="activeEdit = true; getLogin(destination.id)"
+    <button v-if="(userRole === 'ADMIN' || currUserId === destination.id) && !activeEdit"
+            @click="activeEdit = true; getLogin(destination.id)"
             class="admin-button profile__edit">Редактировать
     </button>
-    <button v-if="userRole === 'ADMIN' && activeEdit" @click="saveProfile" class="admin-button profile__edit">
+    <button v-if="(userRole === 'ADMIN' || currUserId === destination.id) && activeEdit" @click="saveProfile"
+            class="admin-button profile__edit">
       Сохранить
     </button>
   </section>
@@ -325,7 +330,8 @@ const loadPlan = async () => {
       background: $pr1;
     }
   }
-  &__checkbox{
+
+  &__checkbox {
     padding-top: 10px;
   }
 }
@@ -347,6 +353,7 @@ input.profile__right-item, input.profile__left-buttons_email, select.profile__ri
   font-size: 18px;
   line-height: 22px;
 }
+
 .my-checkbox {
   transform: scale(1.5);
   margin: 0.25em;
