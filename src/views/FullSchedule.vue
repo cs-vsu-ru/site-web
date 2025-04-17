@@ -32,10 +32,7 @@ const isEditable = computed(() => {
 })
 
 const hasDifferentSecondLesson = lesson => {
-  return lesson.length > 1 &&
-      (lesson[0].name !== lesson[1].name ||
-          lesson[0].groups !== lesson[1].groups ||
-          lesson[0].placement !== lesson[1].placement)
+  return lesson.length > 1
 }
 
 const openModal = (name, course, room, id) => {
@@ -122,7 +119,6 @@ onMounted(() => {
               </td>
               <td class="sticky-col time-col">{{ time.time }}</td>
               <td v-for="(lesson, lIndex) in time.lessons" :key="lIndex" class="lesson-cell">
-                <div class="lesson-content">
                   <div class="lesson-part" :class="{ editable: isEditable }">
                     {{ lesson[0].name }} {{ lesson[0].groups }} {{ lesson[0].placement }}
                     <button
@@ -157,7 +153,6 @@ onMounted(() => {
                         </g>
                       </svg>
                     </button>
-                  </div>
                 </div>
               </td>
             </tr>
@@ -231,6 +226,7 @@ onMounted(() => {
   min-width: 4500px;
   border-collapse: separate;
   border-spacing: 0;
+  table-layout: fixed;
 
   th,
   td {
@@ -292,9 +288,14 @@ onMounted(() => {
 
 .lesson-cell {
   min-width: 200px;
-  vertical-align: top;
+  min-height: 300px;
+  height: 100%;
   position: relative;
+  vertical-align: middle;
   padding: 0 !important;
+  width: 100%;
+  white-space: normal;
+  box-sizing: border-box;
 }
 
 .edit-btn {
@@ -320,16 +321,18 @@ onMounted(() => {
   position: relative;
   background-color: white;
   transition: background-color 0.3s;
-  flex: 1 1 50%;
-  min-height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 5px;
+  flex: 1;
+  min-height: 100px;
+  white-space: normal !important;
+  vertical-align: middle;
   padding: 10px;
+  flex-direction: column;
+  justify-content: center;
+  display: flex;
+  height: 100%;
 
   &:hover {
-    background-color: $sc2;
+    background-color: white;
   }
   &.editable:hover::before {
     content: "";
@@ -338,7 +341,7 @@ onMounted(() => {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: $sc2;
+    background-color: white;
     z-index: 1;
   }
   &:hover .edit-btn {
@@ -372,23 +375,9 @@ onMounted(() => {
   }
 }
 
-.lesson-content {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  width: 100%;
-}
-
 .lesson-divider {
   border: none;
   height: 2px;
   background-color: $sc5;
-}
-
-.second-part {
-  min-height: 40px;
-  padding: 10px;
-  margin-top: 10px;
-  border-top: 1px solid $sc5;
 }
 </style>
