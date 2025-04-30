@@ -1,5 +1,5 @@
 <script setup>
-import {onMounted, ref} from "vue";
+import { computed, onMounted, ref } from 'vue';
 import axios from "axios";
 import {parserAxios} from "@/main";
 import Loader from "@/components/includes/Loader";
@@ -22,6 +22,8 @@ const newsDisabler = ref([])
 const currNews = ref([])
 const scheduleUrl = ref(null)
 const userList = ref([])
+const sortOption = ref('1');
+const filterOption = ref('');
 const eventArr = ref([])
 const monthAssoc = ref({
   '01': 'января',
@@ -47,6 +49,35 @@ const assocStatus = ref({
 })
 const newsUrl = ref()
 const admRole = ref()
+
+const uniquePosts = computed(() => {
+  const posts = userList.value.map(user => user.post);
+  return [...new Set(posts)].filter(post => post);
+});
+
+const filteredAndSortedUsers = computed(() => {
+  let users = [...userList.value];
+
+  if (filterOption.value) {
+    users = users.filter(user => user.post === filterOption.value);
+  }
+
+  if (sortOption.value === '1') {
+    return users.sort((a, b) => {
+      const nameA = `${a.lastName} ${a.firstName} ${a.patronymic}`.toLowerCase();
+      const nameB = `${b.lastName} ${b.firstName} ${b.patronymic}`.toLowerCase();
+      return nameA.localeCompare(nameB);
+    });
+  } else if (sortOption.value === '2') {
+    return users.sort((a, b) => {
+      const nameA = `${a.lastName} ${a.firstName} ${a.patronymic}`.toLowerCase();
+      const nameB = `${b.lastName} ${b.firstName} ${b.patronymic}`.toLowerCase();
+      return nameB.localeCompare(nameA);
+    });
+  }
+
+  return users;
+});
 
 onMounted(() => {
   getSlidesForAdmin()
@@ -546,8 +577,19 @@ const deleteMail = async (mailId) => {
               <p class="admin-users__item-head_name">Сотрудники</p>
               <router-link to="/admin/create_user" class="admin-button">Добавить</router-link>
             </div>
+
+            <div style="display: flex; gap: 10px">
+              <select v-model="sortOption" class="admin-button" style="padding: 5px 10px;">
+                <option value="1">По ФИО (А-Я)</option>
+                <option value="2">По ФИО (Я-А)</option>
+              </select>
+              <select v-model="filterOption" class="admin-button" style="padding: 5px 10px;">
+                <option value="">Должность...</option>
+                <option v-for="post in uniquePosts" :value="post">{{ post }}</option>
+              </select>
+            </div>
             <div class="admin-users__item-list">
-              <div v-for="user in userList" class="user-item">
+              <div v-for="user in filteredAndSortedUsers" class="user-item">
                 <p class="user-item__name">{{ user.lastName + ' ' + user.firstName + ' ' + user.patronymic }}</p>
                 <router-link :to="'/profile/' + user.id" style="margin-left: auto;" class="admin-button">Редактировать
                 </router-link>
@@ -879,6 +921,10 @@ const deleteMail = async (mailId) => {
       gap: 15px;
     }
   }
+}
+
+select option {
+  background: #fff !important;
 }
 
 .user-item {
