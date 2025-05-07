@@ -1,9 +1,11 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import axios from "axios";
-import {parserAxios} from "@/main";
-import Loader from "@/components/includes/Loader";
-import {userAuth} from "@/store/userAuth";
+import axios from 'axios';
+import { parserAxios } from '@/main';
+import Loader from '@/components/includes/Loader';
+import { userAuth } from '@/store/userAuth';
+
+const savedActiveItem = localStorage.getItem('activeItem');
 
 const tabTitles = ref([])
 const store = userAuth()
@@ -16,7 +18,7 @@ const newText = ref('')
 const addUrl = ref(null)
 const newUrl = ref(null)
 const newFile = ref(null)
-const activeItem = ref(0)
+const activeItem = ref(savedActiveItem ?? 'slider');
 const newsSlider = ref([])
 const newsDisabler = ref([])
 const currNews = ref([])
@@ -25,6 +27,7 @@ const userList = ref([])
 const sortOption = ref('1');
 const filterOption = ref('');
 const activeEmployeesTab = ref(localStorage.getItem('employeesActiveTab') ?? 'employees');
+const fileInput = ref(null);
 const eventArr = ref([])
 const monthAssoc = ref({
   '01': 'января',
@@ -92,22 +95,29 @@ onMounted(() => {
   eventList()
   getMails()
   checkRole()
+
+  tabsHandler(activeItem.value);
 })
 
 const checkRole = async () => {
   admRole.value = store.getRole
 
-  let adminButtons = ['Слайдер', 'Мероприятия', 'Новости', 'Расписание', 'Сотрудники', 'Рассылка']
-  let modButtons = ['Слайдер', 'Мероприятия', 'Новости', 'Расписание', 'Рассылка']
+  let buttons = [
+    { value: 'slider', label: 'Слайдер' },
+    { value: 'events', label: 'Мероприятия' },
+    { value: 'feed', label: 'Новости' },
+    { value: 'schedule', label: 'Расписание' },
+    { value: 'employees', label: 'Сотрудники' },
+    { value: 'newsletter', label: 'Рассылка' }
+  ]
 
   if (admRole.value === 'ADMIN') {
-    tabTitles.value = adminButtons
+    tabTitles.value = buttons
   }
 
   if (admRole.value === 'MODERATOR') {
-    tabTitles.value = modButtons
+    tabTitles.value = buttons.filter(b => b.value !== 'employees');
   }
-
 }
 
 const eventList = async () => {
@@ -123,11 +133,11 @@ const eventList = async () => {
 
 const formatDateToString = (eventDate) => {
   const dateObject = new Date(eventDate);
-  return `${dateObject.getDate().toString().padStart(2, "0")}.${(
+  return `${dateObject.getDate().toString().padStart(2, '0')}.${(
       dateObject.getMonth() + 1
   )
       .toString()
-      .padStart(2, "0")}.${dateObject.getFullYear()}`;
+      .padStart(2, '0')}.${dateObject.getFullYear()}`;
 }
 
 const formatTimeToString = (eventDate) => {
@@ -135,10 +145,10 @@ const formatTimeToString = (eventDate) => {
   return `${dateObject
       .getHours()
       .toString()
-      .padStart(2, "0")}:${dateObject
+      .padStart(2, '0')}:${dateObject
       .getMinutes()
       .toString()
-      .padStart(2, "0")}`;
+      .padStart(2, '0')}`;
 
 }
 
@@ -189,6 +199,40 @@ const checkFile = (currId) => {
   currFile.value[currId] = URL.createObjectURL(previewUrl.value[currId].files[0])
 }
 
+const handleFileUpload = async (event, employee) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  try {
+    isLoading.value = true;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const uploadResponse = await axios.post('upload-file', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+
+    await axios.patch(`employees/${employee.id}`, {
+      id: employee.id,
+      plan: uploadResponse.data
+    });
+
+    await getUsers();
+
+  } catch (error) {
+    console.error('Error uploading plan:', error);
+    alert('Ошибка при загрузке плана');
+  } finally {
+    if (fileInput.value) {
+      fileInput.value.value = '';
+    }
+    isLoading.value = false;
+  }
+};
+
 const addSlide = async () => {
   if (addUrl.value.files[0]) {
     let formData = new FormData()
@@ -234,14 +278,9 @@ const deleteSlide = async (slideId) => {
       })
 }
 
-const tabsHandler = (tabIndex) => {
-  let tabView = document.querySelectorAll('.admin__view-item')
-
-  for (let i = 0; i < tabView.length; i++) {
-    tabView[i].classList.remove('active')
-  }
-
-  tabView[tabIndex].classList.add('active')
+const tabsHandler = (tab) => {
+  localStorage.setItem('activeItem', tab);
+  activeItem.value = tab;
 }
 
 const newsList = async () => {
@@ -372,17 +411,17 @@ const deleteMail = async (mailId) => {
   <section class="admin">
     <aside class="admin__tabs">
       <button
-          @click="activeItem = idx; tabsHandler(idx)"
-          :class="{active: idx === activeItem}"
-          v-for="(tab, idx) in tabTitles"
+          @click="activeItem = value; tabsHandler(value)"
+          :class="{active: value === activeItem}"
+          v-for="({ value, label }) in tabTitles"
           class="admin__tabs-item admin-button"
-          :key="idx"
+          :key="value"
       >
-        {{ tab }}
+        {{ label }}
       </button>
     </aside>
     <div class="admin__view">
-      <div class="admin__view-item active">
+      <div v-if="activeItem === 'slider'" class="admin__view-item">
         <div class="slider-admin">
           <div v-for="(slide, index) in slidesAdminArr" :key="slide.id" class="slider-admin__item">
             <div class="slider-admin__box">
@@ -464,41 +503,42 @@ const deleteMail = async (mailId) => {
           <button @click="newSlide = true" class="slider-admin__add admin-button">Добавить слайд</button>
         </div>
       </div>
-      <div class="admin__view-item">
-        <router-link to="/create-event" style="position: absolute; right: 0" class="admin-button">Создать мероприятие
-        </router-link>
-        <div style="margin-top: 50px;" class="admin-event">
-          <div class="admin-event__field" v-for="(event, index) in eventArr" v-show="eventsShow[index]">
-            <router-link :to="'/events/' + event.id" class="event">
-              <div class="event__date">
-                <p class="event__date-day">{{ formatDateToString(event.startDateTime) }}</p>
-                <p class="event__date-time">{{ formatTimeToString(event.startDateTime) }}</p>
-              </div>
-              <p class="event__name">{{ event.title }}</p>
-            </router-link>
-            <svg style="margin-left: 20px; cursor:pointer;" @click="deleteEvent(event.id, index)" width="32" height="32"
-                 viewBox="0 -0.5 21 21" version="1.1" xmlns="http://www.w3.org/2000/svg"
-                 xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000">
-              <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-              <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-              <g id="SVGRepo_iconCarrier"><title>delete [#1487]</title>
-                <desc>Created with Sketch.</desc>
-                <defs></defs>
-                <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                  <g id="Dribbble-Light-Preview" transform="translate(-179.000000, -360.000000)" fill="#00295F">
-                    <g id="icons" transform="translate(56.000000, 160.000000)">
-                      <path
-                          d="M130.35,216 L132.45,216 L132.45,208 L130.35,208 L130.35,216 Z M134.55,216 L136.65,216 L136.65,208 L134.55,208 L134.55,216 Z M128.25,218 L138.75,218 L138.75,206 L128.25,206 L128.25,218 Z M130.35,204 L136.65,204 L136.65,202 L130.35,202 L130.35,204 Z M138.75,204 L138.75,200 L128.25,200 L128.25,204 L123,204 L123,206 L126.15,206 L126.15,220 L140.85,220 L140.85,206 L144,206 L144,204 L138.75,204 Z"
-                          id="delete-[#1487]"></path>
+      <div v-if="activeItem === 'events'" class="admin__view-item">
+        <div style="display:flex;">
+          <div class="admin-event">
+            <div class="admin-event__field" v-for="(event, index) in eventArr" v-show="eventsShow[index]">
+              <router-link :to="'/events/' + event.id" class="event">
+                <div class="event__date">
+                  <p class="event__date-day">{{ formatDateToString(event.startDateTime) }}</p>
+                  <p class="event__date-time">{{ formatTimeToString(event.startDateTime) }}</p>
+                </div>
+                <p class="event__name">{{ event.title }}</p>
+              </router-link>
+              <svg style="margin-left: 20px; cursor:pointer;" @click="deleteEvent(event.id, index)" width="32" height="32"
+                   viewBox="0 -0.5 21 21" version="1.1" xmlns="http://www.w3.org/2000/svg"
+                   xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000">
+                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                <g id="SVGRepo_iconCarrier"><title>delete [#1487]</title>
+                  <desc>Created with Sketch.</desc>
+                  <defs></defs>
+                  <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                    <g id="Dribbble-Light-Preview" transform="translate(-179.000000, -360.000000)" fill="#00295F">
+                      <g id="icons" transform="translate(56.000000, 160.000000)">
+                        <path
+                            d="M130.35,216 L132.45,216 L132.45,208 L130.35,208 L130.35,216 Z M134.55,216 L136.65,216 L136.65,208 L134.55,208 L134.55,216 Z M128.25,218 L138.75,218 L138.75,206 L128.25,206 L128.25,218 Z M130.35,204 L136.65,204 L136.65,202 L130.35,202 L130.35,204 Z M138.75,204 L138.75,200 L128.25,200 L128.25,204 L123,204 L123,206 L126.15,206 L126.15,220 L140.85,220 L140.85,206 L144,206 L144,204 L138.75,204 Z"
+                            id="delete-[#1487]"></path>
+                      </g>
                     </g>
                   </g>
                 </g>
-              </g>
-            </svg>
+              </svg>
+            </div>
           </div>
+          <router-link to="/create-event" style="align-self: flex-start; flex-shrink: 0" class="admin-button">Создать мероприятие</router-link>
         </div>
       </div>
-      <div class="admin__view-item new-view">
+      <div v-if="activeItem === 'feed'" class="admin__view-item new-view">
         <router-link to="/admin/create_news" class="admin-button">Создать новость</router-link>
         <div class="news-all__field">
           <div v-for="(newsSlide, index) in newsSlider" class="new" v-show="newsShow[index]">
@@ -570,13 +610,13 @@ const deleteMail = async (mailId) => {
           </div>
         </div>
       </div>
-      <div class="admin__view-item">
+      <div v-if="activeItem === 'schedule'" class="admin__view-item">
         <div class="admin-schedule">
           <input ref="scheduleUrl" type="file">
           <button @click="uploadSchedule" class="admin-button">Загрузить</button>
         </div>
       </div>
-      <div v-if="admRole === 'ADMIN'" class="admin__view-item">
+      <div v-if="admRole === 'ADMIN' && activeItem === 'employees'" class="admin__view-item">
         <div class="admin-users">
           <div class="admin-users__item">
             <div class="admin-users__item-head">
@@ -641,7 +681,7 @@ const deleteMail = async (mailId) => {
           </div>
         </div>
       </div>
-      <div class="admin__view-item">
+      <div v-if="activeItem === 'newsletter'" class="admin__view-item">
         <router-link to="/create-mail" class="mails-button admin-button">Создать рассылку</router-link>
         <table class="mails">
           <thead>
@@ -757,7 +797,6 @@ const deleteMail = async (mailId) => {
     width: 100%;
 
     &-item {
-      display: none;
       position: relative;
 
       &.active {
@@ -1011,7 +1050,7 @@ select option {
   background: $pr3;
   border-radius: 10px;
   border-spacing: 20px;
-  margin-top: 60px;
+  margin-top: 20px;
 
   th {
     font-size: 24px;
@@ -1036,8 +1075,7 @@ select option {
 }
 
 .mails-button {
-  position: absolute;
-  right: 0;
+  justify-self: flex-end;
 }
 
 .admin-event {
