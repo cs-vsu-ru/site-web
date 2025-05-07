@@ -24,6 +24,7 @@ const scheduleUrl = ref(null)
 const userList = ref([])
 const sortOption = ref('1');
 const filterOption = ref('');
+const activeEmployeesTab = ref(localStorage.getItem('employeesActiveTab') ?? 'employees');
 const eventArr = ref([])
 const monthAssoc = ref({
   '01': 'января',
@@ -78,6 +79,11 @@ const filteredAndSortedUsers = computed(() => {
 
   return users;
 });
+
+const handleEmployeesActiveTabChange = (tab) => {
+  localStorage.setItem('employeesActiveTab', tab);
+  activeEmployeesTab.value = tab;
+}
 
 onMounted(() => {
   getSlidesForAdmin()
@@ -574,7 +580,21 @@ const deleteMail = async (mailId) => {
         <div class="admin-users">
           <div class="admin-users__item">
             <div class="admin-users__item-head">
-              <p class="admin-users__item-head_name">Сотрудники</p>
+              <div style="display: flex; gap: 5px">
+                <p
+                    @click="handleEmployeesActiveTabChange('employees')"
+                    :class="['admin-users__item-head_name', 'employees-tab-button', activeEmployeesTab === 'employees' ? 'active' : '']"
+                >
+                  Сотрудники
+                </p>
+                <p class="admin-users__item-head_name">/</p>
+                <p
+                    @click="handleEmployeesActiveTabChange('personalPlan')"
+                    :class="['admin-users__item-head_name', 'employees-tab-button', activeEmployeesTab === 'personalPlan' ? 'active' : '']"
+                >
+                  Персональный план
+                </p>
+              </div>
               <router-link to="/admin/create_user" class="admin-button">Добавить</router-link>
             </div>
 
@@ -591,9 +611,31 @@ const deleteMail = async (mailId) => {
             <div class="admin-users__item-list">
               <div v-for="user in filteredAndSortedUsers" class="user-item">
                 <p class="user-item__name">{{ user.lastName + ' ' + user.firstName + ' ' + user.patronymic }}</p>
-                <router-link :to="'/profile/' + user.id" style="margin-left: auto;" class="admin-button">Редактировать
-                </router-link>
-                <button @click="deleteUser(user.id)" class="admin-button">Удалить</button>
+                <template v-if="activeEmployeesTab === 'employees'">
+                  <router-link :to="'/profile/' + user.id" style="margin-left: auto;" class="admin-button">Редактировать
+                  </router-link>
+                  <button @click="deleteUser(user.id)" class="admin-button">Удалить</button>
+                </template>
+                <div v-else style="display: flex; gap: 15px">
+                  <a
+                      v-if="user.plan"
+                      :href="user.plan"
+                      class="download-button admin-button"
+                      download
+                  >
+                    Скачать текущий план
+                  </a>
+                  <button class="upload-button admin-button">
+                    Загрузить план
+                    <input
+                        type="file"
+                        ref="fileInput"
+                        @change="handleFileUpload($event, user)"
+                        accept=".pdf"
+                        class="file-input"
+                    >
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -769,6 +811,28 @@ const deleteMail = async (mailId) => {
       right: 0;
     }
   }
+}
+
+.employees-tab-button {
+  cursor: pointer;
+
+  &:not(.active) {
+    color: gray;
+  }
+}
+
+.upload-button {
+  position: relative;
+}
+
+.file-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
 }
 
 .slider-admin {
