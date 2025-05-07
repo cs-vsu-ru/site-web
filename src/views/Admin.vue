@@ -26,6 +26,7 @@ const scheduleUrl = ref(null)
 const userList = ref([])
 const sortOption = ref('1');
 const filterOption = ref('');
+const employeesSearchQuery = ref('');
 const activeEmployeesTab = ref(localStorage.getItem('employeesActiveTab') ?? 'employees');
 const fileInput = ref(null);
 const eventArr = ref([])
@@ -61,6 +62,14 @@ const uniquePosts = computed(() => {
 
 const filteredAndSortedUsers = computed(() => {
   let users = [...userList.value];
+
+  if (employeesSearchQuery.value) {
+    const query = employeesSearchQuery.value.toLowerCase();
+    users = users.filter(user => {
+      const fullName = `${user.lastName} ${user.firstName} ${user.patronymic}`.toLowerCase();
+      return fullName.includes(query);
+    });
+  }
 
   if (filterOption.value) {
     users = users.filter(user => user.post === filterOption.value);
@@ -647,6 +656,13 @@ const deleteMail = async (mailId) => {
                 <option value="">Должность...</option>
                 <option v-for="post in uniquePosts" :value="post">{{ post }}</option>
               </select>
+              <input
+                  v-model="employeesSearchQuery"
+                  type="text"
+                  placeholder="Поиск..."
+                  class="employees-search-input admin-button"
+                  style="padding: 5px 10px; flex-grow: 1;"
+              >
             </div>
             <div class="admin-users__item-list">
               <div v-for="user in filteredAndSortedUsers" class="user-item">
@@ -858,6 +874,11 @@ const deleteMail = async (mailId) => {
   &:not(.active) {
     color: gray;
   }
+}
+
+.employees-search-input {
+  background-color: unset;
+  color: $pr1
 }
 
 .upload-button {
