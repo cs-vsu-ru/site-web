@@ -9,6 +9,7 @@ import Admin from "@/views/Admin";
 import axios from "axios";
 import Schedule from "@/views/Schedule.vue";
 import CreateUser from "@/views/CreateUser.vue";
+import CreateStudent from "@/views/CreateStudent.vue";
 import AboutCaf from "@/views/AboutCaf"
 import Education from "@/views/Education"
 import Students from "@/views/Students"
@@ -84,6 +85,26 @@ const routes = [
     path: '/admin/create_user',
     name: 'CreateUser',
     component: CreateUser,
+    beforeEnter: async (to, from, next) => {
+      const store = userAuth()
+
+      if (store.getIsAuth !== '') {
+        let role = store.getRole
+        role === 'ADMIN' || role === 'MODERATOR' ? next() : next('/')
+        // await axios.get('account')
+        //     .then((accData) => {
+        //       accData.data.mainRole === 'ADMIN' ? next() : next('/')
+        //     })
+      }
+      else {
+        next('/')
+      }
+    }
+  },
+  {
+    path: '/admin/create_student',
+    name: 'CreateStudent',
+    component: CreateStudent,
     beforeEnter: async (to, from, next) => {
       const store = userAuth()
 
