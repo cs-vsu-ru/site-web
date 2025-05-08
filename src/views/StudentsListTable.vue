@@ -148,18 +148,8 @@
             </template>
           </td>
 
-          <td @click="startEdit(student)">
-            <template v-if="editedStudentId === student.id">
-              <input
-                  v-model="student.login"
-                  @blur="stopEdit(student)"
-                  @keyup.enter="stopEdit(student)"
-                  :autofocus="true"
-              />
-            </template>
-            <template v-else>
-              <span :title="student.login">{{ student.login }}</span>
-            </template>
+          <td>
+            <span :title="student.login">{{ student.login }}</span>
           </td>
 
           <td>
