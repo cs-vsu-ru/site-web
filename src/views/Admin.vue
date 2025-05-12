@@ -4,6 +4,7 @@ import axios from 'axios';
 import { parserAxios } from '@/main';
 import Loader from '@/components/includes/Loader';
 import { userAuth } from '@/store/userAuth';
+import StudentsListTable from "@/views/StudentsListTable.vue";
 
 const savedActiveItem = localStorage.getItem('activeItem');
 
@@ -117,6 +118,7 @@ const checkRole = async () => {
     { value: 'feed', label: 'Новости' },
     { value: 'schedule', label: 'Расписание' },
     { value: 'employees', label: 'Сотрудники' },
+    { value: 'students', label: 'Студенты' },
     { value: 'newsletter', label: 'Рассылка' }
   ]
 
@@ -430,7 +432,7 @@ const deleteMail = async (mailId) => {
       </button>
     </aside>
     <div class="admin__view">
-      <div v-if="activeItem === 'slider'" class="admin__view-item">
+      <div v-show="activeItem === 'slider'" class="admin__view-item">
         <div class="slider-admin">
           <div v-for="(slide, index) in slidesAdminArr" :key="slide.id" class="slider-admin__item">
             <div class="slider-admin__box">
@@ -450,7 +452,8 @@ const deleteMail = async (mailId) => {
               </svg>
             </div>
             <div style="display: flex;flex-direction: column; justify-content: space-between; gap: 10px; width: 50%">
-              <textarea v-model="slide.title" class="slider-admin__item-text" :disabled="checkDisable[index]"/>
+              <textarea v-model="slide.title" class="slider-admin__item-text"
+                        :disabled="checkDisable[index]"></textarea>
               <input :disabled="checkDisable[index]" type="text" class="slider-admin__item-text" v-model="slide.urlTo">
             </div>
             <div class="slider-admin__item-buttons">
@@ -483,7 +486,7 @@ const deleteMail = async (mailId) => {
               </svg>
             </div>
             <button
-                @click="() => {saveChanges(slide.id, currFile[index] || slide.imageURL, slide.title, slide.urlTo, index); checkDisable[index] = true}"
+                @click="saveChanges(slide.id, currFile[index] || slide.imageURL, slide.title, slide.urlTo, index); checkDisable[index] = true"
                 v-if="!checkDisable[index]" class="slider-admin__item-save admin-button">Сохранить
             </button>
           </div>
@@ -504,7 +507,8 @@ const deleteMail = async (mailId) => {
               </svg>
             </div>
             <div style="display: flex;flex-direction: column; justify-content: space-between; gap: 10px; width: 50%">
-              <textarea v-model="newText" class="slider-admin__item-text" placeholder="Введите текст для слайда"/>
+              <textarea v-model="newText" class="slider-admin__item-text"
+                        placeholder="Введите текст для слайда"></textarea>
               <input v-model="newsUrl" type="text" class="slider-admin__item-text" placeholder="Введите ссылку">
             </div>
             <button @click="addSlide" class="slider-admin__item-save admin-button">Сохранить</button>
@@ -512,7 +516,7 @@ const deleteMail = async (mailId) => {
           <button @click="newSlide = true" class="slider-admin__add admin-button">Добавить слайд</button>
         </div>
       </div>
-      <div v-if="activeItem === 'events'" class="admin__view-item">
+      <div v-show="activeItem === 'events'" class="admin__view-item">
         <div style="display:flex;">
           <div class="admin-event">
             <div class="admin-event__field" v-for="(event, index) in eventArr" v-show="eventsShow[index]">
@@ -547,7 +551,7 @@ const deleteMail = async (mailId) => {
           <router-link to="/create-event" style="align-self: flex-start; flex-shrink: 0" class="admin-button">Создать мероприятие</router-link>
         </div>
       </div>
-      <div v-if="activeItem === 'feed'" class="admin__view-item new-view">
+      <div v-show="activeItem === 'feed'" class="admin__view-item new-view">
         <router-link to="/admin/create_news" class="admin-button">Создать новость</router-link>
         <div class="news-all__field">
           <div v-for="(newsSlide, index) in newsSlider" class="new" v-show="newsShow[index]">
@@ -570,7 +574,8 @@ const deleteMail = async (mailId) => {
             <p class="new__date">{{
                 new Date(newsSlide.publicationAt).getDate() + ' ' + monthAssoc[newsSlide.publicationAt.split('-').reverse()[1]]
               }}</p>
-            <textarea maxlength="110" v-model="newsSlide.title" class="new__input" :disabled="!newsDisabler[index]"/>
+            <textarea maxlength="110" v-model="newsSlide.title" class="new__input"
+                      :disabled="!newsDisabler[index]"></textarea>
             <div class="news-admin__buttons">
               <svg @click="newsDisabler[index] = true" width="30" height="30" viewBox="0 0 24 24"
                    xmlns="http://www.w3.org/2000/svg" fill="#00295F">
@@ -619,13 +624,13 @@ const deleteMail = async (mailId) => {
           </div>
         </div>
       </div>
-      <div v-if="activeItem === 'schedule'" class="admin__view-item">
+      <div v-show="activeItem === 'schedule'" class="admin__view-item">
         <div class="admin-schedule">
           <input ref="scheduleUrl" type="file">
           <button @click="uploadSchedule" class="admin-button">Загрузить</button>
         </div>
       </div>
-      <div v-if="admRole === 'ADMIN' && activeItem === 'employees'" class="admin__view-item">
+      <div v-show="admRole === 'ADMIN' && activeItem === 'employees'" class="admin__view-item">
         <div class="admin-users">
           <div class="admin-users__item">
             <div class="admin-users__item-head">
@@ -697,7 +702,20 @@ const deleteMail = async (mailId) => {
           </div>
         </div>
       </div>
-      <div v-if="activeItem === 'newsletter'" class="admin__view-item">
+      <div class="admin__view-item" v-show="activeItem === 'students'">
+        <div class="admin-users">
+          <div class="admin-users__item">
+            <div class="admin-users__item-head">
+              <p class="admin-users__item-head_name">Студенты</p>
+              <router-link to="/admin/create_student" class="admin-button">Добавить</router-link>
+            </div>
+            <div class="admin-users__item-list">
+              <StudentsListTable/>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div v-show="activeItem === 'newsletter'" class="admin__view-item">
         <router-link to="/create-mail" class="mails-button admin-button">Создать рассылку</router-link>
         <table class="mails">
           <thead>
