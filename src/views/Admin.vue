@@ -1019,6 +1019,7 @@ const deleteMail = async (mailId) => {
 }
 
 .new-view {
+  display: flex;
   flex-direction: column;
   gap: 20px;
 
