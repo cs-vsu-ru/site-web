@@ -49,7 +49,7 @@
         :max-width="500"
     >
       <form @submit.prevent="auth" class="login-modal">
-        <img src="../../assets/img/auth_logo.png" alt="" class="login-modal__logo">
+        <img src="../../assets/img/logo.jpg" alt="" class="login-modal__logo">
         <div class="login-modal__inputs">
           <div class="login-modal__inputs-item">
             <p class="login-modal__inputs-item_name">Логин</p>
@@ -232,8 +232,7 @@ const accountInfo = async () => {
   position: relative;
 
   &__logo {
-    width: 316px;
-    height: 158px;
+    width: 95px;
     align-self: center;
   }
 
