@@ -682,7 +682,7 @@ const deleteMail = async (mailId) => {
                       v-if="user.plan"
                       :href="user.plan"
                       class="download-button admin-button"
-                      download
+                      target="_blank"
                   >
                     Скачать текущий план
                   </a>

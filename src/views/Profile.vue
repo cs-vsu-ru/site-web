@@ -40,8 +40,13 @@
            style="align-self:flex-start;"
            class="profile__right-plan">
         <p class="profile__right-item">Индивидуальный план</p>
-        <a v-if="destination.plan !== null" style="margin-top: 15px;" class="admin-button" :href="destination.plan">Скачать
-          текущий план</a>
+        <a
+            v-if="destination.plan !== null"
+            style="margin-top: 15px;"
+            class="admin-button"
+            :href="destination.plan"
+            target="_blank"
+        >Скачать текущий план</a>
         <input ref="planUrl" style="margin-top: 10px;" type="file">
         <button @click="loadPlan" style="margin-top: 15px;" class="admin-button">Загрузить</button>
       </div>
