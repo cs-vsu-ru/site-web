@@ -346,7 +346,6 @@ input.profile__right-name {
 
 input.profile__right-item, input.profile__left-buttons_email, select.profile__right-item {
   background: white;
-  width: 90%;
   border-radius: 10px;
   padding: 5px;
   border: 1px solid $pr1;
