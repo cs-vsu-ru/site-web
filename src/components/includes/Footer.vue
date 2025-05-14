@@ -12,7 +12,7 @@
         </div>
       </div>
       <router-link class="footer-logo" to="/">
-        <img src="./../../assets/img/footer-logo.png" alt="" class="footer-logo__image">
+        <img src="./../../assets/img/logo.jpg" alt="" class="footer-logo__image">
       </router-link>
     </div>
   </footer>
@@ -89,6 +89,12 @@
           }
         }
       }
+    }
+  }
+
+  .footer-logo {
+    &__image {
+      max-width: 70px;
     }
   }
 </style>

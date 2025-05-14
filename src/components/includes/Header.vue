@@ -3,7 +3,7 @@
     <div class="header__top">
       <div class="header__top-container">
         <router-link class="logo" to="/">
-          <img src="./../../assets/img/logo.png" alt="" class="logo__image">
+          <img src="./../../assets/img/logo.jpg" alt="" class="logo__image">
           <p class="logo__title">Кафедра информационных систем</p>
         </router-link>
         <button v-if="!isAuth" @click="dialogState = true" class="login">
@@ -163,8 +163,7 @@ const accountInfo = async () => {
         gap: 18px;
 
         &__image {
-          width: 105px;
-          height: 52px;
+          max-width: 50px;
         }
 
         &__title {
