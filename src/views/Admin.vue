@@ -646,7 +646,7 @@ const deleteMail = async (mailId) => {
                     @click="handleEmployeesActiveTabChange('personalPlan')"
                     :class="['admin-users__item-head_name', 'employees-tab-button', activeEmployeesTab === 'personalPlan' ? 'active' : '']"
                 >
-                  Персональный план
+                  Индивидуальный план
                 </p>
               </div>
               <router-link to="/admin/create_user" class="admin-button">Добавить</router-link>
