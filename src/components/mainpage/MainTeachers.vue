@@ -22,7 +22,7 @@
           >
             <swiper-slide v-for="teacher in teachersArr">
               <router-link :to="'/profile/' + teacher.id" class="teacher">
-                <img :src="teacher.imageUrl" alt="" class="teacher__photo">
+                <img :src="`${API_FILES_URL}/${teacher.imageUrl}`" alt="" class="teacher__photo">
                 <div class="teacher__data">
                   <p class="teacher__data-name">{{ teacher.lastName }} <br> {{ teacher.firstName }} <br> {{ teacher.patronymic}}</p>
                   <p class="teacher__data-status">{{ teacher.post }}</p>
@@ -40,6 +40,7 @@ import {onMounted, ref} from "vue";
 import axios from "axios";
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import { Autoplay } from 'swiper'
+import { API_FILES_URL } from '@/main';
 
 let teachersArr = ref([])
 

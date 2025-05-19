@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import axios from 'axios';
-import { parserAxios } from '@/main';
+import { API_FILES_URL, NO_IMG_URL, parserAxios } from '@/main';
 import Loader from '@/components/includes/Loader';
 import { userAuth } from '@/store/userAuth';
 import StudentsListTable from "@/views/StudentsListTable.vue";
@@ -268,7 +268,7 @@ const addSlide = async () => {
         })
   } else {
     await axios.post('sliders', {
-      imageURL: 'https://i.imgur.com/fn32s4s.jpeg',
+      imageURL: `${NO_IMG_URL}`,
       title: newText.value,
       urlTo: newsUrl.value
     })
@@ -436,8 +436,8 @@ const deleteMail = async (mailId) => {
         <div class="slider-admin">
           <div v-for="(slide, index) in slidesAdminArr" :key="slide.id" class="slider-admin__item">
             <div class="slider-admin__box">
-              <img v-if="currFile[index] === null" :src="slide.imageURL" alt="" class="slider-admin__item-img">
-              <img v-else :src="currFile[index]" alt="" class="slider-admin__item-img">
+              <img v-if="currFile[index] === null" :src="`${API_FILES_URL}/${slide.imageURL}`" alt="" class="slider-admin__item-img">
+              <img v-else :src="`${API_FILES_URL}/${currFile[index]}`" alt="" class="slider-admin__item-img">
               <input v-on:change="checkFile(index)" ref="previewUrl" :id="slide.id" type="file"
                      accept="image/png, image/jpeg, image/jpg" class="slider-admin__box-input">
               <label v-if="!checkDisable[index]" class="slider-admin__box-label" :for="slide.id"></label>
@@ -493,7 +493,7 @@ const deleteMail = async (mailId) => {
           <div v-if="newSlide" class="slider-admin__item">
             <div class="slider-admin__box">
               <img v-if="newFile === null" alt="" class="slider-admin__item-img">
-              <img v-else :src="newFile" alt="" class="slider-admin__item-img">
+              <img v-else :src="`${newFile}`" alt="" class="slider-admin__item-img">
               <input v-on:change="checkNewFile" ref="addUrl" id="new-slide" type="file"
                      accept="image/png, image/jpeg, image/jpg" class="slider-admin__box-input">
               <label for="new-slide" class="slider-admin__box-label"></label>
@@ -556,8 +556,8 @@ const deleteMail = async (mailId) => {
         <div class="news-all__field">
           <div v-for="(newsSlide, index) in newsSlider" class="new" v-show="newsShow[index]">
             <div class="slider-admin__box">
-              <img v-if="currNews[index] === null" :src="newsSlide.imageLink" alt="" class="slider-admin__item-img">
-              <img v-else :src="currNews[index]" alt="" class="slider-admin__item-img">
+              <img v-if="currNews[index] === null" :src="`${API_FILES_URL}/${newsSlide.imageLink}`" alt="" class="slider-admin__item-img">
+              <img v-else :src="`${API_FILES_URL}/${currNews[index]}`" alt="" class="slider-admin__item-img">
               <input v-on:change="checkNew(index)" ref="newUrl" :id="newsSlide.id" type="file"
                      accept="image/png, image/jpeg, image/jpg" class="slider-admin__box-input">
               <label v-if="newsDisabler[index]" class="slider-admin__box-label" :for="newsSlide.id"></label>
@@ -680,7 +680,7 @@ const deleteMail = async (mailId) => {
                 <div v-else style="display: flex; gap: 15px">
                   <a
                       v-if="user.plan"
-                      :href="user.plan"
+                      :href="`${API_FILES_URL}/${user.plan}`"
                       class="download-button admin-button"
                       target="_blank"
                   >

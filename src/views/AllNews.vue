@@ -4,7 +4,7 @@
       <h1 class="news-all__title">Новости</h1>
       <div class="news-all__field">
           <router-link :to="'/news/new/' + newsSlide.id" v-for="newsSlide in newsSlider" class="new">
-              <img :src="newsSlide.imageLink" alt="" class="new__image">
+              <img :src="`${API_FILES_URL}/${newsSlide.imageLink}`" alt="" class="new__image">
               <p class="new__date" v-if="newsSlide.publicationAt">{{ new Date(newsSlide.publicationAt).getDate() + ' ' + monthAssoc[newsSlide.publicationAt.split('-').reverse()[1]] }}</p>
               <p class="new__text">{{ newsSlide.title }}</p>
           </router-link>
@@ -15,6 +15,7 @@
 <script setup>
 import {onMounted, ref} from "vue";
 import axios from "axios";
+import { API_FILES_URL } from '@/main';
 
 const newsSlider = ref([])
 const monthAssoc = ref({

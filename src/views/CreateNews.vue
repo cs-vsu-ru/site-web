@@ -3,6 +3,7 @@ import {onMounted, ref} from "vue";
 import axios from "axios";
 import DecoupledEditor from "@ckeditor/ckeditor5-build-decoupled-document";
 import CustomUploader from "@/services/customUploader";
+import { API_FILES_URL, NO_IMG_URL } from '@/main';
 
 onMounted(async () => {
   await axios.get('pages')
@@ -57,7 +58,7 @@ const createNews = async () => {
   else {
     await axios.post('news', {
       title: newsTitle.value,
-      imageLink: 'https://i.imgur.com/fn32s4s.jpeg',
+      imageLink: `${NO_IMG_URL}`,
       content: newsContent.value,
     })
         .then(() => {
@@ -73,7 +74,7 @@ const createNews = async () => {
     <div class="user-create__field">
       <div class="user-create__field-left create-news__left">
         <div class="create-box">
-          <img v-if="profileImg !== null" :src="profileImg" alt="" class="create-box__image">
+          <img v-if="profileImg !== null" :src="`${profileImg}`" alt="" class="create-box__image">
         </div>
         <input v-on:change="checkImg" ref="imgUrl" type="file" accept="image/png, image/jpeg, image/jpg" style="display: none" id="create_image">
         <label for="create_image" class="create-box__label">Загрузить</label>

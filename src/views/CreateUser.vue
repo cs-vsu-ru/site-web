@@ -1,6 +1,7 @@
 <script setup>
 import {ref} from "vue";
 import axios from "axios";
+import { API_FILES_URL, NO_IMG_URL } from '@/main';
 
 const login = ref('')
 const lastName = ref('')
@@ -67,7 +68,7 @@ const createUser = async () => {
       firstName: firstName.value,
       lastName: lastName.value,
       email: email.value,
-      imageUrl: 'https://i.imgur.com/fn32s4s.jpeg',
+      imageUrl: `${NO_IMG_URL}`,
       mainRole: role.value,
       hasLessons: hasLessons.value,
     })
@@ -84,7 +85,7 @@ const createUser = async () => {
       <div class="user-create__field">
           <div class="user-create__field-left">
               <div class="create-box">
-                  <img v-if="profileImg !== null" :src="profileImg" alt="" class="create-box__image">
+                  <img v-if="profileImg !== null" :src="`${profileImg}`" alt="" class="create-box__image">
               </div>
               <input v-on:change="checkImg" ref="imgUrl" type="file" accept="image/png, image/jpeg, image/jpg" style="display: none" id="create_image">
               <label for="create_image" class="create-box__label">Загрузить</label>

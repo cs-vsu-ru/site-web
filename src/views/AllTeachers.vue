@@ -20,7 +20,7 @@
     </div>
     <div class="teachers__field">
       <router-link :to="'/profile/' + teacher.id" v-for="teacher in filteredAndSortedUsers" class="teacher">
-        <img :src="teacher.imageUrl" alt="" class="teacher__photo">
+        <img :src="`${API_FILES_URL}/${teacher.imageUrl}`" alt="" class="teacher__photo">
         <div class="teacher__data">
           <p class="teacher__data-name">{{ teacher.lastName }} <br> {{ teacher.firstName }} <br>
             {{ teacher.patronymic }}</p>
@@ -37,6 +37,7 @@
 import { computed, onMounted, ref } from 'vue';
 import axios from 'axios';
 import Loader from '@/components/includes/Loader';
+import { API_FILES_URL } from '@/main';
 
 let teachersArr = ref([])
 const isLoading = ref(false)

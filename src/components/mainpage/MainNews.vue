@@ -22,7 +22,7 @@
         >
           <SwiperSlide v-for="newsSlide in newsSlider">
             <router-link :to="'/news/new/' + newsSlide.id" class="new">
-              <img :src="newsSlide.imageLink" alt="" class="new__image">
+              <img :src="`${API_FILES_URL}/${newsSlide.imageLink}`" alt="" class="new__image">
               <p class="new__date">{{ new Date(newsSlide.publicationAt).getDate() + ' ' + monthAssoc[newsSlide.publicationAt.split('-').reverse()[1]] }}</p>
               <p class="new__text">{{ newsSlide.title }}</p>
             </router-link>
@@ -50,6 +50,7 @@ import { Swiper, SwiperSlide } from 'swiper/vue'
 import { Navigation } from 'swiper'
 import {onMounted, ref} from "vue";
 import axios from "axios";
+import { API_FILES_URL } from '@/main';
 
 const prevEl = ref(null)
 const nextEl = ref(null)

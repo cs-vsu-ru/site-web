@@ -21,7 +21,7 @@
             <div class="event__text">
               <p class="event__text-value">{{ slide.title }}</p>
             </div>
-            <img :src="slide.imageURL" alt="" class="event__image">
+            <img :src="`${API_FILES_URL}/${slide.imageURL}`" alt="" class="event__image">
           </a>
         </SwiperSlide>
       </Swiper>
@@ -46,6 +46,7 @@ import { Swiper, SwiperSlide } from 'swiper/vue'
 import { Navigation, Autoplay } from 'swiper'
 import axios from "axios";
 import {onMounted, ref} from "vue";
+import { API_FILES_URL } from '@/main';
 
 const slidesArr = ref([])
 

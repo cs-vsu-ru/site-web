@@ -2,8 +2,8 @@
   <section class="profile" v-if="destination">
     <div class="profile__left">
       <div class="profile__left-block">
-        <img v-if="profileImg !== null" :src="profileImg" alt="" class="profile__left-block_image">
-        <img v-else :src="destination.imageUrl" alt="" class="profile__left-block_image">
+        <img v-if="profileImg !== null" :src="`${API_FILES_URL}/${profileImg}`" alt="" class="profile__left-block_image">
+        <img v-else :src="`${API_FILES_URL}/${destination.imageUrl}`" alt="" class="profile__left-block_image">
       </div>
       <div class="profile__left-buttons">
         <input v-on:change="checkImg" ref="imgUrl" type="file" accept="image/png, image/jpeg, image/jpg"
@@ -34,7 +34,12 @@
           v-if="currUserId === destination.id && destination.id !== 1 && userRole !== 'ADMIN' && destination.plan !== null"
           style="align-self:flex-start;" class="profile__right-plan">
         <p class="profile__right-item">Индивидуальный план</p>
-        <a style="margin-top: 15px;" class="admin-button" :href="destination.plan">Скачать</a>
+        <a
+            style="margin-top: 15px;"
+            class="admin-button"
+            target="_blank"
+            :href="`${API_FILES_URL}/${destination.plan}`"
+        >Скачать</a>
       </div>
       <div v-if="(userRole === 'ADMIN' || currUserId === destination.id) && destination.id !== 1"
            style="align-self:flex-start;"
@@ -44,7 +49,7 @@
             v-if="destination.plan !== null"
             style="margin-top: 15px;"
             class="admin-button"
-            :href="destination.plan"
+            :href="`${API_FILES_URL}/${destination.plan}`"
             target="_blank"
         >Скачать текущий план</a>
         <input ref="planUrl" style="margin-top: 10px;" type="file">
@@ -94,6 +99,7 @@ import axios from "axios";
 import {useRoute} from "vue-router";
 import Loader from "@/components/includes/Loader";
 import {userAuth} from "@/store/userAuth";
+import { API_FILES_URL } from '@/main';
 
 const accountInfo = ref([])
 const userRole = ref()
