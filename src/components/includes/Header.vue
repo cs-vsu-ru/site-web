@@ -102,7 +102,7 @@ const auth = async () => {
             location.reload()
           },
           (err) => {
-            authError.value = err.response.data.detail
+            authError.value = err.response?.data?.detail || 'Неверный логин или пароль'
           }
       )
 }

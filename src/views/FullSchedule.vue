@@ -147,6 +147,8 @@ onBeforeUnmount(() => {
 watch(hideEmptyTeachers, (newVal) => {
   if (newVal) {
     selectedTeacherIds.value = selectedTeacherIds.value.filter(id => teachersWithLessons.value.includes(id))
+  } else {
+    selectedTeacherIds.value = scheduleData.value.employees.map(teacher => teacher.id)
   }
 })
 
