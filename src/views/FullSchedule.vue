@@ -18,6 +18,9 @@ const hideEmptyTeachers = ref(false)
 const selectedTeacherIds = ref([])
 const isOpen = ref(false)
 const multiselectRef = ref(null)
+const selectedDays = ref([])
+const isDaysOpen = ref(false)
+const daysMultiselectRef = ref(null)
 
 const zoomIn = () => {
   if (zoom.value < 2) zoom.value += 0.1
@@ -31,25 +34,31 @@ const isEditable = computed(() => {
   return userRole.value === 'ADMIN' || userRole.value === 'MODERATOR'
 })
 
-const hasLessons = (teacherIndex) => {
-  return scheduleData.value.schedule.some(day =>
-      day.times.some(time =>
-          time.lessons[teacherIndex].some(lesson => lesson.name.trim() !== '')
+const selectedTeacherSet = computed(() => new Set(selectedTeacherIds.value))
+
+const teacherHasLessons = computed(() => {
+  return scheduleData.value.employees.map((_, index) =>
+      scheduleData.value.schedule.some(day =>
+          day.times.some(time =>
+              time.lessons[index].some(lesson => lesson.name.trim() !== '')
+          )
       )
   )
-}
+})
 
 const teachersWithLessons = computed(() => {
   return scheduleData.value.employees
-      .filter((teacher, index) => hasLessons(index))
+      .filter((_, index) => teacherHasLessons.value[index])
       .map(teacher => teacher.id)
 })
 
 const visibleTeacherIndices = computed(() => {
-  return scheduleData.value.employees
-      .map((teacher, index) => ({id: teacher.id, index}))
-      .filter(({id}) => selectedTeacherIds.value.includes(id))
-      .map(({index}) => index)
+  const set = selectedTeacherSet.value
+  const result = []
+  scheduleData.value.employees.forEach((teacher, index) => {
+    if (set.has(teacher.id)) result.push(index)
+  })
+  return result
 })
 
 const toggleSelectAll = () => {
@@ -70,10 +79,47 @@ const selectAllState = computed(() => {
 })
 
 const toggleTeacher = (id) => {
-  if (selectedTeacherIds.value.includes(id)) {
+  if (selectedTeacherSet.value.has(id)) {
     selectedTeacherIds.value = selectedTeacherIds.value.filter(tId => tId !== id)
   } else {
     selectedTeacherIds.value = [...selectedTeacherIds.value, id]
+  }
+}
+
+const allDays = computed(() => {
+  if (!scheduleData.value) return []
+  return scheduleData.value.schedule.map(day => day.weekday)
+})
+
+const selectedDaysSet = computed(() => new Set(selectedDays.value))
+
+const visibleSchedule = computed(() => {
+  if (!scheduleData.value) return []
+  return scheduleData.value.schedule.filter(day => selectedDaysSet.value.has(day.weekday))
+})
+
+const toggleDaySelectAll = () => {
+  if (selectedDays.value.length === allDays.value.length) {
+    selectedDays.value = []
+  } else {
+    selectedDays.value = [...allDays.value]
+  }
+}
+
+const selectAllDaysState = computed(() => {
+  if (!scheduleData.value) return 'unchecked'
+  const total = allDays.value.length
+  const selected = selectedDays.value.length
+  if (selected === 0) return 'unchecked'
+  if (selected === total) return 'checked'
+  return 'indeterminate'
+})
+
+const toggleDay = (day) => {
+  if (selectedDaysSet.value.has(day)) {
+    selectedDays.value = selectedDays.value.filter(d => d !== day)
+  } else {
+    selectedDays.value = [...selectedDays.value, day]
   }
 }
 
@@ -81,9 +127,16 @@ const toggleOpen = () => {
   isOpen.value = !isOpen.value
 }
 
+const toggleDaysOpen = () => {
+  isDaysOpen.value = !isDaysOpen.value
+}
+
 const handleClickOutside = (event) => {
   if (multiselectRef.value && !multiselectRef.value.contains(event.target)) {
     isOpen.value = false
+  }
+  if (daysMultiselectRef.value && !daysMultiselectRef.value.contains(event.target)) {
+    isDaysOpen.value = false
   }
 }
 
@@ -101,6 +154,7 @@ const loadSchedule = async () => {
     const response = await parserAxios.get('lessons/')
     scheduleData.value = response.data
     selectedTeacherIds.value = scheduleData.value.employees.map(teacher => teacher.id)
+    selectedDays.value = scheduleData.value.schedule.map(day => day.weekday)
   } catch (err) {
     console.error('Ошибка загрузки расписания', err)
   } finally {
@@ -146,14 +200,16 @@ onBeforeUnmount(() => {
 
 watch(hideEmptyTeachers, (newVal) => {
   if (newVal) {
-    selectedTeacherIds.value = selectedTeacherIds.value.filter(id => teachersWithLessons.value.includes(id))
+    const withLessons = new Set(teachersWithLessons.value)
+    selectedTeacherIds.value = selectedTeacherIds.value.filter(id => withLessons.has(id))
   } else {
     selectedTeacherIds.value = scheduleData.value.employees.map(teacher => teacher.id)
   }
 })
 
 watch(selectedTeacherIds, (newVal) => {
-  if (newVal.some(id => !teachersWithLessons.value.includes(id))) {
+  const withLessons = new Set(teachersWithLessons.value)
+  if (newVal.some(id => !withLessons.has(id))) {
     hideEmptyTeachers.value = false
   }
 }, {deep: true})
@@ -171,7 +227,41 @@ watch(selectedTeacherIds, (newVal) => {
         Скрыть преподавателей без занятий
       </label>
     </div>
-    <h3>Выберите преподавателей для отображения:</h3>
+    <div class="filters-row">
+    <div class="filter-group">
+    <h3>Дни недели:</h3>
+    <div class="multiselect" ref="daysMultiselectRef">
+      <div class="multiselect-toggle" @click="toggleDaysOpen">
+        <span>{{
+            selectedDays.length > 0 ? `Выбрано: ${selectedDays.length} дней` : 'Выберите дни'
+          }}</span>
+        <span>▼</span>
+      </div>
+      <div class="multiselect-list" v-show="isDaysOpen">
+        <ul>
+          <li>
+            <label>
+              <input type="checkbox"
+                     :checked="selectAllDaysState === 'checked'"
+                     :indeterminate.prop="selectAllDaysState === 'indeterminate'"
+                     @change="toggleDaySelectAll"/>
+              Выбрать все
+            </label>
+          </li>
+          <li v-for="day in allDays" :key="day">
+            <label>
+              <input type="checkbox"
+                     :checked="selectedDaysSet.has(day)"
+                     @change="toggleDay(day)"/>
+              {{ day }}
+            </label>
+          </li>
+        </ul>
+      </div>
+    </div>
+    </div>
+    <div class="filter-group">
+    <h3>Преподаватели:</h3>
     <div class="multiselect" ref="multiselectRef">
       <div class="multiselect-toggle" @click="toggleOpen">
         <span>{{
@@ -194,13 +284,15 @@ watch(selectedTeacherIds, (newVal) => {
             <label>
               <input type="checkbox"
                      :value="teacher.id"
-                     :checked="selectedTeacherIds.includes(teacher.id)"
+                     :checked="selectedTeacherSet.has(teacher.id)"
                      @change="toggleTeacher(teacher.id)"/>
               {{ teacher.name }}
             </label>
           </li>
         </ul>
       </div>
+    </div>
+    </div>
     </div>
     <div class="zoom-controls">
       <button @click="zoomOut" aria-label="Уменьшить масштаб">–</button>
@@ -223,7 +315,7 @@ watch(selectedTeacherIds, (newVal) => {
           </tr>
           </thead>
           <tbody>
-          <template v-for="(day, dIndex) in scheduleData.schedule" :key="dIndex">
+          <template v-for="(day, dIndex) in visibleSchedule" :key="dIndex">
             <tr v-for="(time, tIndex) in day.times" :key="tIndex">
               <td v-if="tIndex === 0" class="sticky-col day-col" :rowspan="day.times.length">
                 {{ day.weekday }}
@@ -484,6 +576,19 @@ thead th.time-col {
 
 .controls {
   margin-bottom: 20px;
+}
+
+.filters-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.filter-group {
+  h3 {
+    margin-bottom: 0;
+  }
 }
 
 .multiselect {
