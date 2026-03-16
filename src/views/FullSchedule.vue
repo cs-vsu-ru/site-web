@@ -36,9 +36,16 @@ const isEditable = computed(() => {
 
 const selectedTeacherSet = computed(() => new Set(selectedTeacherIds.value))
 
+const selectedDaysSet = computed(() => new Set(selectedDays.value))
+
+const visibleSchedule = computed(() => {
+  if (!scheduleData.value) return []
+  return scheduleData.value.schedule.filter(day => selectedDaysSet.value.has(day.weekday))
+})
+
 const teacherHasLessons = computed(() => {
   return scheduleData.value.employees.map((_, index) =>
-      scheduleData.value.schedule.some(day =>
+      visibleSchedule.value.some(day =>
           day.times.some(time =>
               time.lessons[index].some(lesson => lesson.name.trim() !== '')
           )
@@ -89,13 +96,6 @@ const toggleTeacher = (id) => {
 const allDays = computed(() => {
   if (!scheduleData.value) return []
   return scheduleData.value.schedule.map(day => day.weekday)
-})
-
-const selectedDaysSet = computed(() => new Set(selectedDays.value))
-
-const visibleSchedule = computed(() => {
-  if (!scheduleData.value) return []
-  return scheduleData.value.schedule.filter(day => selectedDaysSet.value.has(day.weekday))
 })
 
 const toggleDaySelectAll = () => {
@@ -198,14 +198,24 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 
+const applyHideEmpty = () => {
+  const withLessons = new Set(teachersWithLessons.value)
+  selectedTeacherIds.value = selectedTeacherIds.value.filter(id => withLessons.has(id))
+}
+
 watch(hideEmptyTeachers, (newVal) => {
   if (newVal) {
-    const withLessons = new Set(teachersWithLessons.value)
-    selectedTeacherIds.value = selectedTeacherIds.value.filter(id => withLessons.has(id))
+    applyHideEmpty()
   } else {
     selectedTeacherIds.value = scheduleData.value.employees.map(teacher => teacher.id)
   }
 })
+
+watch(selectedDays, () => {
+  if (hideEmptyTeachers.value) {
+    applyHideEmpty()
+  }
+}, {deep: true})
 
 watch(selectedTeacherIds, (newVal) => {
   const withLessons = new Set(teachersWithLessons.value)
