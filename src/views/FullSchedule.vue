@@ -198,6 +198,19 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 
+const hasActiveFilters = computed(() => {
+  if (!scheduleData.value) return false
+  return hideEmptyTeachers.value
+      || selectedDays.value.length !== allDays.value.length
+      || selectedTeacherIds.value.length !== scheduleData.value.employees.length
+})
+
+const resetFilters = () => {
+  hideEmptyTeachers.value = false
+  selectedDays.value = [...allDays.value]
+  selectedTeacherIds.value = scheduleData.value.employees.map(teacher => teacher.id)
+}
+
 const applyHideEmpty = () => {
   const withLessons = new Set(teachersWithLessons.value)
   selectedTeacherIds.value = selectedTeacherIds.value.filter(id => withLessons.has(id))
@@ -303,6 +316,7 @@ watch(selectedTeacherIds, (newVal) => {
       </div>
     </div>
     </div>
+    <button v-show="hasActiveFilters" class="reset-filters-btn" @click="resetFilters">Сбросить фильтры</button>
     </div>
     <div class="zoom-controls">
       <button @click="zoomOut" aria-label="Уменьшить масштаб">–</button>
@@ -586,6 +600,23 @@ thead th.time-col {
 
 .controls {
   margin-bottom: 20px;
+}
+
+.reset-filters-btn {
+  background: none;
+  border: none;
+  color: $pr1;
+  text-decoration: underline;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-left: auto;
+  align-self: flex-end;
+  margin-bottom: 28px;
+  padding: 0;
+
+  &:hover {
+    opacity: 0.7;
+  }
 }
 
 .filters-row {
