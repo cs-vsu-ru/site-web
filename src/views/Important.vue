@@ -1,88 +1,126 @@
 <template>
   <section class="static">
-    <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+    <div
+      style="
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+      "
+    >
       <h1>Важное</h1>
-      <button :class="{visible: !isEditorActive}" @click="isEditorActive = true" v-if="userRole === 'ADMIN' || userRole === 'MODERATOR'" class="edit-button admin-button">Редактировать</button>
+      <button
+        :class="{ visible: !isEditorActive }"
+        @click="isEditorActive = true"
+        v-if="userRole === 'ADMIN' || userRole === 'MODERATOR'"
+        class="edit-button admin-button"
+      >
+        Редактировать
+      </button>
     </div>
     <ckeditor
-        :editor="editor"
-        v-model="staticInfo.contentImportant"
-        :config="editorConfig"
-        @ready="onReady"
-        v-if="isEditorActive && (userRole === 'ADMIN' || userRole === 'MODERATOR')"
-        class="static__editor"
+      :editor="editor"
+      v-model="staticInfo.contentImportant"
+      :config="editorConfig"
+      @ready="onReady"
+      v-if="
+        isEditorActive && (userRole === 'ADMIN' || userRole === 'MODERATOR')
+      "
+      class="static__editor"
     ></ckeditor>
-    <button v-if="isEditorActive && (userRole === 'ADMIN' || userRole === 'MODERATOR')" @click="saveStatic" style="margin: 10px 0 10px auto;" class="admin-button">Сохранить</button>
-    <div class="new-editor" v-if="staticInfo && !isEditorActive" v-html="staticInfo.contentImportant">
-
-    </div>
+    <button
+      v-if="
+        isEditorActive && (userRole === 'ADMIN' || userRole === 'MODERATOR')
+      "
+      @click="saveStatic"
+      style="margin: 10px 0 10px auto"
+      class="admin-button"
+    >
+      Сохранить
+    </button>
+    <div
+      class="new-editor"
+      v-if="staticInfo && !isEditorActive"
+      v-html="staticInfo.contentImportant"
+    ></div>
   </section>
 </template>
 
 <script setup>
-import {onMounted, ref} from "vue";
+import { onMounted, ref } from "vue";
 import DecoupledEditor from "@ckeditor/ckeditor5-build-decoupled-document";
 import CustomUploader from "@/services/customUploader";
 import axios from "axios";
-import {userAuth} from "@/store/userAuth";
+import { userAuth } from "@/store/userAuth";
 
-const store = userAuth()
-const staticInfo = ref(null)
-const userRole = ref('')
-const aboutModel = ref('')
-const isEditorActive = ref(false)
-const editor = ref(DecoupledEditor)
+const store = userAuth();
+const staticInfo = ref(null);
+const userRole = ref("");
+const aboutModel = ref("");
+const isEditorActive = ref(false);
+const editor = ref(DecoupledEditor);
 const editorConfig = ref({
-  // toolbar: [
-  //     'undo', 'redo',
-  //     '|', 'heading',
-  //     '|', 'bold', 'italic',
-  //     '|', 'link', 'uploadImage', 'insertTable', 'mediaEmbed',
-  //     '|', 'bulletedList', 'numberedList', 'outdent', 'indent'
-  // ],
-  language: 'ru'
-})
+  language: "ru",
+  mediaEmbed: {
+    previewsInData: true,
+    providers: [
+      {
+        name: "rutube",
+        url: [
+          /rutube\.ru\/video\/([a-zA-Z0-9]+)/,
+          /rutube\.ru\/([a-zA-Z0-9]+)/,
+        ],
+        html: (match) => {
+          const id = match[1] || match.input.split("/").pop();
+          return `<div class="rutube-container">
+            <iframe src="https://rutube.ru/play/embed/${id}" frameborder="0" allowfullscreen></iframe>
+          </div>`;
+        },
+      },
+    ],
+  },
+});
 
 onMounted(() => {
-  userRole.value = store.getRole
-  getStatic()
-})
+  userRole.value = store.getRole;
+  getStatic();
+});
 
 const onReady = (editor) => {
-  editor.ui.getEditableElement().parentElement.insertBefore(
+  editor.ui
+    .getEditableElement()
+    .parentElement.insertBefore(
       editor.ui.view.toolbar.element,
-      editor.ui.getEditableElement()
-  )
+      editor.ui.getEditableElement(),
+    );
 
-  editor.plugins.get('FileRepository').createUploadAdapter = loader => {
-    return new CustomUploader(loader)
-  }
-}
+  editor.plugins.get("FileRepository").createUploadAdapter = (loader) => {
+    return new CustomUploader(loader);
+  };
+};
 
 const getStatic = async () => {
-  await axios.get('static-pages')
-      .then((staticData) => {
-        staticInfo.value = staticData.data[0]
-
-        console.log(staticInfo.value.contentImportant)
-      })
-}
+  await axios.get("static-pages").then((staticData) => {
+    staticInfo.value = staticData.data[0];
+    console.log(staticInfo.value.contentImportant);
+  });
+};
 
 const saveStatic = async () => {
-  await axios.put('static-pages/1', {
-    id: 1,
-    contentImportant: staticInfo.value.contentImportant
-  })
-      .then(() => {
-        location.reload()
-      })
-}
+  await axios
+    .put("static-pages/1", {
+      id: 1,
+      contentImportant: staticInfo.value.contentImportant,
+    })
+    .then(() => {
+      location.reload();
+    });
+};
 </script>
 
 <style lang="scss">
 @import "@/assets/styles/_variables.scss";
 
-.static{
+.static {
   max-width: 1440px;
   margin: 0 auto;
 
@@ -90,22 +128,70 @@ const saveStatic = async () => {
     max-width: calc(100% - 40px);
   }
 
-  h1{
+  u {
+    text-decoration: underline !important;
+  }
+
+  s {
+    text-decoration: line-through !important;
+  }
+
+  ul {
+    padding-left: 25px;
+    margin: 10px 0;
+
+    li {
+      font-size: 18px;
+    }
+  }
+
+  h1 {
     margin-bottom: 30px;
   }
 
-  p{
+  p {
     font-size: 22px;
     line-height: 24px;
   }
 
-  img{
+  img {
     width: 100%;
   }
 
-  &__editor{
+  .image-style-align-left {
+    float: left;
+  }
+
+  &__editor {
     border: 1px solid $pr1;
     min-height: 350px;
+    width: 100%;
+  }
+
+  .static__editor,
+  .new-editor {
+    .rutube-container {
+      position: relative;
+      padding-bottom: 56.25%;
+      height: 0;
+      margin: 20px 0;
+      width: 100%;
+
+      iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100% !important;
+        height: 100% !important;
+        border: none;
+      }
+    }
+
+    iframe {
+      width: 100% !important;
+      height: 400px !important;
+      border: none;
+    }
   }
 }
 </style>
