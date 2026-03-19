@@ -36,9 +36,16 @@ const isEditable = computed(() => {
 
 const selectedTeacherSet = computed(() => new Set(selectedTeacherIds.value))
 
+const selectedDaysSet = computed(() => new Set(selectedDays.value))
+
+const visibleSchedule = computed(() => {
+  if (!scheduleData.value) return []
+  return scheduleData.value.schedule.filter(day => selectedDaysSet.value.has(day.weekday))
+})
+
 const teacherHasLessons = computed(() => {
   return scheduleData.value.employees.map((_, index) =>
-      scheduleData.value.schedule.some(day =>
+      visibleSchedule.value.some(day =>
           day.times.some(time =>
               time.lessons[index].some(lesson => lesson.name.trim() !== '')
           )
@@ -89,13 +96,6 @@ const toggleTeacher = (id) => {
 const allDays = computed(() => {
   if (!scheduleData.value) return []
   return scheduleData.value.schedule.map(day => day.weekday)
-})
-
-const selectedDaysSet = computed(() => new Set(selectedDays.value))
-
-const visibleSchedule = computed(() => {
-  if (!scheduleData.value) return []
-  return scheduleData.value.schedule.filter(day => selectedDaysSet.value.has(day.weekday))
 })
 
 const toggleDaySelectAll = () => {
@@ -198,14 +198,37 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 
+const hasActiveFilters = computed(() => {
+  if (!scheduleData.value) return false
+  return hideEmptyTeachers.value
+      || selectedDays.value.length !== allDays.value.length
+      || selectedTeacherIds.value.length !== scheduleData.value.employees.length
+})
+
+const resetFilters = () => {
+  hideEmptyTeachers.value = false
+  selectedDays.value = [...allDays.value]
+  selectedTeacherIds.value = scheduleData.value.employees.map(teacher => teacher.id)
+}
+
+const applyHideEmpty = () => {
+  const withLessons = new Set(teachersWithLessons.value)
+  selectedTeacherIds.value = selectedTeacherIds.value.filter(id => withLessons.has(id))
+}
+
 watch(hideEmptyTeachers, (newVal) => {
   if (newVal) {
-    const withLessons = new Set(teachersWithLessons.value)
-    selectedTeacherIds.value = selectedTeacherIds.value.filter(id => withLessons.has(id))
+    applyHideEmpty()
   } else {
     selectedTeacherIds.value = scheduleData.value.employees.map(teacher => teacher.id)
   }
 })
+
+watch(selectedDays, () => {
+  if (hideEmptyTeachers.value) {
+    applyHideEmpty()
+  }
+}, {deep: true})
 
 watch(selectedTeacherIds, (newVal) => {
   const withLessons = new Set(teachersWithLessons.value)
@@ -293,6 +316,7 @@ watch(selectedTeacherIds, (newVal) => {
       </div>
     </div>
     </div>
+    <button v-show="hasActiveFilters" class="reset-filters-btn" @click="resetFilters">Сбросить фильтры</button>
     </div>
     <div class="zoom-controls">
       <button @click="zoomOut" aria-label="Уменьшить масштаб">–</button>
@@ -576,6 +600,23 @@ thead th.time-col {
 
 .controls {
   margin-bottom: 20px;
+}
+
+.reset-filters-btn {
+  background: none;
+  border: none;
+  color: $pr1;
+  text-decoration: underline;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-left: auto;
+  align-self: flex-end;
+  margin-bottom: 28px;
+  padding: 0;
+
+  &:hover {
+    opacity: 0.7;
+  }
 }
 
 .filters-row {
