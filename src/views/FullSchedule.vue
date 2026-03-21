@@ -21,6 +21,8 @@ const multiselectRef = ref(null)
 const selectedDays = ref([])
 const isDaysOpen = ref(false)
 const daysMultiselectRef = ref(null)
+const parseErrors = ref([])
+const parseErrorsExpanded = ref(false)
 
 const zoomIn = () => {
   if (zoom.value < 2) zoom.value += 0.1
@@ -188,10 +190,33 @@ const deleteLesson = async () => {
   }
 }
 
+const fieldLabels = {
+  row: 'Строка',
+  course: 'Курс',
+  group: 'Группа',
+  course_map: 'Соответствие курса',
+  cell: 'Ячейка',
+  cell_format_skipped: 'Формат ячейки',
+  lesson_meta: 'Метаданные занятия'
+}
+
+const dismissParseErrors = () => {
+  parseErrors.value = []
+  sessionStorage.removeItem('scheduleParseErrors')
+}
+
 onMounted(() => {
   userRole.value = store.getRole
   loadSchedule()
   document.addEventListener('click', handleClickOutside)
+
+  const stored = sessionStorage.getItem('scheduleParseErrors')
+  if (stored) {
+    try {
+      parseErrors.value = JSON.parse(stored)
+    } catch (_) {}
+    sessionStorage.removeItem('scheduleParseErrors')
+  }
 })
 
 onBeforeUnmount(() => {
@@ -241,6 +266,26 @@ watch(selectedTeacherIds, (newVal) => {
 <template>
   <section v-if="scheduleData" class="full-schedule">
     <h1>Расписание</h1>
+    <div v-if="parseErrors.length" class="parse-warnings">
+      <div class="parse-warnings__header">
+        <span>Расписание загружено, но обнаружены проблемы ({{ parseErrors.length }})</span>
+        <div class="parse-warnings__actions">
+          <button @click="parseErrorsExpanded = !parseErrorsExpanded" class="parse-warnings__toggle">
+            {{ parseErrorsExpanded ? 'Свернуть' : 'Подробнее' }}
+          </button>
+          <button @click="dismissParseErrors" class="parse-warnings__close">&times;</button>
+        </div>
+      </div>
+      <div v-if="parseErrorsExpanded" class="parse-warnings__details">
+        <div v-for="(error, i) in parseErrors" :key="i" class="parse-warnings__item">
+          <span class="parse-warnings__field">{{ fieldLabels[error.field] || error.field }}</span>
+          <span v-if="error.row != null || error.col != null" class="parse-warnings__location">
+            ({{ error.row != null ? `строка ${error.row}` : '' }}{{ error.row != null && error.col != null ? ', ' : '' }}{{ error.col != null ? `столбец ${error.col}` : '' }})
+          </span>
+          <span class="parse-warnings__message">{{ error.message }}</span>
+        </div>
+      </div>
+    </div>
     <a :href="parserAxios.defaults.baseURL + 'lessons/xlsx/'" class="admin-button schedule-load">
       Скачать расписание
     </a>
@@ -682,5 +727,81 @@ thead th.time-col {
 
 .multiselect-list input[type="checkbox"] {
   margin-right: 10px;
+}
+
+.parse-warnings {
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background-color: #fff8e1;
+  border: 1px solid #ffe082;
+  border-radius: 6px;
+  font-size: 14px;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 500;
+    color: #e65100;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__toggle {
+    background: none;
+    border: none;
+    color: $pr1;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0;
+  }
+
+  &__close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #999;
+    padding: 0 4px;
+    line-height: 1;
+
+    &:hover {
+      color: #333;
+    }
+  }
+
+  &__details {
+    margin-top: 12px;
+    max-height: 300px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  &__item {
+    padding: 6px 8px;
+    background-color: #fff3e0;
+    border-radius: 4px;
+    color: #333;
+  }
+
+  &__field {
+    font-weight: 500;
+  }
+
+  &__location {
+    color: #888;
+    margin: 0 4px;
+  }
+
+  &__message {
+    margin-left: 4px;
+  }
 }
 </style>

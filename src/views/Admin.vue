@@ -24,6 +24,7 @@ const newsSlider = ref([])
 const newsDisabler = ref([])
 const currNews = ref([])
 const scheduleUrl = ref(null)
+const scheduleError = ref('')
 const userList = ref([])
 const sortOption = ref('1');
 const filterOption = ref('');
@@ -351,35 +352,46 @@ const deleteNews = async (artId, index) => {
 }
 
 const uploadSchedule = async () => {
+  scheduleError.value = ''
+
+  if (!scheduleUrl.value?.files?.length) {
+    scheduleError.value = 'Выберите файл для загрузки'
+    return
+  }
+
   let formData = new FormData()
   isLoading.value = true
 
   formData.append('file', scheduleUrl.value.files[0])
 
-  await parserAxios.post('lessons/parse/',
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      })
-      .then(() => {
-        location.replace('/is/full-schedule')
-      })
-  // .then(async (schData) => {
-  //     let parseData = new FormData()
-  //
-  //     parseData.append('filepath', schData.data)
-  //
-  //     await axios.post('parser/lessons/parse/', parseData, {
-  //         headers: {
-  //             'Content-Type': 'multipart/form-data'
-  //         }
-  //     })
-  //         .then(() => {
-  //           isLoading.value = false
-  //         })
-  // })
+  try {
+    const response = await parserAxios.post('lessons/parse/',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        })
+
+    if (response.data?.errors?.length) {
+      sessionStorage.setItem('scheduleParseErrors', JSON.stringify(response.data.errors))
+    }
+
+    location.replace('/is/full-schedule')
+  } catch (err) {
+    const status = err.response?.status
+    const errorType = err.response?.data?.error?.type
+
+    if (status === 400) {
+      scheduleError.value = 'Файл не передан или имеет неверный формат'
+    } else if (status === 500 || errorType === 'critical_error') {
+      scheduleError.value = 'Не удалось обработать файл. Убедитесь, что загружаемый файл — корректный .xlsx'
+    } else {
+      scheduleError.value = 'Произошла ошибка при загрузке расписания'
+    }
+  } finally {
+    isLoading.value = false
+  }
 }
 
 const getUsers = async () => {
@@ -626,8 +638,11 @@ const deleteMail = async (mailId) => {
       </div>
       <div v-show="activeItem === 'schedule'" class="admin__view-item">
         <div class="admin-schedule">
-          <input ref="scheduleUrl" type="file">
+          <input ref="scheduleUrl" type="file" accept=".xlsx">
           <button @click="uploadSchedule" class="admin-button">Загрузить</button>
+        </div>
+        <div v-if="scheduleError" class="schedule-error">
+          {{ scheduleError }}
         </div>
       </div>
       <div v-show="admRole === 'ADMIN' && activeItem === 'employees'" class="admin__view-item">
@@ -1016,6 +1031,16 @@ const deleteMail = async (mailId) => {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.schedule-error {
+  margin-top: 10px;
+  padding: 12px 16px;
+  background-color: #fdecea;
+  color: #b71c1c;
+  border: 1px solid #f5c6cb;
+  border-radius: 6px;
+  font-size: 14px;
 }
 
 .new-view {
