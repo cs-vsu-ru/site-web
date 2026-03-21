@@ -3,6 +3,7 @@ import {ref, computed, onMounted, onBeforeUnmount, watch} from 'vue'
 import {parserAxios} from '@/main'
 import Loader from '@/components/includes/Loader'
 import {userAuth} from '@/store/userAuth'
+import {GDialog} from 'gitart-vue-dialog'
 
 const store = userAuth()
 const scheduleData = ref(null)
@@ -23,6 +24,25 @@ const isDaysOpen = ref(false)
 const daysMultiselectRef = ref(null)
 const parseErrors = ref([])
 const parseErrorsExpanded = ref(false)
+const downloadError = ref('')
+const selectAllDaysCheckbox = ref(null)
+const selectAllTeachersCheckbox = ref(null)
+
+const downloadSchedule = async () => {
+  downloadError.value = ''
+  try {
+    const response = await parserAxios.get('lessons/xlsx/', { responseType: 'blob' })
+    const url = window.URL.createObjectURL(response.data)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'расписание.xlsx'
+    link.click()
+    window.URL.revokeObjectURL(url)
+  } catch (err) {
+    downloadError.value = 'Не удалось скачать расписание. Попробуйте позже'
+    setTimeout(() => { downloadError.value = '' }, 5000)
+  }
+}
 
 const zoomIn = () => {
   if (zoom.value < 2) zoom.value += 0.1
@@ -261,6 +281,18 @@ watch(selectedTeacherIds, (newVal) => {
     hideEmptyTeachers.value = false
   }
 }, {deep: true})
+
+watch(selectAllDaysState, (state) => {
+  if (selectAllDaysCheckbox.value) {
+    selectAllDaysCheckbox.value.indeterminate = state === 'indeterminate'
+  }
+})
+
+watch(selectAllState, (state) => {
+  if (selectAllTeachersCheckbox.value) {
+    selectAllTeachersCheckbox.value.indeterminate = state === 'indeterminate'
+  }
+})
 </script>
 
 <template>
@@ -286,9 +318,12 @@ watch(selectedTeacherIds, (newVal) => {
         </div>
       </div>
     </div>
-    <a :href="parserAxios.defaults.baseURL + 'lessons/xlsx/'" class="admin-button schedule-load">
+    <button @click="downloadSchedule" class="admin-button schedule-load">
       Скачать расписание
-    </a>
+    </button>
+    <div v-if="downloadError" class="download-error">
+      {{ downloadError }}
+    </div>
     <div class="controls">
       <label>
         <input type="checkbox" v-model="hideEmptyTeachers"/>
@@ -310,8 +345,8 @@ watch(selectedTeacherIds, (newVal) => {
           <li>
             <label>
               <input type="checkbox"
+                     ref="selectAllDaysCheckbox"
                      :checked="selectAllDaysState === 'checked'"
-                     :indeterminate.prop="selectAllDaysState === 'indeterminate'"
                      @change="toggleDaySelectAll"/>
               Выбрать все
             </label>
@@ -342,8 +377,8 @@ watch(selectedTeacherIds, (newVal) => {
           <li>
             <label>
               <input type="checkbox"
+                     ref="selectAllTeachersCheckbox"
                      :checked="selectAllState === 'checked'"
-                     :indeterminate.prop="selectAllState === 'indeterminate'"
                      @change="toggleSelectAll"/>
               Выбрать всех
             </label>
@@ -803,5 +838,16 @@ thead th.time-col {
   &__message {
     margin-left: 4px;
   }
+}
+
+.download-error {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  padding: 12px 16px;
+  background-color: #fdecea;
+  color: #b71c1c;
+  border: 1px solid #f5c6cb;
+  border-radius: 6px;
+  font-size: 14px;
 }
 </style>
