@@ -15,6 +15,7 @@ const courseNGroups = ref('')
 const placement = ref('')
 const lessonId = ref(null)
 const zoom = ref(1)
+const isFullscreen = ref(false)
 const hideEmptyTeachers = ref(false)
 const selectedTeacherIds = ref([])
 const isOpen = ref(false)
@@ -153,6 +154,12 @@ const toggleDaysOpen = () => {
   isDaysOpen.value = !isDaysOpen.value
 }
 
+const handleKeydown = (event) => {
+  if (event.key === 'Escape' && isFullscreen.value) {
+    isFullscreen.value = false
+  }
+}
+
 const handleClickOutside = (event) => {
   if (multiselectRef.value && !multiselectRef.value.contains(event.target)) {
     isOpen.value = false
@@ -220,6 +227,13 @@ const fieldLabels = {
   lesson_meta: 'Метаданные занятия'
 }
 
+const areLessonsEqual = (lessons) => {
+  return lessons.length === 2
+      && lessons[0].name === lessons[1].name
+      && lessons[0].groups === lessons[1].groups
+      && lessons[0].placement === lessons[1].placement
+}
+
 const dismissParseErrors = () => {
   parseErrors.value = []
   sessionStorage.removeItem('scheduleParseErrors')
@@ -229,6 +243,7 @@ onMounted(() => {
   userRole.value = store.getRole
   loadSchedule()
   document.addEventListener('click', handleClickOutside)
+  document.addEventListener('keydown', handleKeydown)
 
   const stored = sessionStorage.getItem('scheduleParseErrors')
   if (stored) {
@@ -241,6 +256,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
+  document.removeEventListener('keydown', handleKeydown)
 })
 
 const hasActiveFilters = computed(() => {
@@ -401,8 +417,18 @@ watch(selectAllState, (state) => {
     <div class="zoom-controls">
       <button @click="zoomOut" aria-label="Уменьшить масштаб">–</button>
       <button @click="zoomIn" aria-label="Увеличить масштаб">+</button>
+      <button @click="isFullscreen=true" class="fullscreen-btn" aria-label="Полноэкранный режим">
+        <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 3H9V5H5V9H3V3ZM15 3H21V9H19V5H15V3ZM19 15H21V21H15V19H19V15ZM5 19V15H3V21H9V19H5Z" fill="white"/>
+        </svg>
+      </button>
     </div>
-    <div class="table-wrapper">
+    <div class="table-wrapper" :class="{ 'table-wrapper--fullscreen': isFullscreen }">
+      <button v-if="isFullscreen" @click="isFullscreen=false" class="fullscreen-close-btn" aria-label="Закрыть полноэкранный режим">
+        <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18.3 5.71a1 1 0 0 0-1.41 0L12 10.59 7.11 5.7a1 1 0 1 0-1.41 1.42L10.59 12l-4.89 4.88a1 1 0 1 0 1.41 1.42L12 13.41l4.89 4.89a1 1 0 0 0 1.41-1.42L13.41 12l4.89-4.88a1 1 0 0 0 0-1.41z" fill="white"/>
+        </svg>
+      </button>
       <div class="schedule-container" :style="{ zoom: zoom }">
         <table class="schedule-table">
           <thead>
@@ -429,7 +455,8 @@ watch(selectAllState, (state) => {
                   :key="index"
                   class="lesson-cell">
                 <template v-for="(singleLesson, sIndex) in time.lessons[index]" :key="sIndex">
-                  <div class="lesson-part" :class="{ editable: isEditable }">
+                  <template v-if="!(sIndex === 1 && areLessonsEqual(time.lessons[index]))">
+                  <div class="lesson-part" :class="{ editable: isEditable, 'lesson-part--merged': areLessonsEqual(time.lessons[index]) }">
                     {{ singleLesson.name }} {{ singleLesson.groups }} {{ singleLesson.placement }}
                     <button v-if="isEditable"
                             @click="openModal(singleLesson.name, singleLesson.groups, singleLesson.placement, singleLesson.id)"
@@ -445,7 +472,8 @@ watch(selectAllState, (state) => {
                       </svg>
                     </button>
                   </div>
-                  <hr v-if="sIndex < time.lessons[index].length - 1" class="lesson-divider"/>
+                  <hr v-if="sIndex < time.lessons[index].length - 1 && !areLessonsEqual(time.lessons[index])" class="lesson-divider"/>
+                  </template>
                 </template>
               </td>
             </tr>
@@ -655,7 +683,7 @@ thead th.time-col {
   button {
     background-color: $pr1;
     border: none;
-    color: $sc2;
+    color: white;
     padding: 8px 16px;
     font-size: 1.2rem;
     border-radius: 5px;
@@ -670,6 +698,56 @@ thead th.time-col {
       transform: scale(0.95);
     }
   }
+
+  .fullscreen-btn {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+  }
+}
+
+.table-wrapper--fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-width: none;
+  max-height: none;
+  z-index: 1000;
+  background: white;
+}
+
+.fullscreen-close-btn {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 1001;
+  background-color: $pr1;
+  color: $sc2;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.1s;
+
+  &:hover {
+    background-color: darken($pr1, 10%);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.lesson-part--merged {
+  height: 100%;
 }
 
 .lesson-divider {
