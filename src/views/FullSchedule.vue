@@ -3,6 +3,7 @@ import {ref, computed, onMounted, onBeforeUnmount, watch} from 'vue'
 import {parserAxios} from '@/main'
 import Loader from '@/components/includes/Loader'
 import {userAuth} from '@/store/userAuth'
+import {GDialog} from 'gitart-vue-dialog'
 
 const store = userAuth()
 const scheduleData = ref(null)
@@ -14,6 +15,7 @@ const courseNGroups = ref('')
 const placement = ref('')
 const lessonId = ref(null)
 const zoom = ref(1)
+const isFullscreen = ref(false)
 const hideEmptyTeachers = ref(false)
 const selectedTeacherIds = ref([])
 const isOpen = ref(false)
@@ -21,6 +23,27 @@ const multiselectRef = ref(null)
 const selectedDays = ref([])
 const isDaysOpen = ref(false)
 const daysMultiselectRef = ref(null)
+const parseErrors = ref([])
+const parseErrorsExpanded = ref(false)
+const downloadError = ref('')
+const selectAllDaysCheckbox = ref(null)
+const selectAllTeachersCheckbox = ref(null)
+
+const downloadSchedule = async () => {
+  downloadError.value = ''
+  try {
+    const response = await parserAxios.get('lessons/xlsx/', { responseType: 'blob' })
+    const url = window.URL.createObjectURL(response.data)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'расписание.xlsx'
+    link.click()
+    window.URL.revokeObjectURL(url)
+  } catch (err) {
+    downloadError.value = 'Не удалось скачать расписание. Попробуйте позже'
+    setTimeout(() => { downloadError.value = '' }, 5000)
+  }
+}
 
 const zoomIn = () => {
   if (zoom.value < 2) zoom.value += 0.1
@@ -131,6 +154,12 @@ const toggleDaysOpen = () => {
   isDaysOpen.value = !isDaysOpen.value
 }
 
+const handleKeydown = (event) => {
+  if (event.key === 'Escape' && isFullscreen.value) {
+    isFullscreen.value = false
+  }
+}
+
 const handleClickOutside = (event) => {
   if (multiselectRef.value && !multiselectRef.value.contains(event.target)) {
     isOpen.value = false
@@ -188,14 +217,46 @@ const deleteLesson = async () => {
   }
 }
 
+const fieldLabels = {
+  row: 'Строка',
+  course: 'Курс',
+  group: 'Группа',
+  course_map: 'Соответствие курса',
+  cell: 'Ячейка',
+  cell_format_skipped: 'Формат ячейки',
+  lesson_meta: 'Метаданные занятия'
+}
+
+const areLessonsEqual = (lessons) => {
+  return lessons.length === 2
+      && lessons[0].name === lessons[1].name
+      && lessons[0].groups === lessons[1].groups
+      && lessons[0].placement === lessons[1].placement
+}
+
+const dismissParseErrors = () => {
+  parseErrors.value = []
+  sessionStorage.removeItem('scheduleParseErrors')
+}
+
 onMounted(() => {
   userRole.value = store.getRole
   loadSchedule()
   document.addEventListener('click', handleClickOutside)
+  document.addEventListener('keydown', handleKeydown)
+
+  const stored = sessionStorage.getItem('scheduleParseErrors')
+  if (stored) {
+    try {
+      parseErrors.value = JSON.parse(stored)
+    } catch (_) {}
+    sessionStorage.removeItem('scheduleParseErrors')
+  }
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
+  document.removeEventListener('keydown', handleKeydown)
 })
 
 const hasActiveFilters = computed(() => {
@@ -236,14 +297,49 @@ watch(selectedTeacherIds, (newVal) => {
     hideEmptyTeachers.value = false
   }
 }, {deep: true})
+
+watch(selectAllDaysState, (state) => {
+  if (selectAllDaysCheckbox.value) {
+    selectAllDaysCheckbox.value.indeterminate = state === 'indeterminate'
+  }
+})
+
+watch(selectAllState, (state) => {
+  if (selectAllTeachersCheckbox.value) {
+    selectAllTeachersCheckbox.value.indeterminate = state === 'indeterminate'
+  }
+})
 </script>
 
 <template>
   <section v-if="scheduleData" class="full-schedule">
     <h1>Расписание</h1>
-    <a :href="parserAxios.defaults.baseURL + 'lessons/xlsx/'" class="admin-button schedule-load">
+    <div v-if="parseErrors.length" class="parse-warnings">
+      <div class="parse-warnings__header">
+        <span>Расписание загружено, но обнаружены проблемы ({{ parseErrors.length }})</span>
+        <div class="parse-warnings__actions">
+          <button @click="parseErrorsExpanded = !parseErrorsExpanded" class="parse-warnings__toggle">
+            {{ parseErrorsExpanded ? 'Свернуть' : 'Подробнее' }}
+          </button>
+          <button @click="dismissParseErrors" class="parse-warnings__close">&times;</button>
+        </div>
+      </div>
+      <div v-if="parseErrorsExpanded" class="parse-warnings__details">
+        <div v-for="(error, i) in parseErrors" :key="i" class="parse-warnings__item">
+          <span class="parse-warnings__field">{{ fieldLabels[error.field] || error.field }}</span>
+          <span v-if="error.row != null || error.col != null" class="parse-warnings__location">
+            ({{ error.row != null ? `строка ${error.row}` : '' }}{{ error.row != null && error.col != null ? ', ' : '' }}{{ error.col != null ? `столбец ${error.col}` : '' }})
+          </span>
+          <span class="parse-warnings__message">{{ error.message }}</span>
+        </div>
+      </div>
+    </div>
+    <button @click="downloadSchedule" class="admin-button schedule-load">
       Скачать расписание
-    </a>
+    </button>
+    <div v-if="downloadError" class="download-error">
+      {{ downloadError }}
+    </div>
     <div class="controls">
       <label>
         <input type="checkbox" v-model="hideEmptyTeachers"/>
@@ -265,8 +361,8 @@ watch(selectedTeacherIds, (newVal) => {
           <li>
             <label>
               <input type="checkbox"
+                     ref="selectAllDaysCheckbox"
                      :checked="selectAllDaysState === 'checked'"
-                     :indeterminate.prop="selectAllDaysState === 'indeterminate'"
                      @change="toggleDaySelectAll"/>
               Выбрать все
             </label>
@@ -297,8 +393,8 @@ watch(selectedTeacherIds, (newVal) => {
           <li>
             <label>
               <input type="checkbox"
+                     ref="selectAllTeachersCheckbox"
                      :checked="selectAllState === 'checked'"
-                     :indeterminate.prop="selectAllState === 'indeterminate'"
                      @change="toggleSelectAll"/>
               Выбрать всех
             </label>
@@ -321,8 +417,18 @@ watch(selectedTeacherIds, (newVal) => {
     <div class="zoom-controls">
       <button @click="zoomOut" aria-label="Уменьшить масштаб">–</button>
       <button @click="zoomIn" aria-label="Увеличить масштаб">+</button>
+      <button @click="isFullscreen=true" class="fullscreen-btn" aria-label="Полноэкранный режим">
+        <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 3H9V5H5V9H3V3ZM15 3H21V9H19V5H15V3ZM19 15H21V21H15V19H19V15ZM5 19V15H3V21H9V19H5Z" fill="white"/>
+        </svg>
+      </button>
     </div>
-    <div class="table-wrapper">
+    <div class="table-wrapper" :class="{ 'table-wrapper--fullscreen': isFullscreen }">
+      <button v-if="isFullscreen" @click="isFullscreen=false" class="fullscreen-close-btn" aria-label="Закрыть полноэкранный режим">
+        <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18.3 5.71a1 1 0 0 0-1.41 0L12 10.59 7.11 5.7a1 1 0 1 0-1.41 1.42L10.59 12l-4.89 4.88a1 1 0 1 0 1.41 1.42L12 13.41l4.89 4.89a1 1 0 0 0 1.41-1.42L13.41 12l4.89-4.88a1 1 0 0 0 0-1.41z" fill="white"/>
+        </svg>
+      </button>
       <div class="schedule-container" :style="{ zoom: zoom }">
         <table class="schedule-table">
           <thead>
@@ -349,7 +455,8 @@ watch(selectedTeacherIds, (newVal) => {
                   :key="index"
                   class="lesson-cell">
                 <template v-for="(singleLesson, sIndex) in time.lessons[index]" :key="sIndex">
-                  <div class="lesson-part" :class="{ editable: isEditable }">
+                  <template v-if="!(sIndex === 1 && areLessonsEqual(time.lessons[index]))">
+                  <div class="lesson-part" :class="{ editable: isEditable, 'lesson-part--merged': areLessonsEqual(time.lessons[index]) }">
                     {{ singleLesson.name }} {{ singleLesson.groups }} {{ singleLesson.placement }}
                     <button v-if="isEditable"
                             @click="openModal(singleLesson.name, singleLesson.groups, singleLesson.placement, singleLesson.id)"
@@ -365,7 +472,8 @@ watch(selectedTeacherIds, (newVal) => {
                       </svg>
                     </button>
                   </div>
-                  <hr v-if="sIndex < time.lessons[index].length - 1" class="lesson-divider"/>
+                  <hr v-if="sIndex < time.lessons[index].length - 1 && !areLessonsEqual(time.lessons[index])" class="lesson-divider"/>
+                  </template>
                 </template>
               </td>
             </tr>
@@ -575,7 +683,7 @@ thead th.time-col {
   button {
     background-color: $pr1;
     border: none;
-    color: $sc2;
+    color: white;
     padding: 8px 16px;
     font-size: 1.2rem;
     border-radius: 5px;
@@ -590,6 +698,56 @@ thead th.time-col {
       transform: scale(0.95);
     }
   }
+
+  .fullscreen-btn {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+  }
+}
+
+.table-wrapper--fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-width: none;
+  max-height: none;
+  z-index: 1000;
+  background: white;
+}
+
+.fullscreen-close-btn {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 1001;
+  background-color: $pr1;
+  color: $sc2;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.1s;
+
+  &:hover {
+    background-color: darken($pr1, 10%);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.lesson-part--merged {
+  height: 100%;
 }
 
 .lesson-divider {
@@ -682,5 +840,92 @@ thead th.time-col {
 
 .multiselect-list input[type="checkbox"] {
   margin-right: 10px;
+}
+
+.parse-warnings {
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background-color: #fff8e1;
+  border: 1px solid #ffe082;
+  border-radius: 6px;
+  font-size: 14px;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 500;
+    color: #e65100;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__toggle {
+    background: none;
+    border: none;
+    color: $pr1;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0;
+  }
+
+  &__close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #999;
+    padding: 0 4px;
+    line-height: 1;
+
+    &:hover {
+      color: #333;
+    }
+  }
+
+  &__details {
+    margin-top: 12px;
+    max-height: 300px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  &__item {
+    padding: 6px 8px;
+    background-color: #fff3e0;
+    border-radius: 4px;
+    color: #333;
+  }
+
+  &__field {
+    font-weight: 500;
+  }
+
+  &__location {
+    color: #888;
+    margin: 0 4px;
+  }
+
+  &__message {
+    margin-left: 4px;
+  }
+}
+
+.download-error {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  padding: 12px 16px;
+  background-color: #fdecea;
+  color: #b71c1c;
+  border: 1px solid #f5c6cb;
+  border-radius: 6px;
+  font-size: 14px;
 }
 </style>

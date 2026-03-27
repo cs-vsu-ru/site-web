@@ -25,7 +25,7 @@
             <div class="outer-div" v-if="index === 'time'">
               <h4> {{ lesson }}</h4>
             </div>
-            <div v-else class="outer-div">
+            <div v-else class="outer-div" :class="{ 'outer-div--merged': areLessonsEqual(lesson) }">
               {{ lesson[0].name }} {{ lesson[0].groups }} {{ lesson[0].placement }}
               <button @click="openModal(lesson[0].name, lesson[0].groups, lesson[0].placement, lesson[0].id)"
                       v-if="userRole === 'ADMIN' || userRole === 'MODERATOR'" class="schedule-edit">
@@ -39,10 +39,7 @@
                 </svg>
               </button>
             </div>
-            <div class="inner-div" v-if="index !== 'time'" v-show="(userRole === 'ADMIN' || userRole === 'MODERATOR') ||
-              !(lesson[0].name === lesson[1].name
-              && lesson[0].groups === lesson[1].groups
-              && lesson[0].placement === lesson[1].placement)">
+            <div class="inner-div" v-if="index !== 'time' && !areLessonsEqual(lesson)">
               {{ lesson[1].name }} {{ lesson[1].groups }} {{ lesson[1].placement }}
               <button @click="openModal(lesson[1].name, lesson[1].groups, lesson[1].placement, lesson[1].id)"
                       v-if="userRole === 'ADMIN' || userRole === 'MODERATOR'" class="schedule-edit">
@@ -92,7 +89,7 @@
 </template>
 
 <script setup>
-import {computed, onMounted, ref, toRaw} from "vue";
+import {computed, onMounted, ref} from "vue";
 import {useRoute} from "vue-router";
 import axios from "axios";
 import {GDialog} from "gitart-vue-dialog/dist/index";
@@ -124,6 +121,12 @@ const courseNGroups = ref()
 const placement = ref()
 const lessonId = ref()
 const exportTable = ref()
+
+const areLessonsEqual = (lesson) => {
+  return lesson[0].name === lesson[1].name
+      && lesson[0].groups === lesson[1].groups
+      && lesson[0].placement === lesson[1].placement
+}
 
 onMounted(() => {
   userRole.value = store.getRole
@@ -217,6 +220,10 @@ const deleteLesson = async () => {
             visibility: visible;
             opacity: 1;
           }
+        }
+
+        &--merged {
+          height: 100%;
         }
 
         h4 {
