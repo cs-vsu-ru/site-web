@@ -81,6 +81,15 @@
         </label>
       </div>
     </div>
+    <div v-if="currUserId === destination.id && !activeEdit" class="profile__tfa">
+      <button
+          class="admin-button"
+          @click="openTwoFactor"
+      >
+        {{ destination.twoFactorEnabled ? 'Отключить 2FA' : 'Подключить 2FA' }}
+      </button>
+    </div>
+
     <button v-if="(userRole === 'ADMIN' || currUserId === destination.id) && !activeEdit"
             @click="activeEdit = true; getLogin(destination.id)"
             class="admin-button profile__edit">Редактировать
@@ -89,6 +98,14 @@
             class="admin-button profile__edit">
       Сохранить
     </button>
+
+    <TwoFactorSetup
+        ref="tfaRef"
+        v-model="tfaDialogState"
+        :current-email="destination.email"
+        :two-factor-enabled="destination.twoFactorEnabled"
+        @updated="onTfaUpdated"
+    />
   </section>
   <Loader v-if="isLoading"/>
 </template>
@@ -98,6 +115,7 @@ import {computed, onMounted, ref} from "vue";
 import axios from "axios";
 import {useRoute} from "vue-router";
 import Loader from "@/components/includes/Loader";
+import TwoFactorSetup from "@/components/includes/TwoFactorSetup.vue";
 import {userAuth} from "@/store/userAuth";
 import { API_FILES_URL } from '@/main';
 
@@ -111,6 +129,8 @@ const isLoading = ref(false)
 const route = useRoute()
 const imgUrl = ref()
 const profileImg = ref(null)
+const tfaDialogState = ref(false)
+const tfaRef = ref(null)
 
 const store = userAuth()
 const destinationId = computed(() => route.params.id)
@@ -205,6 +225,17 @@ const saveProfile = async () => {
           })
     }
   }
+}
+
+const openTwoFactor = () => {
+  tfaDialogState.value = true
+  setTimeout(() => {
+    if (tfaRef.value) tfaRef.value.open()
+  })
+}
+
+const onTfaUpdated = () => {
+  accountAPI()
 }
 
 const loadPlan = async () => {
@@ -344,6 +375,12 @@ const loadPlan = async () => {
 
   &__checkbox {
     padding-top: 10px;
+  }
+
+  &__tfa {
+    position: absolute;
+    right: 30px;
+    bottom: 30px;
   }
 }
 
