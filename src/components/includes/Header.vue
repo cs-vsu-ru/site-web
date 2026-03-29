@@ -48,7 +48,8 @@
         v-model="dialogState"
         :max-width="500"
     >
-      <form @submit.prevent="auth" class="login-modal">
+      <!-- Обычный логин -->
+      <form v-if="!twoFactorRequired" @submit.prevent="auth" class="login-modal">
         <img src="../../assets/img/logo.jpg" alt="" class="login-modal__logo">
         <div class="login-modal__inputs">
           <div class="login-modal__inputs-item">
@@ -63,6 +64,22 @@
         <p class="login-modal__error">{{ authError }}</p>
         <button type="submit" class="login-modal__submit">Вход</button>
       </form>
+
+      <!-- Ввод кода 2FA -->
+      <div v-else class="login-modal">
+        <img src="../../assets/img/logo.jpg" alt="" class="login-modal__logo">
+        <h3 class="login-modal__2fa-title">Двухфакторная аутентификация</h3>
+        <p class="login-modal__2fa-subtitle">Введите код, отправленный на {{ twoFactorEmail }}</p>
+        <OtpInput
+            ref="loginOtpRef"
+            :error="authError"
+            :loading="twoFactorLoading"
+            :cooldown="twoFactorCooldown"
+            @complete="verify2fa"
+            @resend="resend2fa"
+        />
+        <button class="login-modal__back" @click="backToLogin">Назад</button>
+      </div>
     </GDialog>
   </header>
 </template>
@@ -72,6 +89,7 @@ import {computed, onMounted, ref} from "vue";
 import {GDialog} from "gitart-vue-dialog";
 import axios from "axios";
 import {userAuth} from "@/store/userAuth";
+import OtpInput from "@/components/includes/OtpInput.vue";
 
 const store = userAuth()
 
@@ -81,6 +99,11 @@ const password = ref('')
 const profileId = ref(0)
 const profileRole = ref('')
 const authError = ref('')
+const twoFactorRequired = ref(false)
+const twoFactorEmail = ref('')
+const twoFactorLoading = ref(false)
+const twoFactorCooldown = ref(60)
+const loginOtpRef = ref(null)
 
 const isAuth = computed(() => store.getIsAuth)
 
@@ -92,19 +115,82 @@ onMounted(() => {
 })
 
 const auth = async () => {
-  await axios.post('authenticate', {
-    username: login.value,
-    password: password.value,
-    rememberMe: true
-  })
-      .then((token) => {
-            store.setAuth(token.data.jwtToken, token.data.mainRole)
-            location.reload()
-          },
-          (err) => {
-            authError.value = err.response?.data?.detail || 'Неверный логин или пароль'
-          }
-      )
+  authError.value = ''
+  try {
+    const response = await axios.post('authenticate', {
+      username: login.value,
+      password: password.value,
+      rememberMe: true
+    })
+    if (response.data.requiresTwoFactor) {
+      twoFactorRequired.value = true
+      twoFactorEmail.value = response.data.email
+      twoFactorCooldown.value = 60
+    } else {
+      const token = response.data.accessToken || response.data.jwtToken
+      store.setAuth(token, response.data.mainRole)
+      location.reload()
+    }
+  } catch (err) {
+    authError.value = err.response?.data?.detail || err.response?.data || 'Неверный логин или пароль'
+  }
+}
+
+const verify2fa = async (code) => {
+  authError.value = ''
+  twoFactorLoading.value = true
+  try {
+    const response = await axios.post('verify-2fa', {
+      email: twoFactorEmail.value,
+      code
+    })
+    const token = response.data.accessToken || response.data.jwtToken
+    store.setAuth(token, response.data.mainRole)
+    location.reload()
+  } catch (err) {
+    const status = err.response?.status
+    const message = err.response?.data
+    if (status === 429) {
+      const match = typeof message === 'string' && message.match(/(\d+)/)
+      if (match && loginOtpRef.value) {
+        loginOtpRef.value.startCooldown(parseInt(match[1]))
+      }
+      authError.value = message || 'Превышен лимит попыток. Попробуйте позже.'
+    } else if (status === 410) {
+      authError.value = 'Код истёк. Запросите новый код.'
+    } else if (status === 404) {
+      authError.value = 'Код не найден. Запросите новый код.'
+    } else {
+      authError.value = typeof message === 'string' ? message : 'Неверный код подтверждения'
+    }
+    if (loginOtpRef.value) loginOtpRef.value.reset()
+  } finally {
+    twoFactorLoading.value = false
+  }
+}
+
+const resend2fa = async () => {
+  authError.value = ''
+  try {
+    await axios.post('2fa/resend', {email: twoFactorEmail.value})
+    twoFactorCooldown.value = 60
+    if (loginOtpRef.value) loginOtpRef.value.startCooldown(60)
+  } catch (err) {
+    const message = err.response?.data
+    if (err.response?.status === 429) {
+      const match = typeof message === 'string' && message.match(/(\d+)/)
+      if (match && loginOtpRef.value) {
+        loginOtpRef.value.startCooldown(parseInt(match[1]))
+      }
+      authError.value = message || 'Повторная отправка пока недоступна'
+    }
+  }
+}
+
+const backToLogin = () => {
+  twoFactorRequired.value = false
+  twoFactorEmail.value = ''
+  authError.value = ''
 }
 
 const logout = () => {
@@ -290,6 +376,32 @@ const accountInfo = async () => {
     &:hover {
       background: $pr1;
       color: white;
+    }
+  }
+
+  &__2fa-title {
+    font-size: 22px;
+    color: $pr1;
+    text-align: center;
+  }
+
+  &__2fa-subtitle {
+    font-size: 14px;
+    color: $sc5;
+    text-align: center;
+  }
+
+  &__back {
+    font-size: 14px;
+    color: $pr1;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
+    align-self: center;
+
+    &:hover {
+      opacity: 0.7;
     }
   }
 }
