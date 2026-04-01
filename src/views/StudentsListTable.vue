@@ -153,7 +153,7 @@
           </td>
 
           <td>
-            <button @click="deleteStudent(student.id)" aria-label="Удалить"
+            <button @click="confirmDeleteStudent(student)" aria-label="Удалить"
                     title="Удалить студента"
                     style="background: none; border: none; padding: 0; cursor: pointer;">
               <svg width="20px" height="20px" viewBox="0 0 21 21" version="1.1"
@@ -187,12 +187,25 @@
       <span>Страница {{ currentPage }} из {{ totalPages }}</span>
       <button @click="nextPage" :disabled="currentPage === totalPages">▶</button>
     </div>
+
+    <GDialog v-model="deleteStudentDialogState" :max-width="400">
+      <div class="delete-confirm-modal">
+        <p>Вы уверены, что хотите удалить студента
+          <strong>{{ studentToDelete?.lastName }} {{ studentToDelete?.firstName }} {{ studentToDelete?.patronymic }}</strong>?
+        </p>
+        <div class="delete-confirm-modal__actions">
+          <button @click="deleteStudent" class="delete-confirm-modal__delete">Удалить</button>
+          <button @click="deleteStudentDialogState = false">Отмена</button>
+        </div>
+      </div>
+    </GDialog>
   </div>
 </template>
 
 <script setup>
 import {ref, computed, onMounted} from 'vue'
 import axios from "axios";
+import {GDialog} from "gitart-vue-dialog/dist/index";
 
 const userList = ref([])
 const studentsList = ref([])
@@ -346,9 +359,20 @@ function prevPage() {
   if (currentPage.value > 1) currentPage.value--
 }
 
-async function deleteStudent(id) {
-  await axios.delete(`students/${id}`)
-      .then((userData) => {
+const deleteStudentDialogState = ref(false)
+const studentToDelete = ref(null)
+
+function confirmDeleteStudent(student) {
+  studentToDelete.value = student
+  deleteStudentDialogState.value = true
+}
+
+async function deleteStudent() {
+  if (!studentToDelete.value) return
+  await axios.delete(`students/${studentToDelete.value.id}`)
+      .then(() => {
+        deleteStudentDialogState.value = false
+        studentToDelete.value = null
         getStudents()
       })
 }
@@ -464,6 +488,39 @@ async function deleteStudent(id) {
 
   button {
     cursor: pointer;
+  }
+}
+
+.delete-confirm-modal {
+  padding: 20px;
+
+  p {
+    margin-bottom: 20px;
+    font-size: 16px;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+
+    button {
+      padding: 8px 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+      background: #fff;
+    }
+  }
+
+  &__delete {
+    background-color: #dc3545 !important;
+    color: #fff;
+    border-color: #dc3545 !important;
+
+    &:hover {
+      background-color: #c82333 !important;
+    }
   }
 }
 

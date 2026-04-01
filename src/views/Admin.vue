@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import axios from 'axios';
 import { API_FILES_URL, NO_IMG_URL, parserAxios } from '@/main';
+import { GDialog } from 'gitart-vue-dialog/dist/index';
 import Loader from '@/components/includes/Loader';
 import { userAuth } from '@/store/userAuth';
 import StudentsListTable from "@/views/StudentsListTable.vue";
@@ -401,9 +402,20 @@ const getUsers = async () => {
       })
 }
 
-const deleteUser = async (userId) => {
-  await axios.delete('employees/' + userId)
+const deleteUserDialogState = ref(false)
+const userToDelete = ref(null)
+
+const confirmDeleteUser = (user) => {
+  userToDelete.value = user
+  deleteUserDialogState.value = true
+}
+
+const deleteUser = async () => {
+  if (!userToDelete.value) return
+  await axios.delete('employees/' + userToDelete.value.id)
       .then(() => {
+        deleteUserDialogState.value = false
+        userToDelete.value = null
         location.reload()
       })
 }
@@ -687,7 +699,7 @@ const deleteMail = async (mailId) => {
                 <template v-if="activeEmployeesTab === 'employees'">
                   <router-link :to="'/profile/' + user.id" style="margin-left: auto;" class="admin-button">Редактировать
                   </router-link>
-                  <button @click="deleteUser(user.id)" class="admin-button">Удалить</button>
+                  <button @click="confirmDeleteUser(user)" class="admin-button">Удалить</button>
                 </template>
                 <div v-else style="display: flex; gap: 15px">
                   <a
@@ -788,6 +800,19 @@ const deleteMail = async (mailId) => {
       </div>
     </div>
   </section>
+
+  <GDialog v-model="deleteUserDialogState" :max-width="400">
+    <div class="delete-confirm-modal">
+      <p>Вы уверены, что хотите удалить сотрудника
+        <strong>{{ userToDelete?.lastName }} {{ userToDelete?.firstName }} {{ userToDelete?.patronymic }}</strong>?
+      </p>
+      <div class="delete-confirm-modal__actions">
+        <button @click="deleteUser" class="admin-button delete-confirm-modal__delete">Удалить</button>
+        <button @click="deleteUserDialogState = false" class="admin-button">Отмена</button>
+      </div>
+    </div>
+  </GDialog>
+
   <Loader v-if="isLoading"/>
 </template>
 
@@ -1173,6 +1198,30 @@ select option {
         overflow: hidden;
         text-overflow: ellipsis;
       }
+    }
+  }
+}
+
+.delete-confirm-modal {
+  padding: 20px;
+
+  p {
+    margin-bottom: 20px;
+    font-size: 16px;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  &__delete {
+    background-color: #dc3545;
+    color: #fff;
+
+    &:hover {
+      background-color: #c82333;
     }
   }
 }
