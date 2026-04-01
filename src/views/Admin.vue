@@ -6,6 +6,7 @@ import { GDialog } from 'gitart-vue-dialog/dist/index';
 import Loader from '@/components/includes/Loader';
 import { userAuth } from '@/store/userAuth';
 import StudentsListTable from "@/views/StudentsListTable.vue";
+import TabsConstructor from "@/views/TabsConstructor.vue";
 
 const savedActiveItem = localStorage.getItem('activeItem');
 
@@ -115,6 +116,7 @@ const checkRole = async () => {
   admRole.value = store.getRole
 
   let buttons = [
+    { value: 'navigation', label: 'Навигация' },
     { value: 'slider', label: 'Слайдер' },
     { value: 'events', label: 'Мероприятия' },
     { value: 'feed', label: 'Новости' },
@@ -456,6 +458,9 @@ const deleteMail = async (mailId) => {
       </button>
     </aside>
     <div class="admin__view">
+      <div v-show="activeItem === 'navigation'" class="admin__view-item">
+        <TabsConstructor />
+      </div>
       <div v-show="activeItem === 'slider'" class="admin__view-item">
         <div class="slider-admin">
           <div v-for="(slide, index) in slidesAdminArr" :key="slide.id" class="slider-admin__item">
