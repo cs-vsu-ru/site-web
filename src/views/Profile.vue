@@ -2,58 +2,154 @@
   <section class="profile" v-if="destination">
     <div class="profile__left">
       <div class="profile__left-block">
-        <img v-if="profileImg !== null" :src="`${API_FILES_URL}/${profileImg}`" alt="" class="profile__left-block_image">
-        <img v-else :src="`${API_FILES_URL}/${destination.imageUrl}`" alt="" class="profile__left-block_image">
+        <img
+          v-if="profileImg"
+          :src="profileImg"
+          alt=""
+          class="profile__left-block_image"
+        />
+        <img
+          v-else-if="destination.imageUrl"
+          :src="`${API_FILES_URL}/${destination.imageUrl}`"
+          alt=""
+          class="profile__left-block_image"
+        />
       </div>
       <div class="profile__left-buttons">
-        <input v-on:change="checkImg" ref="imgUrl" type="file" accept="image/png, image/jpeg, image/jpg"
-               style="display: none" id="edit_profile_image">
-        <label for="edit_profile_image" v-if="activeEdit" class="profile__left-buttons_item">Изменить фото</label>
-        <router-link v-else :to="'/schedule/' + destination.id" class="profile__left-buttons_item">Расписание
-          преподавателя
+        <input
+          v-on:change="checkImg"
+          ref="imgUrl"
+          type="file"
+          accept="image/png, image/jpeg, image/jpg"
+          style="display: none"
+          id="edit_profile_image"
+        />
+        <label
+          for="edit_profile_image"
+          v-if="activeEdit"
+          class="profile__left-buttons_item"
+          >Изменить фото</label
+        >
+        <router-link
+          v-else
+          :to="'/schedule/' + destination.id"
+          class="profile__left-buttons_item"
+          >Расписание преподавателя
         </router-link>
         <!--            <button class="profile__left-buttons_item">Научное руководство</button>-->
-        <a v-if="!activeEdit" class="profile__left-buttons_email"
-           :href="'mailto: ' + destination.email">{{ destination.email }}</a>
-        <input class="profile__left-buttons_email" v-else v-model="destination.email" type="text">
-        <input class="profile__left-buttons_email" v-if="activeEdit && login" v-model="login.login" type="text">
+        <a
+          v-if="!activeEdit"
+          class="profile__left-buttons_email"
+          :href="'mailto: ' + destination.email"
+          >{{ destination.email }}</a
+        >
+        <input
+          class="profile__left-buttons_email"
+          v-else
+          v-model="destination.email"
+          type="text"
+        />
+        <input
+          class="profile__left-buttons_email"
+          v-if="activeEdit && login"
+          v-model="login.login"
+          type="text"
+        />
       </div>
     </div>
     <div v-if="!activeEdit" class="profile__right">
       <p class="profile__right-name">
-        {{ destination.lastName + ' ' + destination.firstName + ' ' + destination.patronymic }}</p>
-      <p v-if="destination.post" class="profile__right-item">Должность <span>{{ destination.post }}</span></p>
-      <p v-if="destination.academicTitle && destination.academicDegree" class="profile__right-item">Ученое звание /
-        Ученая степень <span>{{ destination.academicTitle }} / {{ destination.academicDegree }}</span></p>
-      <p v-if="destination.experience && destination.professionalExperience" class="profile__right-item">Стаж <span>Общий - {{
-          Math.floor((new Date() - new Date(destination.experience)) / 1000 / 24 / 60 / 60 / 365)
-        }} / По специальности - {{
-          Math.floor((new Date() - new Date(destination.professionalExperience)) / 1000 / 24 / 60 / 60 / 365)
-        }}</span></p>
+        {{
+          destination.lastName +
+          " " +
+          destination.firstName +
+          " " +
+          destination.patronymic
+        }}
+      </p>
+      <p v-if="destination.post" class="profile__right-item">
+        Должность <span>{{ destination.post }}</span>
+      </p>
+      <p
+        v-if="destination.academicTitle && destination.academicDegree"
+        class="profile__right-item"
+      >
+        Ученое звание / Ученая степень
+        <span
+          >{{ destination.academicTitle }} /
+          {{ destination.academicDegree }}</span
+        >
+      </p>
+      <p
+        v-if="destination.experience && destination.professionalExperience"
+        class="profile__right-item"
+      >
+        Стаж
+        <span
+          >Общий -
+          {{
+            Math.floor(
+              (new Date() - new Date(destination.experience)) /
+                1000 /
+                24 /
+                60 /
+                60 /
+                365,
+            )
+          }}
+          / По специальности -
+          {{
+            Math.floor(
+              (new Date() - new Date(destination.professionalExperience)) /
+                1000 /
+                24 /
+                60 /
+                60 /
+                365,
+            )
+          }}</span
+        >
+      </p>
       <div
-          v-if="currUserId === destination.id && destination.id !== 1 && userRole !== 'ADMIN' && destination.plan !== null"
-          style="align-self:flex-start;" class="profile__right-plan">
+        v-if="
+          currUserId === destination.id &&
+          destination.id !== 1 &&
+          userRole !== 'ADMIN' &&
+          destination.plan !== null
+        "
+        style="align-self: flex-start"
+        class="profile__right-plan"
+      >
         <p class="profile__right-item">Индивидуальный план</p>
         <a
-            style="margin-top: 15px;"
-            class="admin-button"
-            target="_blank"
-            :href="`${API_FILES_URL}/${destination.plan}`"
-        >Скачать</a>
+          style="margin-top: 15px"
+          class="admin-button"
+          target="_blank"
+          :href="`${API_FILES_URL}/${destination.plan}`"
+          >Скачать</a
+        >
       </div>
-      <div v-if="(userRole === 'ADMIN' || currUserId === destination.id) && destination.id !== 1"
-           style="align-self:flex-start;"
-           class="profile__right-plan">
+      <div
+        v-if="
+          (userRole === 'ADMIN' || currUserId === destination.id) &&
+          destination.id !== 1
+        "
+        style="align-self: flex-start"
+        class="profile__right-plan"
+      >
         <p class="profile__right-item">Индивидуальный план</p>
         <a
-            v-if="destination.plan !== null"
-            style="margin-top: 15px;"
-            class="admin-button"
-            :href="`${API_FILES_URL}/${destination.plan}`"
-            target="_blank"
-        >Скачать текущий план</a>
-        <input ref="planUrl" style="margin-top: 10px;" type="file">
-        <button @click="loadPlan" style="margin-top: 15px;" class="admin-button">Загрузить</button>
+          v-if="destination.plan !== null"
+          style="margin-top: 15px"
+          class="admin-button"
+          :href="`${API_FILES_URL}/${destination.plan}`"
+          target="_blank"
+          >Скачать текущий план</a
+        >
+        <input ref="planUrl" style="margin-top: 10px" type="file" />
+        <button @click="loadPlan" style="margin-top: 15px" class="admin-button">
+          Загрузить
+        </button>
       </div>
     </div>
     <div v-else class="profile__right">
@@ -64,201 +160,242 @@
           <option value="ADMIN">Администратор</option>
         </select>
       </div>
-      <input class="profile__right-item" v-model="destination.lastName">
-      <input class="profile__right-item" v-model="destination.firstName">
-      <input class="profile__right-item" v-model="destination.patronymic">
-      <p class="profile__right-item">Должность <input class="profile__right-item" v-model="destination.post"></p>
-      <p class="profile__right-item">Ученое звание / Ученая степень <span><input class="profile__right-item"
-                                                                                 v-model="destination.academicTitle"> / <input
-          class="profile__right-item" v-model="destination.academicDegree"></span></p>
-      <p class="profile__right-item">Стаж <span>Общий - <input type="date" class="profile__right-item"
-                                                               v-model="destination.experience"> / По специальности - <input
-          type="date" class="profile__right-item" v-model="destination.professionalExperience"></span></p>
+      <input class="profile__right-item" v-model="destination.lastName" />
+      <input class="profile__right-item" v-model="destination.firstName" />
+      <input class="profile__right-item" v-model="destination.patronymic" />
+      <p class="profile__right-item">
+        Должность
+        <input class="profile__right-item" v-model="destination.post" />
+      </p>
+      <p class="profile__right-item">
+        Ученое звание / Ученая степень
+        <span
+          ><input
+            class="profile__right-item"
+            v-model="destination.academicTitle" />
+          /
+          <input
+            class="profile__right-item"
+            v-model="destination.academicDegree"
+        /></span>
+      </p>
+      <p class="profile__right-item">
+        Стаж
+        <span
+          >Общий -
+          <input
+            type="date"
+            class="profile__right-item"
+            v-model="destination.experience" />
+          / По специальности -
+          <input
+            type="date"
+            class="profile__right-item"
+            v-model="destination.professionalExperience"
+        /></span>
+      </p>
       <div class="profile__checkbox">
         <label>
-          <input type="checkbox" v-model="destination.hasLessons" class="my-checkbox">
-          {{ 'Создать расписание' }}
+          <input
+            type="checkbox"
+            v-model="destination.hasLessons"
+            class="my-checkbox"
+          />
+          {{ "Создать расписание" }}
         </label>
       </div>
     </div>
-    <div v-if="currUserId === destination.id && !activeEdit" class="profile__tfa">
-      <button
-          class="admin-button"
-          @click="openTwoFactor"
-      >
-        {{ destination.twoFactorEnabled ? 'Отключить 2FA' : 'Подключить 2FA' }}
+    <div
+      v-if="currUserId === destination.id && !activeEdit"
+      class="profile__tfa"
+    >
+      <button class="admin-button" @click="openTwoFactor">
+        {{ destination.twoFactorEnabled ? "Отключить 2FA" : "Подключить 2FA" }}
       </button>
     </div>
 
-    <button v-if="(userRole === 'ADMIN' || currUserId === destination.id) && !activeEdit"
-            @click="activeEdit = true; getLogin(destination.id)"
-            class="admin-button profile__edit">Редактировать
+    <button
+      v-if="
+        (userRole === 'ADMIN' || currUserId === destination.id) && !activeEdit
+      "
+      @click="
+        activeEdit = true;
+        getLogin(destination.id);
+      "
+      class="admin-button profile__edit"
+    >
+      Редактировать
     </button>
-    <button v-if="(userRole === 'ADMIN' || currUserId === destination.id) && activeEdit" @click="saveProfile"
-            class="admin-button profile__edit">
+    <button
+      v-if="
+        (userRole === 'ADMIN' || currUserId === destination.id) && activeEdit
+      "
+      @click="saveProfile"
+      class="admin-button profile__edit"
+    >
       Сохранить
     </button>
 
     <TwoFactorSetup
-        ref="tfaRef"
-        v-model="tfaDialogState"
-        :current-email="destination.email"
-        :two-factor-enabled="destination.twoFactorEnabled"
-        @updated="onTfaUpdated"
+      ref="tfaRef"
+      v-model="tfaDialogState"
+      :current-email="destination.email"
+      :two-factor-enabled="destination.twoFactorEnabled"
+      @updated="onTfaUpdated"
     />
   </section>
-  <Loader v-if="isLoading"/>
+  <Loader v-if="isLoading" />
 </template>
 
 <script setup>
-import {computed, onMounted, ref} from "vue";
+import { computed, onMounted, ref } from "vue";
 import axios from "axios";
-import {useRoute} from "vue-router";
+import { useRoute } from "vue-router";
 import Loader from "@/components/includes/Loader";
 import TwoFactorSetup from "@/components/includes/TwoFactorSetup.vue";
-import {userAuth} from "@/store/userAuth";
-import { API_FILES_URL } from '@/main';
+import { userAuth } from "@/store/userAuth";
+import { API_FILES_URL } from "@/main";
 
-const accountInfo = ref([])
-const userRole = ref()
-const currUserId = ref()
-const planUrl = ref(null)
-const activeEdit = ref(false)
-const login = ref()
-const isLoading = ref(false)
-const route = useRoute()
-const imgUrl = ref()
-const profileImg = ref(null)
-const tfaDialogState = ref(false)
-const tfaRef = ref(null)
+const accountInfo = ref([]);
+const userRole = ref();
+const currUserId = ref();
+const planUrl = ref(null);
+const activeEdit = ref(false);
+const login = ref();
+const isLoading = ref(false);
+const route = useRoute();
+const imgUrl = ref();
+const profileImg = ref(null);
+const tfaDialogState = ref(false);
+const tfaRef = ref(null);
 
-const store = userAuth()
-const destinationId = computed(() => route.params.id)
+const store = userAuth();
+const destinationId = computed(() => route.params.id);
 const destination = computed(() => {
-  return accountInfo.value.find(item => item.id == destinationId.value)
-})
+  return accountInfo.value.find((item) => item.id == destinationId.value);
+});
 onMounted(() => {
-  accountAPI()
-  getUserData()
-})
+  accountAPI();
+  getUserData();
+});
 
 const checkImg = () => {
-  profileImg.value = URL.createObjectURL(imgUrl.value.files[0])
-}
+  profileImg.value = URL.createObjectURL(imgUrl.value.files[0]);
+};
 
 const accountAPI = async () => {
-  isLoading.value = true
-  await axios.get('employees')
-      .then((accId) => {
-        accountInfo.value = accId.data
-        isLoading.value = false
-      })
-}
+  isLoading.value = true;
+  await axios.get("employees").then((accId) => {
+    accountInfo.value = accId.data;
+    isLoading.value = false;
+  });
+};
 
 const getUserData = async () => {
-  userRole.value = store.getRole
-  await axios.get('account')
-      .then((user) => {
-        currUserId.value = user.data.id
-      })
-}
+  userRole.value = store.getRole;
+  await axios.get("account").then((user) => {
+    currUserId.value = user.data.id;
+  });
+};
 
 const getLogin = async (currId) => {
-  await axios.get('employees/admin/' + currId)
-      .then((loginData) => {
-        login.value = loginData.data
-      })
-}
+  await axios.get("employees/admin/" + currId).then((loginData) => {
+    login.value = loginData.data;
+  });
+};
 
 const saveProfile = async () => {
   if (destination.value) {
     if (imgUrl.value.files[0]) {
-      let formData = new FormData()
+      let formData = new FormData();
 
-      formData.append('file', imgUrl.value.files[0])
+      formData.append("file", imgUrl.value.files[0]);
 
-      await axios.post('upload-file', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      })
-          .then(async (urlData) => {
-            await axios.patch('employees/' + destination.value.id, {
-              id: destination.value.id,
-              academicDegree: destination.value.academicDegree,
-              academicTitle: destination.value.academicTitle,
-              email: destination.value.email,
-              experience: destination.value.experience,
-              firstName: destination.value.firstName,
-              imageUrl: urlData.data,
-              lastName: destination.value.lastName,
-              patronymic: destination.value.patronymic,
-              post: destination.value.post,
-              professionalExperience: destination.value.professionalExperience,
-              login: login.value.login,
-              hasLessons: destination.value.hasLessons,
-              mainRole: login.value.mainRole
-            })
-          })
-          .then(() => {
-            location.reload()
-          })
+      await axios
+        .post("upload-file", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then(async (urlData) => {
+          await axios.patch("employees/" + destination.value.id, {
+            id: destination.value.id,
+            academicDegree: destination.value.academicDegree,
+            academicTitle: destination.value.academicTitle,
+            email: destination.value.email,
+            experience: destination.value.experience,
+            firstName: destination.value.firstName,
+            imageUrl: urlData.data,
+            lastName: destination.value.lastName,
+            patronymic: destination.value.patronymic,
+            post: destination.value.post,
+            professionalExperience: destination.value.professionalExperience,
+            login: login.value.login,
+            hasLessons: destination.value.hasLessons,
+            mainRole: login.value.mainRole,
+          });
+        })
+        .then(() => {
+          location.reload();
+        });
     } else {
-      await axios.patch('employees/' + destination.value.id, {
-        id: destination.value.id,
-        academicDegree: destination.value.academicDegree,
-        academicTitle: destination.value.academicTitle,
-        email: destination.value.email,
-        experience: destination.value.experience,
-        firstName: destination.value.firstName,
-        imageUrl: destination.value.imageUrl,
-        lastName: destination.value.lastName,
-        patronymic: destination.value.patronymic,
-        post: destination.value.post,
-        professionalExperience: destination.value.professionalExperience,
-        login: login.value.login,
-        hasLessons: destination.value.hasLessons,
-        mainRole: login.value.mainRole
-      })
-          .then(() => {
-            location.reload()
-          })
+      await axios
+        .patch("employees/" + destination.value.id, {
+          id: destination.value.id,
+          academicDegree: destination.value.academicDegree,
+          academicTitle: destination.value.academicTitle,
+          email: destination.value.email,
+          experience: destination.value.experience,
+          firstName: destination.value.firstName,
+          imageUrl: destination.value.imageUrl,
+          lastName: destination.value.lastName,
+          patronymic: destination.value.patronymic,
+          post: destination.value.post,
+          professionalExperience: destination.value.professionalExperience,
+          login: login.value.login,
+          hasLessons: destination.value.hasLessons,
+          mainRole: login.value.mainRole,
+        })
+        .then(() => {
+          location.reload();
+        });
     }
   }
-}
+};
 
 const openTwoFactor = () => {
-  tfaDialogState.value = true
+  tfaDialogState.value = true;
   setTimeout(() => {
-    if (tfaRef.value) tfaRef.value.open()
-  })
-}
+    if (tfaRef.value) tfaRef.value.open();
+  });
+};
 
 const onTfaUpdated = () => {
-  accountAPI()
-}
+  accountAPI();
+};
 
 const loadPlan = async () => {
   if (destination.value) {
-    let formData = new FormData()
+    let formData = new FormData();
 
-    formData.append('file', planUrl.value.files[0])
+    formData.append("file", planUrl.value.files[0]);
 
-    await axios.post('upload-file', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    })
-        .then(async (urlData) => {
-          await axios.patch('employees/' + destination.value.id, {
-            id: destination.value.id,
-            plan: urlData.data
-          })
+    await axios
+      .post("upload-file", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then(async (urlData) => {
+        await axios.patch("employees/" + destination.value.id, {
+          id: destination.value.id,
+          plan: urlData.data,
+        });
 
-          location.reload()
-        })
+        location.reload();
+      });
   }
-}
+};
 </script>
 
 <style lang="scss" scoped>
@@ -280,7 +417,7 @@ const loadPlan = async () => {
   }
 
   &__left {
-    background: #C2EEFF;
+    background: #c2eeff;
     padding: 20px;
     max-width: 385px;
     width: 100%;
@@ -331,7 +468,7 @@ const loadPlan = async () => {
   }
 
   &__right {
-    background: #C2EEFF;
+    background: #c2eeff;
     width: 100%;
     border-radius: 25px;
     padding: 20px;
@@ -392,7 +529,9 @@ input.profile__right-name {
   border: 1px solid $pr1;
 }
 
-input.profile__right-item, input.profile__left-buttons_email, select.profile__right-item {
+input.profile__right-item,
+input.profile__left-buttons_email,
+select.profile__right-item {
   background: white;
   border-radius: 10px;
   padding: 5px;
