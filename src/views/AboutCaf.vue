@@ -122,6 +122,7 @@ const saveStatic = async () => {
 .static {
   max-width: 1440px;
   margin: 0 auto;
+  padding-top: 20px;
 
   @media (max-width: 1480px) {
     max-width: calc(100% - 40px);

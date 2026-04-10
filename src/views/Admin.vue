@@ -1,66 +1,68 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue';
-import axios from 'axios';
-import { API_FILES_URL, NO_IMG_URL, parserAxios } from '@/main';
-import { GDialog } from 'gitart-vue-dialog/dist/index';
-import Loader from '@/components/includes/Loader';
-import { userAuth } from '@/store/userAuth';
+import { computed, onMounted, ref } from "vue";
+import axios from "axios";
+import { API_FILES_URL, NO_IMG_URL, parserAxios } from "@/main";
+import { GDialog } from "gitart-vue-dialog/dist/index";
+import Loader from "@/components/includes/Loader";
+import { userAuth } from "@/store/userAuth";
 import StudentsListTable from "@/views/StudentsListTable.vue";
 
-const savedActiveItem = localStorage.getItem('activeItem');
+const savedActiveItem = localStorage.getItem("activeItem");
 
-const tabTitles = ref([])
-const store = userAuth()
-const slidesAdminArr = ref([])
-const checkDisable = ref([])
-const previewUrl = ref([])
-const currFile = ref([])
-const newSlide = ref(false)
-const newText = ref('')
-const addUrl = ref(null)
-const newUrl = ref(null)
-const newFile = ref(null)
-const activeItem = ref(savedActiveItem ?? 'slider');
-const newsSlider = ref([])
-const newsDisabler = ref([])
-const currNews = ref([])
-const scheduleUrl = ref(null)
-const scheduleError = ref('')
-const userList = ref([])
-const sortOption = ref('1');
-const filterOption = ref('');
-const employeesSearchQuery = ref('');
-const activeEmployeesTab = ref(localStorage.getItem('employeesActiveTab') ?? 'employees');
+const tabTitles = ref([]);
+const store = userAuth();
+const slidesAdminArr = ref([]);
+const checkDisable = ref([]);
+const previewUrl = ref([]);
+const currFile = ref([]);
+const newSlide = ref(false);
+const newText = ref("");
+const addUrl = ref(null);
+const newUrl = ref(null);
+const newFile = ref(null);
+const activeItem = ref(savedActiveItem ?? "slider");
+const newsSlider = ref([]);
+const newsDisabler = ref([]);
+const currNews = ref([]);
+const scheduleUrl = ref(null);
+const scheduleError = ref("");
+const userList = ref([]);
+const sortOption = ref("1");
+const filterOption = ref("");
+const employeesSearchQuery = ref("");
+const activeEmployeesTab = ref(
+  localStorage.getItem("employeesActiveTab") ?? "employees",
+);
 const fileInput = ref(null);
-const eventArr = ref([])
+const eventArr = ref([]);
 const monthAssoc = ref({
-  '01': 'января',
-  '02': 'февраля',
-  '03': 'марта',
-  '04': 'апреля',
-  '05': 'мая',
-  '06': 'июня',
-  '07': 'июля',
-  '08': 'августа',
-  '09': 'сентября',
-  '10': 'октября',
-  '11': 'ноября',
-  '12': 'декабря'
-})
-const isLoading = ref(false)
-const mails = ref()
-const newsShow = ref([])
-const eventsShow = ref([])
+  "01": "января",
+  "02": "февраля",
+  "03": "марта",
+  "04": "апреля",
+  "05": "мая",
+  "06": "июня",
+  "07": "июля",
+  "08": "августа",
+  "09": "сентября",
+  10: "октября",
+  11: "ноября",
+  12: "декабря",
+});
+const isLoading = ref(false);
+const mails = ref();
+const newsShow = ref([]);
+const eventsShow = ref([]);
 const assocStatus = ref({
-  'open': 'Запланирована',
-  'close': 'Отправлена'
-})
-const newsUrl = ref()
-const admRole = ref()
+  open: "Запланирована",
+  close: "Отправлена",
+});
+const newsUrl = ref();
+const admRole = ref();
 
 const uniquePosts = computed(() => {
-  const posts = userList.value.map(user => user.post);
-  return [...new Set(posts)].filter(post => post);
+  const posts = userList.value.map((user) => user.post);
+  return [...new Set(posts)].filter((post) => post);
 });
 
 const filteredAndSortedUsers = computed(() => {
@@ -68,26 +70,31 @@ const filteredAndSortedUsers = computed(() => {
 
   if (employeesSearchQuery.value) {
     const query = employeesSearchQuery.value.toLowerCase();
-    users = users.filter(user => {
-      const fullName = `${user.lastName} ${user.firstName} ${user.patronymic}`.toLowerCase();
+    users = users.filter((user) => {
+      const fullName =
+        `${user.lastName} ${user.firstName} ${user.patronymic}`.toLowerCase();
       return fullName.includes(query);
     });
   }
 
   if (filterOption.value) {
-    users = users.filter(user => user.post === filterOption.value);
+    users = users.filter((user) => user.post === filterOption.value);
   }
 
-  if (sortOption.value === '1') {
+  if (sortOption.value === "1") {
     return users.sort((a, b) => {
-      const nameA = `${a.lastName} ${a.firstName} ${a.patronymic}`.toLowerCase();
-      const nameB = `${b.lastName} ${b.firstName} ${b.patronymic}`.toLowerCase();
+      const nameA =
+        `${a.lastName} ${a.firstName} ${a.patronymic}`.toLowerCase();
+      const nameB =
+        `${b.lastName} ${b.firstName} ${b.patronymic}`.toLowerCase();
       return nameA.localeCompare(nameB);
     });
-  } else if (sortOption.value === '2') {
+  } else if (sortOption.value === "2") {
     return users.sort((a, b) => {
-      const nameA = `${a.lastName} ${a.firstName} ${a.patronymic}`.toLowerCase();
-      const nameB = `${b.lastName} ${b.firstName} ${b.patronymic}`.toLowerCase();
+      const nameA =
+        `${a.lastName} ${a.firstName} ${a.patronymic}`.toLowerCase();
+      const nameB =
+        `${b.lastName} ${b.firstName} ${b.patronymic}`.toLowerCase();
       return nameB.localeCompare(nameA);
     });
   }
@@ -96,121 +103,116 @@ const filteredAndSortedUsers = computed(() => {
 });
 
 const handleEmployeesActiveTabChange = (tab) => {
-  localStorage.setItem('employeesActiveTab', tab);
+  localStorage.setItem("employeesActiveTab", tab);
   activeEmployeesTab.value = tab;
-}
+};
 
 onMounted(() => {
-  getSlidesForAdmin()
-  newsList()
-  getUsers()
-  eventList()
-  getMails()
-  checkRole()
+  getSlidesForAdmin();
+  newsList();
+  getUsers();
+  eventList();
+  getMails();
+  checkRole();
 
   tabsHandler(activeItem.value);
-})
+});
 
 const checkRole = async () => {
-  admRole.value = store.getRole
+  admRole.value = store.getRole;
 
   let buttons = [
-    { value: 'slider', label: 'Слайдер' },
-    { value: 'events', label: 'Мероприятия' },
-    { value: 'feed', label: 'Новости' },
-    { value: 'schedule', label: 'Расписание' },
-    { value: 'employees', label: 'Сотрудники' },
-    { value: 'students', label: 'Студенты' },
-    { value: 'newsletter', label: 'Рассылка' }
-  ]
+    { value: "slider", label: "Слайдер" },
+    { value: "events", label: "Мероприятия" },
+    { value: "feed", label: "Новости" },
+    { value: "schedule", label: "Расписание" },
+    { value: "employees", label: "Сотрудники" },
+    { value: "students", label: "Студенты" },
+    { value: "newsletter", label: "Рассылка" },
+  ];
 
-  if (admRole.value === 'ADMIN') {
-    tabTitles.value = buttons
+  if (admRole.value === "ADMIN") {
+    tabTitles.value = buttons;
   }
 
-  if (admRole.value === 'MODERATOR') {
-    tabTitles.value = buttons.filter(b => b.value !== 'employees');
+  if (admRole.value === "MODERATOR") {
+    tabTitles.value = buttons.filter((b) => b.value !== "employees");
   }
-}
+};
 
 const eventList = async () => {
-  await axios.get('events')
-      .then((events) => {
-        eventArr.value = events.data
+  await axios.get("events").then((events) => {
+    eventArr.value = events.data;
 
-        for (let i = 0; i < events.data.length; i++) {
-          eventsShow.value.push(true)
-        }
-      })
-}
+    for (let i = 0; i < events.data.length; i++) {
+      eventsShow.value.push(true);
+    }
+  });
+};
 
 const formatDateToString = (eventDate) => {
   const dateObject = new Date(eventDate);
-  return `${dateObject.getDate().toString().padStart(2, '0')}.${(
-      dateObject.getMonth() + 1
+  return `${dateObject.getDate().toString().padStart(2, "0")}.${(
+    dateObject.getMonth() + 1
   )
-      .toString()
-      .padStart(2, '0')}.${dateObject.getFullYear()}`;
-}
+    .toString()
+    .padStart(2, "0")}.${dateObject.getFullYear()}`;
+};
 
 const formatTimeToString = (eventDate) => {
   const dateObject = new Date(eventDate);
-  return `${dateObject
-      .getHours()
-      .toString()
-      .padStart(2, '0')}:${dateObject
-      .getMinutes()
-      .toString()
-      .padStart(2, '0')}`;
-
-}
+  return `${dateObject.getHours().toString().padStart(2, "0")}:${dateObject
+    .getMinutes()
+    .toString()
+    .padStart(2, "0")}`;
+};
 
 const getSlidesForAdmin = async () => {
-  await axios.get('sliders')
-      .then((slidesData) => {
-        slidesAdminArr.value = slidesData.data
+  await axios.get("sliders").then((slidesData) => {
+    slidesAdminArr.value = slidesData.data;
 
-        for (let i in slidesData.data) {
-          checkDisable.value.push(true)
-          currFile.value.push(null)
-        }
-      })
-}
+    for (let i in slidesData.data) {
+      checkDisable.value.push(true);
+      currFile.value.push(null);
+    }
+  });
+};
 
 const saveChanges = async (slideId, imageURL, title, urlTo, slideIdx) => {
   if (previewUrl.value[slideIdx].files[0]) {
-    let formData = new FormData()
+    let formData = new FormData();
 
-    formData.append('file', previewUrl.value[slideIdx].files[0])
+    formData.append("file", previewUrl.value[slideIdx].files[0]);
 
-    await axios.post('upload-file',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        })
-        .then(async (urlData) => {
-          await axios.put('sliders/' + slideId, {
-            id: slideId,
-            imageURL: urlData.data,
-            title: title,
-            urlTo: urlTo
-          })
-        })
+    await axios
+      .post("upload-file", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then(async (urlData) => {
+        await axios.put("sliders/" + slideId, {
+          id: slideId,
+          imageURL: urlData.data,
+          title: title,
+          urlTo: urlTo,
+        });
+      });
   } else {
-    await axios.put('sliders/' + slideId, {
+    await axios.put("sliders/" + slideId, {
       id: slideId,
       imageURL: imageURL,
       title: title,
-      urlTo: urlTo
-    })
+      urlTo: urlTo,
+    });
   }
-}
+};
 
 const checkFile = (currId) => {
-  currFile.value[currId] = URL.createObjectURL(previewUrl.value[currId].files[0])
-}
+  currFile.value[currId] = URL.createObjectURL(
+    previewUrl.value[currId].files[0],
+  );
+};
 
 const handleFileUpload = async (event, employee) => {
   const file = event.target.files[0];
@@ -220,27 +222,26 @@ const handleFileUpload = async (event, employee) => {
     isLoading.value = true;
 
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append("file", file);
 
-    const uploadResponse = await axios.post('upload-file', formData, {
+    const uploadResponse = await axios.post("upload-file", formData, {
       headers: {
-        'Content-Type': 'multipart/form-data'
-      }
+        "Content-Type": "multipart/form-data",
+      },
     });
 
     await axios.patch(`employees/${employee.id}`, {
       id: employee.id,
-      plan: uploadResponse.data
+      plan: uploadResponse.data,
     });
 
     await getUsers();
-
   } catch (error) {
-    console.error('Error uploading plan:', error);
-    alert('Ошибка при загрузке плана');
+    console.error("Error uploading plan:", error);
+    alert("Ошибка при загрузке плана");
   } finally {
     if (fileInput.value) {
-      fileInput.value.value = '';
+      fileInput.value.value = "";
     }
     isLoading.value = false;
   }
@@ -248,209 +249,213 @@ const handleFileUpload = async (event, employee) => {
 
 const addSlide = async () => {
   if (addUrl.value.files[0]) {
-    let formData = new FormData()
+    let formData = new FormData();
 
-    formData.append('file', addUrl.value.files[0])
+    formData.append("file", addUrl.value.files[0]);
 
-    await axios.post('upload-file',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        })
-        .then(async (urlData) => {
-          await axios.post('sliders', {
-            imageURL: urlData.data,
-            title: newText.value,
-            urlTo: newsUrl.value
-          })
+    await axios
+      .post("upload-file", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then(async (urlData) => {
+        await axios.post("sliders", {
+          imageURL: urlData.data,
+          title: newText.value,
+          urlTo: newsUrl.value,
+        });
 
-          location.reload()
-        })
+        location.reload();
+      });
   } else {
-    await axios.post('sliders', {
-      imageURL: `${NO_IMG_URL}`,
-      title: newText.value,
-      urlTo: newsUrl.value
-    })
-        .then(() => {
-          location.reload()
-        })
+    await axios
+      .post("sliders", {
+        imageURL: `${NO_IMG_URL}`,
+        title: newText.value,
+        urlTo: newsUrl.value,
+      })
+      .then(() => {
+        location.reload();
+      });
   }
-}
+};
 
 const checkNewFile = () => {
-  newFile.value = URL.createObjectURL(addUrl.value.files[0])
-}
+  newFile.value = URL.createObjectURL(addUrl.value.files[0]);
+};
 
 const deleteSlide = async (slideId) => {
-  await axios.delete('sliders/' + slideId)
-      .then(() => {
-        location.reload()
-      })
-}
+  await axios.delete("sliders/" + slideId).then(() => {
+    location.reload();
+  });
+};
 
 const tabsHandler = (tab) => {
-  localStorage.setItem('activeItem', tab);
+  localStorage.setItem("activeItem", tab);
   activeItem.value = tab;
-}
+};
 
 const newsList = async () => {
-  await axios.get('news')
-      .then((news) => {
-        newsSlider.value = news.data
-        newsSlider.value.reverse()
+  await axios.get("news").then((news) => {
+    newsSlider.value = news.data;
+    newsSlider.value.reverse();
 
-        for (let i in news.data) {
-          newsDisabler.value.push(false)
-          currNews.value.push(null)
-          newsShow.value.push(true)
-        }
-      })
-}
+    for (let i in news.data) {
+      newsDisabler.value.push(false);
+      currNews.value.push(null);
+      newsShow.value.push(true);
+    }
+  });
+};
 
 const checkNew = (currId) => {
-  currNews.value[currId] = URL.createObjectURL(newUrl.value[currId].files[0])
-}
+  currNews.value[currId] = URL.createObjectURL(newUrl.value[currId].files[0]);
+};
 
-const saveNews = async (artId, pubDate, pubTime, content, title, imageURL, slideIdx) => {
+const saveNews = async (
+  artId,
+  pubDate,
+  pubTime,
+  content,
+  title,
+  imageURL,
+  slideIdx,
+) => {
   if (newUrl.value[slideIdx].files[0]) {
-    let formData = new FormData()
+    let formData = new FormData();
 
-    formData.append('file', newUrl.value[slideIdx].files[0])
+    formData.append("file", newUrl.value[slideIdx].files[0]);
 
-    await axios.post('upload-file',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        })
-        .then(async (urlData) => {
-          await axios.put('news/' + artId, {
-            id: artId,
-            content: content,
-            title: title,
-            imageLink: urlData.data
-          })
-        })
+    await axios
+      .post("upload-file", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then(async (urlData) => {
+        await axios.put("news/" + artId, {
+          id: artId,
+          content: content,
+          title: title,
+          imageLink: urlData.data,
+        });
+      });
   } else {
-    await axios.put('news/' + artId, {
+    await axios.put("news/" + artId, {
       id: artId,
       content: content,
       title: title,
-      imageLink: imageURL
-    })
+      imageLink: imageURL,
+    });
   }
-}
+};
 
 const deleteNews = async (artId, index) => {
-  await axios.delete('news/' + artId)
-      .then(() => {
-        newsShow.value[index] = false
-      })
-}
+  await axios.delete("news/" + artId).then(() => {
+    newsShow.value[index] = false;
+  });
+};
 
 const uploadSchedule = async () => {
-  scheduleError.value = ''
+  scheduleError.value = "";
 
   if (!scheduleUrl.value?.files?.length) {
-    scheduleError.value = 'Выберите файл для загрузки'
-    return
+    scheduleError.value = "Выберите файл для загрузки";
+    return;
   }
 
-  let formData = new FormData()
-  isLoading.value = true
+  let formData = new FormData();
+  isLoading.value = true;
 
-  formData.append('file', scheduleUrl.value.files[0])
+  formData.append("file", scheduleUrl.value.files[0]);
 
   try {
-    const response = await parserAxios.post('lessons/parse/',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        })
+    const response = await parserAxios.post("lessons/parse/", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
 
     if (response.data?.errors?.length) {
-      sessionStorage.setItem('scheduleParseErrors', JSON.stringify(response.data.errors))
+      sessionStorage.setItem(
+        "scheduleParseErrors",
+        JSON.stringify(response.data.errors),
+      );
     }
 
-    location.replace('/is/full-schedule')
+    location.replace("/is/full-schedule");
   } catch (err) {
-    const status = err.response?.status
-    const errorType = err.response?.data?.error?.type
+    const status = err.response?.status;
+    const errorType = err.response?.data?.error?.type;
 
     if (status === 400) {
-      scheduleError.value = 'Файл не передан или имеет неверный формат'
-    } else if (status === 500 || errorType === 'critical_error') {
-      scheduleError.value = 'Не удалось обработать файл. Убедитесь, что загружаемый файл — корректный .xlsx'
+      scheduleError.value = "Файл не передан или имеет неверный формат";
+    } else if (status === 500 || errorType === "critical_error") {
+      scheduleError.value =
+        "Не удалось обработать файл. Убедитесь, что загружаемый файл — корректный .xlsx";
     } else {
-      scheduleError.value = 'Произошла ошибка при загрузке расписания'
+      scheduleError.value = "Произошла ошибка при загрузке расписания";
     }
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
-}
+};
 
 const getUsers = async () => {
-  await axios.get('employees')
-      .then((userData) => {
-        userList.value = userData.data
-      })
-}
+  await axios.get("employees").then((userData) => {
+    userList.value = userData.data;
+  });
+};
 
-const deleteUserDialogState = ref(false)
-const userToDelete = ref(null)
+const deleteUserDialogState = ref(false);
+const userToDelete = ref(null);
 
 const confirmDeleteUser = (user) => {
-  userToDelete.value = user
-  deleteUserDialogState.value = true
-}
+  userToDelete.value = user;
+  deleteUserDialogState.value = true;
+};
 
 const deleteUser = async () => {
-  if (!userToDelete.value) return
-  await axios.delete('employees/' + userToDelete.value.id)
-      .then(() => {
-        deleteUserDialogState.value = false
-        userToDelete.value = null
-        location.reload()
-      })
-}
+  if (!userToDelete.value) return;
+  await axios.delete("employees/" + userToDelete.value.id).then(() => {
+    deleteUserDialogState.value = false;
+    userToDelete.value = null;
+    location.reload();
+  });
+};
 
 const getMails = async () => {
-  await axios.get('newsletters')
-      .then((mailsData) => {
-        mails.value = mailsData.data
-      })
-}
+  await axios.get("newsletters").then((mailsData) => {
+    mails.value = mailsData.data;
+  });
+};
 
 const deleteEvent = async (eventId, index) => {
-  await axios.delete('events/' + eventId)
-      .then(() => {
-        eventsShow.value[index] = false
-      })
-}
+  await axios.delete("events/" + eventId).then(() => {
+    eventsShow.value[index] = false;
+  });
+};
 
 const deleteMail = async (mailId) => {
-  await axios.delete('newsletter/' + mailId)
-      .then(() => {
-        location.reload()
-      })
-}
+  await axios.delete("newsletter/" + mailId).then(() => {
+    location.reload();
+  });
+};
 </script>
 
 <template>
   <section class="admin">
     <aside class="admin__tabs">
       <button
-          @click="activeItem = value; tabsHandler(value)"
-          :class="{active: value === activeItem}"
-          v-for="({ value, label }) in tabTitles"
-          class="admin__tabs-item admin-button"
-          :key="value"
+        @click="
+          activeItem = value;
+          tabsHandler(value);
+        "
+        :class="{ active: value === activeItem }"
+        v-for="{ value, label } in tabTitles"
+        class="admin__tabs-item admin-button"
+        :key="value"
       >
         {{ label }}
       </button>
@@ -458,51 +463,139 @@ const deleteMail = async (mailId) => {
     <div class="admin__view">
       <div v-show="activeItem === 'slider'" class="admin__view-item">
         <div class="slider-admin">
-          <div v-for="(slide, index) in slidesAdminArr" :key="slide.id" class="slider-admin__item">
+          <div
+            v-for="(slide, index) in slidesAdminArr"
+            :key="slide.id"
+            class="slider-admin__item"
+          >
             <div class="slider-admin__box">
-              <img v-if="currFile[index] === null" :src="`${API_FILES_URL}/${slide.imageURL}`" alt="" class="slider-admin__item-img">
-              <img v-else :src="`${API_FILES_URL}/${currFile[index]}`" alt="" class="slider-admin__item-img">
-              <input v-on:change="checkFile(index)" ref="previewUrl" :id="slide.id" type="file"
-                     accept="image/png, image/jpeg, image/jpg" class="slider-admin__box-input">
-              <label v-if="!checkDisable[index]" class="slider-admin__box-label" :for="slide.id"></label>
-              <svg v-if="!checkDisable[index]" width="64px" height="64px" viewBox="0 0 24 24"
-                   xmlns="http://www.w3.org/2000/svg">
-                <g id="SVGRepo_bgCarrier" style="stroke-width:0"></g>
-                <g id="SVGRepo_tracerCarrier" style="stroke-linecap:round;stroke-linejoin:round"></g>
+              <img
+                v-if="currFile[index] === null"
+                :src="`${API_FILES_URL}/${slide.imageURL}`"
+                alt=""
+                class="slider-admin__item-img"
+              />
+              <img
+                v-else
+                :src="currFile[index]"
+                alt=""
+                class="slider-admin__item-img"
+              />
+              <input
+                v-on:change="checkFile(index)"
+                ref="previewUrl"
+                :id="slide.id"
+                type="file"
+                accept="image/png, image/jpeg, image/jpg"
+                class="slider-admin__box-input"
+              />
+              <label
+                v-if="!checkDisable[index]"
+                class="slider-admin__box-label"
+                :for="slide.id"
+              ></label>
+              <svg
+                v-if="!checkDisable[index]"
+                width="64px"
+                height="64px"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g id="SVGRepo_bgCarrier" style="stroke-width: 0"></g>
+                <g
+                  id="SVGRepo_tracerCarrier"
+                  style="stroke-linecap: round; stroke-linejoin: round"
+                ></g>
                 <g id="SVGRepo_iconCarrier">
-                  <path fill-rule="evenodd" clip-rule="evenodd"
-                        d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"></path>
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"
+                  ></path>
                 </g>
               </svg>
             </div>
-            <div style="display: flex;flex-direction: column; justify-content: space-between; gap: 10px; width: 50%">
-              <textarea v-model="slide.title" class="slider-admin__item-text"
-                        :disabled="checkDisable[index]"></textarea>
-              <input :disabled="checkDisable[index]" type="text" class="slider-admin__item-text" v-model="slide.urlTo">
+            <div
+              style="
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                gap: 10px;
+                width: 50%;
+              "
+            >
+              <textarea
+                v-model="slide.title"
+                class="slider-admin__item-text"
+                :disabled="checkDisable[index]"
+              ></textarea>
+              <input
+                :disabled="checkDisable[index]"
+                type="text"
+                class="slider-admin__item-text"
+                v-model="slide.urlTo"
+              />
             </div>
             <div class="slider-admin__item-buttons">
-              <svg @click="checkDisable[index] = false" width="64px" height="64px" viewBox="0 0 24 24"
-                   xmlns="http://www.w3.org/2000/svg">
-                <g id="SVGRepo_bgCarrier" style="stroke-width:0"></g>
-                <g id="SVGRepo_tracerCarrier" style="stroke-linecap:round;stroke-linejoin:round"></g>
+              <svg
+                @click="checkDisable[index] = false"
+                width="64px"
+                height="64px"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g id="SVGRepo_bgCarrier" style="stroke-width: 0"></g>
+                <g
+                  id="SVGRepo_tracerCarrier"
+                  style="stroke-linecap: round; stroke-linejoin: round"
+                ></g>
                 <g id="SVGRepo_iconCarrier">
-                  <path fill-rule="evenodd" clip-rule="evenodd"
-                        d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"></path>
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"
+                  ></path>
                 </g>
               </svg>
-              <svg @click="deleteSlide(slide.id)" width="64px" height="64px" viewBox="0 -0.5 21 21"
-                   xmlns="http://www.w3.org/2000/svg" style="fill:#000000">
-                <g id="SVGRepo_bgCarrier" style="stroke-width:0"></g>
-                <g id="SVGRepo_tracerCarrier" style="stroke-linecap:round;stroke-linejoin:round"></g>
-                <g id="SVGRepo_iconCarrier"><title>delete [#1487]</title>
+              <svg
+                @click="deleteSlide(slide.id)"
+                width="64px"
+                height="64px"
+                viewBox="0 -0.5 21 21"
+                xmlns="http://www.w3.org/2000/svg"
+                style="fill: #000000"
+              >
+                <g id="SVGRepo_bgCarrier" style="stroke-width: 0"></g>
+                <g
+                  id="SVGRepo_tracerCarrier"
+                  style="stroke-linecap: round; stroke-linejoin: round"
+                ></g>
+                <g id="SVGRepo_iconCarrier">
+                  <title>delete [#1487]</title>
                   <desc>Created with Sketch.</desc>
                   <defs></defs>
-                  <g id="Page-1" style="stroke:none;stroke-width:1;fill:none;fill-rule:evenodd">
-                    <g id="Dribbble-Light-Preview" transform="translate(-179.000000, -360.000000)" style="fill:#00295F">
-                      <g id="icons" transform="translate(56.000000, 160.000000)">
+                  <g
+                    id="Page-1"
+                    style="
+                      stroke: none;
+                      stroke-width: 1;
+                      fill: none;
+                      fill-rule: evenodd;
+                    "
+                  >
+                    <g
+                      id="Dribbble-Light-Preview"
+                      transform="translate(-179.000000, -360.000000)"
+                      style="fill: #00295f"
+                    >
+                      <g
+                        id="icons"
+                        transform="translate(56.000000, 160.000000)"
+                      >
                         <path
-                            d="M130.35,216 L132.45,216 L132.45,208 L130.35,208 L130.35,216 Z M134.55,216 L136.65,216 L136.65,208 L134.55,208 L134.55,216 Z M128.25,218 L138.75,218 L138.75,206 L128.25,206 L128.25,218 Z M130.35,204 L136.65,204 L136.65,202 L130.35,202 L130.35,204 Z M138.75,204 L138.75,200 L128.25,200 L128.25,204 L123,204 L123,206 L126.15,206 L126.15,220 L140.85,220 L140.85,206 L144,206 L144,204 L138.75,204 Z"
-                            id="delete-[#1487]"></path>
+                          d="M130.35,216 L132.45,216 L132.45,208 L130.35,208 L130.35,216 Z M134.55,216 L136.65,216 L136.65,208 L134.55,208 L134.55,216 Z M128.25,218 L138.75,218 L138.75,206 L128.25,206 L128.25,218 Z M130.35,204 L136.65,204 L136.65,202 L130.35,202 L130.35,204 Z M138.75,204 L138.75,200 L128.25,200 L128.25,204 L123,204 L123,206 L126.15,206 L126.15,220 L140.85,220 L140.85,206 L144,206 L144,204 L138.75,204 Z"
+                          id="delete-[#1487]"
+                        ></path>
                       </g>
                     </g>
                   </g>
@@ -510,60 +603,154 @@ const deleteMail = async (mailId) => {
               </svg>
             </div>
             <button
-                @click="saveChanges(slide.id, currFile[index] || slide.imageURL, slide.title, slide.urlTo, index); checkDisable[index] = true"
-                v-if="!checkDisable[index]" class="slider-admin__item-save admin-button">Сохранить
+              @click="
+                saveChanges(
+                  slide.id,
+                  currFile[index] || slide.imageURL,
+                  slide.title,
+                  slide.urlTo,
+                  index,
+                );
+                checkDisable[index] = true;
+              "
+              v-if="!checkDisable[index]"
+              class="slider-admin__item-save admin-button"
+            >
+              Сохранить
             </button>
           </div>
           <div v-if="newSlide" class="slider-admin__item">
             <div class="slider-admin__box">
               <div v-if="newFile === null" class="slider-admin__item-img"></div>
-              <img v-else :src="`${newFile}`" alt="" class="slider-admin__item-img">
-              <input v-on:change="checkNewFile" ref="addUrl" id="new-slide" type="file"
-                     accept="image/png, image/jpeg, image/jpg" class="slider-admin__box-input">
+              <img
+                v-else
+                :src="`${newFile}`"
+                alt=""
+                class="slider-admin__item-img"
+              />
+              <input
+                v-on:change="checkNewFile"
+                ref="addUrl"
+                id="new-slide"
+                type="file"
+                accept="image/png, image/jpeg, image/jpg"
+                class="slider-admin__box-input"
+              />
               <label for="new-slide" class="slider-admin__box-label"></label>
-              <svg width="64px" height="64px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <g id="SVGRepo_bgCarrier" style="stroke-width:0"></g>
-                <g id="SVGRepo_tracerCarrier" style="stroke-linecap:round;stroke-linejoin:round"></g>
+              <svg
+                width="64px"
+                height="64px"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g id="SVGRepo_bgCarrier" style="stroke-width: 0"></g>
+                <g
+                  id="SVGRepo_tracerCarrier"
+                  style="stroke-linecap: round; stroke-linejoin: round"
+                ></g>
                 <g id="SVGRepo_iconCarrier">
-                  <path fill-rule="evenodd" clip-rule="evenodd"
-                        d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"></path>
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"
+                  ></path>
                 </g>
               </svg>
             </div>
-            <div style="display: flex;flex-direction: column; justify-content: space-between; gap: 10px; width: 50%">
-              <textarea v-model="newText" class="slider-admin__item-text"
-                        placeholder="Введите текст для слайда"></textarea>
-              <input v-model="newsUrl" type="text" class="slider-admin__item-text" placeholder="Введите ссылку">
+            <div
+              style="
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                gap: 10px;
+                width: 50%;
+              "
+            >
+              <textarea
+                v-model="newText"
+                class="slider-admin__item-text"
+                placeholder="Введите текст для слайда"
+              ></textarea>
+              <input
+                v-model="newsUrl"
+                type="text"
+                class="slider-admin__item-text"
+                placeholder="Введите ссылку"
+              />
             </div>
-            <button @click="addSlide" class="slider-admin__item-save admin-button">Сохранить</button>
+            <button
+              @click="addSlide"
+              class="slider-admin__item-save admin-button"
+            >
+              Сохранить
+            </button>
           </div>
-          <button @click="newSlide = true" class="slider-admin__add admin-button">Добавить слайд</button>
+          <button
+            @click="newSlide = true"
+            class="slider-admin__add admin-button"
+          >
+            Добавить слайд
+          </button>
         </div>
       </div>
       <div v-show="activeItem === 'events'" class="admin__view-item">
-        <div style="display:flex;">
+        <div style="display: flex">
           <div class="admin-event">
-            <div class="admin-event__field" v-for="(event, index) in eventArr" v-show="eventsShow[index]">
+            <div
+              class="admin-event__field"
+              v-for="(event, index) in eventArr"
+              v-show="eventsShow[index]"
+            >
               <router-link :to="'/events/' + event.id" class="event">
                 <div class="event__date">
-                  <p class="event__date-day">{{ formatDateToString(event.startDateTime) }}</p>
-                  <p class="event__date-time">{{ formatTimeToString(event.startDateTime) }}</p>
+                  <p class="event__date-day">
+                    {{ formatDateToString(event.startDateTime) }}
+                  </p>
+                  <p class="event__date-time">
+                    {{ formatTimeToString(event.startDateTime) }}
+                  </p>
                 </div>
                 <p class="event__name">{{ event.title }}</p>
               </router-link>
-              <svg style="margin-left: 20px; cursor:pointer; fill:#000000" @click="deleteEvent(event.id, index)" width="32" height="32"
-                   viewBox="0 -0.5 21 21" xmlns="http://www.w3.org/2000/svg">
-                <g id="SVGRepo_bgCarrier" style="stroke-width:0"></g>
-                <g id="SVGRepo_tracerCarrier" style="stroke-linecap:round;stroke-linejoin:round"></g>
-                <g id="SVGRepo_iconCarrier"><title>delete [#1487]</title>
+              <svg
+                style="margin-left: 20px; cursor: pointer; fill: #000000"
+                @click="deleteEvent(event.id, index)"
+                width="32"
+                height="32"
+                viewBox="0 -0.5 21 21"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g id="SVGRepo_bgCarrier" style="stroke-width: 0"></g>
+                <g
+                  id="SVGRepo_tracerCarrier"
+                  style="stroke-linecap: round; stroke-linejoin: round"
+                ></g>
+                <g id="SVGRepo_iconCarrier">
+                  <title>delete [#1487]</title>
                   <desc>Created with Sketch.</desc>
                   <defs></defs>
-                  <g id="Page-1" style="stroke:none;stroke-width:1;fill:none;fill-rule:evenodd">
-                    <g id="Dribbble-Light-Preview" transform="translate(-179.000000, -360.000000)" style="fill:#00295F">
-                      <g id="icons" transform="translate(56.000000, 160.000000)">
+                  <g
+                    id="Page-1"
+                    style="
+                      stroke: none;
+                      stroke-width: 1;
+                      fill: none;
+                      fill-rule: evenodd;
+                    "
+                  >
+                    <g
+                      id="Dribbble-Light-Preview"
+                      transform="translate(-179.000000, -360.000000)"
+                      style="fill: #00295f"
+                    >
+                      <g
+                        id="icons"
+                        transform="translate(56.000000, 160.000000)"
+                      >
                         <path
-                            d="M130.35,216 L132.45,216 L132.45,208 L130.35,208 L130.35,216 Z M134.55,216 L136.65,216 L136.65,208 L134.55,208 L134.55,216 Z M128.25,218 L138.75,218 L138.75,206 L128.25,206 L128.25,218 Z M130.35,204 L136.65,204 L136.65,202 L130.35,202 L130.35,204 Z M138.75,204 L138.75,200 L128.25,200 L128.25,204 L123,204 L123,206 L126.15,206 L126.15,220 L140.85,220 L140.85,206 L144,206 L144,204 L138.75,204 Z"
-                            id="delete-[#1487]"></path>
+                          d="M130.35,216 L132.45,216 L132.45,208 L130.35,208 L130.35,216 Z M134.55,216 L136.65,216 L136.65,208 L134.55,208 L134.55,216 Z M128.25,218 L138.75,218 L138.75,206 L128.25,206 L128.25,218 Z M130.35,204 L136.65,204 L136.65,202 L130.35,202 L130.35,204 Z M138.75,204 L138.75,200 L128.25,200 L128.25,204 L123,204 L123,206 L126.15,206 L126.15,220 L140.85,220 L140.85,206 L144,206 L144,204 L138.75,204 Z"
+                          id="delete-[#1487]"
+                        ></path>
                       </g>
                     </g>
                   </g>
@@ -571,154 +758,303 @@ const deleteMail = async (mailId) => {
               </svg>
             </div>
           </div>
-          <router-link to="/create-event" style="align-self: flex-start; flex-shrink: 0" class="admin-button">Создать мероприятие</router-link>
+          <router-link
+            to="/create-event"
+            style="align-self: flex-start; flex-shrink: 0"
+            class="admin-button"
+            >Создать мероприятие</router-link
+          >
         </div>
       </div>
       <div v-show="activeItem === 'feed'" class="admin__view-item new-view">
-        <router-link to="/admin/create_news" class="admin-button">Создать новость</router-link>
+        <router-link to="/admin/create_news" class="admin-button"
+          >Создать новость</router-link
+        >
         <div class="news-all__field">
-          <div v-for="(newsSlide, index) in newsSlider" class="new" v-show="newsShow[index]">
+          <div
+            v-for="(newsSlide, index) in newsSlider"
+            class="new"
+            v-show="newsShow[index]"
+          >
             <div class="slider-admin__box">
-              <img v-if="currNews[index] === null" :src="`${API_FILES_URL}/${newsSlide.imageLink}`" alt="" class="slider-admin__item-img">
-              <img v-else :src="`${API_FILES_URL}/${currNews[index]}`" alt="" class="slider-admin__item-img">
-              <input v-on:change="checkNew(index)" ref="newUrl" :id="newsSlide.id" type="file"
-                     accept="image/png, image/jpeg, image/jpg" class="slider-admin__box-input">
-              <label v-if="newsDisabler[index]" class="slider-admin__box-label" :for="newsSlide.id"></label>
-              <svg v-if="newsDisabler[index]" width="64px" height="64px" viewBox="0 0 24 24"
-                   xmlns="http://www.w3.org/2000/svg">
-                <g id="SVGRepo_bgCarrier" style="stroke-width:0"></g>
-                <g id="SVGRepo_tracerCarrier" style="stroke-linecap:round;stroke-linejoin:round"></g>
+              <img
+                v-if="currNews[index] === null"
+                :src="`${API_FILES_URL}/${newsSlide.imageLink}`"
+                alt=""
+                class="slider-admin__item-img"
+              />
+              <img
+                v-else
+                :src="`${API_FILES_URL}/${currNews[index]}`"
+                alt=""
+                class="slider-admin__item-img"
+              />
+              <input
+                v-on:change="checkNew(index)"
+                ref="newUrl"
+                :id="newsSlide.id"
+                type="file"
+                accept="image/png, image/jpeg, image/jpg"
+                class="slider-admin__box-input"
+              />
+              <label
+                v-if="newsDisabler[index]"
+                class="slider-admin__box-label"
+                :for="newsSlide.id"
+              ></label>
+              <svg
+                v-if="newsDisabler[index]"
+                width="64px"
+                height="64px"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g id="SVGRepo_bgCarrier" style="stroke-width: 0"></g>
+                <g
+                  id="SVGRepo_tracerCarrier"
+                  style="stroke-linecap: round; stroke-linejoin: round"
+                ></g>
                 <g id="SVGRepo_iconCarrier">
-                  <path fill-rule="evenodd" clip-rule="evenodd"
-                        d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"></path>
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"
+                  ></path>
                 </g>
               </svg>
             </div>
-            <p class="new__date">{{
-                new Date(newsSlide.publicationAt).getDate() + ' ' + monthAssoc[newsSlide.publicationAt.split('-').reverse()[1]]
-              }}</p>
-            <textarea maxlength="110" v-model="newsSlide.title" class="new__input"
-                      :disabled="!newsDisabler[index]"></textarea>
+            <p class="new__date">
+              {{
+                new Date(newsSlide.publicationAt).getDate() +
+                " " +
+                monthAssoc[newsSlide.publicationAt.split("-").reverse()[1]]
+              }}
+            </p>
+            <textarea
+              maxlength="110"
+              v-model="newsSlide.title"
+              class="new__input"
+              :disabled="!newsDisabler[index]"
+            ></textarea>
             <div class="news-admin__buttons">
-              <svg @click="newsDisabler[index] = true" width="30" height="30" viewBox="0 0 24 24"
-                   xmlns="http://www.w3.org/2000/svg" style="fill:#00295F">
-                <g id="SVGRepo_bgCarrier" style="stroke-width:0"></g>
-                <g id="SVGRepo_tracerCarrier" style="stroke-linecap:round;stroke-linejoin:round"></g>
+              <svg
+                @click="newsDisabler[index] = true"
+                width="30"
+                height="30"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+                style="fill: #00295f"
+              >
+                <g id="SVGRepo_bgCarrier" style="stroke-width: 0"></g>
+                <g
+                  id="SVGRepo_tracerCarrier"
+                  style="stroke-linecap: round; stroke-linejoin: round"
+                ></g>
                 <g id="SVGRepo_iconCarrier">
-                  <path fill-rule="evenodd" clip-rule="evenodd"
-                        d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"></path>
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"
+                  ></path>
                 </g>
               </svg>
-              <svg @click="deleteNews(newsSlide.id, index)" width="30" height="30" viewBox="0 -0.5 21 21" xmlns="http://www.w3.org/2000/svg" style="fill:#000000">
-                <g id="SVGRepo_bgCarrier" style="stroke-width:0"></g>
-                <g id="SVGRepo_tracerCarrier" style="stroke-linecap:round;stroke-linejoin:round"></g>
-                <g id="SVGRepo_iconCarrier"><title>delete [#1487]</title>
+              <svg
+                @click="deleteNews(newsSlide.id, index)"
+                width="30"
+                height="30"
+                viewBox="0 -0.5 21 21"
+                xmlns="http://www.w3.org/2000/svg"
+                style="fill: #000000"
+              >
+                <g id="SVGRepo_bgCarrier" style="stroke-width: 0"></g>
+                <g
+                  id="SVGRepo_tracerCarrier"
+                  style="stroke-linecap: round; stroke-linejoin: round"
+                ></g>
+                <g id="SVGRepo_iconCarrier">
+                  <title>delete [#1487]</title>
                   <desc>Created with Sketch.</desc>
                   <defs></defs>
-                  <g id="Page-1" style="stroke:none;stroke-width:1;fill:none;fill-rule:evenodd">
-                    <g id="Dribbble-Light-Preview" transform="translate(-179.000000, -360.000000)" style="fill:#00295F">
-                      <g id="icons" transform="translate(56.000000, 160.000000)">
+                  <g
+                    id="Page-1"
+                    style="
+                      stroke: none;
+                      stroke-width: 1;
+                      fill: none;
+                      fill-rule: evenodd;
+                    "
+                  >
+                    <g
+                      id="Dribbble-Light-Preview"
+                      transform="translate(-179.000000, -360.000000)"
+                      style="fill: #00295f"
+                    >
+                      <g
+                        id="icons"
+                        transform="translate(56.000000, 160.000000)"
+                      >
                         <path
-                            d="M130.35,216 L132.45,216 L132.45,208 L130.35,208 L130.35,216 Z M134.55,216 L136.65,216 L136.65,208 L134.55,208 L134.55,216 Z M128.25,218 L138.75,218 L138.75,206 L128.25,206 L128.25,218 Z M130.35,204 L136.65,204 L136.65,202 L130.35,202 L130.35,204 Z M138.75,204 L138.75,200 L128.25,200 L128.25,204 L123,204 L123,206 L126.15,206 L126.15,220 L140.85,220 L140.85,206 L144,206 L144,204 L138.75,204 Z"
-                            id="delete-[#1487]"></path>
+                          d="M130.35,216 L132.45,216 L132.45,208 L130.35,208 L130.35,216 Z M134.55,216 L136.65,216 L136.65,208 L134.55,208 L134.55,216 Z M128.25,218 L138.75,218 L138.75,206 L128.25,206 L128.25,218 Z M130.35,204 L136.65,204 L136.65,202 L130.35,202 L130.35,204 Z M138.75,204 L138.75,200 L128.25,200 L128.25,204 L123,204 L123,206 L126.15,206 L126.15,220 L140.85,220 L140.85,206 L144,206 L144,204 L138.75,204 Z"
+                          id="delete-[#1487]"
+                        ></path>
                       </g>
                     </g>
                   </g>
                 </g>
               </svg>
               <router-link :to="'/news/new/' + newsSlide.id">
-                <svg style="fill:#00295F;stroke:#00295F" width="30" height="30" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-                  <g id="SVGRepo_bgCarrier" style="stroke-width:0"></g>
-                  <g id="SVGRepo_tracerCarrier" style="stroke-linecap:round;stroke-linejoin:round"></g>
-                  <g id="SVGRepo_iconCarrier"><title>link</title>
+                <svg
+                  style="fill: #00295f; stroke: #00295f"
+                  width="30"
+                  height="30"
+                  viewBox="0 0 32 32"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g id="SVGRepo_bgCarrier" style="stroke-width: 0"></g>
+                  <g
+                    id="SVGRepo_tracerCarrier"
+                    style="stroke-linecap: round; stroke-linejoin: round"
+                  ></g>
+                  <g id="SVGRepo_iconCarrier">
+                    <title>link</title>
                     <path
-                        d="M10.406 13.406l2.5-2.531c0.219-0.219 0.469-0.5 0.719-0.813 0.25-0.281 0.531-0.531 0.813-0.75 0.531-0.469 1.156-0.875 1.938-0.875 0.688 0 1.281 0.313 1.719 0.719s0.688 1 0.688 1.688c0 0.281-0.031 0.594-0.125 0.813-0.219 0.438-0.406 0.75-0.594 1-0.094 0.125-0.188 0.25-0.188 0.375 0 0.094 0 0.188 0.063 0.219 0.344 0.844 0.594 1.563 0.75 2.438 0.094 0.344 0.281 0.5 0.594 0.5 0.125 0 0.25-0.031 0.375-0.125 0.25-0.156 0.469-0.406 0.688-0.656 0.125-0.125 0.219-0.25 0.281-0.313 1.125-1.094 1.781-2.656 1.781-4.25 0-1.688-0.688-3.188-1.781-4.281-1.094-1.063-2.625-1.781-4.25-1.781s-3.188 0.656-4.281 1.813l-4.281 4.25c-1.125 1.156-1.75 2.656-1.75 4.25 0 0.469 0.188 1.438 0.5 2.344 0.313 0.875 0.719 1.656 1.25 1.656 0.281 0 0.875-0.469 1.375-1s1-1.125 1-1.344c0-0.156-0.125-0.344-0.25-0.625-0.156-0.281-0.219-0.625-0.219-1.031 0-0.625 0.25-1.25 0.688-1.688zM10.313 25.406l4.281-4.25c1.125-1.094 1.75-2.688 1.75-4.281 0-0.469-0.188-1.406-0.5-2.313-0.281-0.875-0.719-1.688-1.25-1.688-0.219 0-0.875 0.5-1.344 1.031-0.531 0.531-1.031 1.094-1.031 1.313 0 0.156 0.094 0.406 0.25 0.656 0.156 0.281 0.281 0.594 0.281 1-0.031 0.625-0.281 1.25-0.719 1.75l-2.531 2.5c-0.219 0.25-0.469 0.5-0.719 0.781l-0.781 0.781c-0.531 0.5-1.188 0.844-1.969 0.844-1.313 0-2.375-1.031-2.375-2.375 0-0.313 0.063-0.594 0.156-0.813 0.188-0.438 0.375-0.75 0.594-1 0.094-0.125 0.125-0.25 0.125-0.344 0-0.063-0.031-0.125-0.063-0.25-0.375-0.844-0.594-1.563-0.75-2.438-0.063-0.156-0.094-0.281-0.188-0.344-0.094-0.125-0.25-0.156-0.406-0.156-0.125 0-0.219 0.031-0.344 0.125-0.25 0.156-0.5 0.406-0.719 0.656-0.094 0.125-0.219 0.219-0.281 0.281-1.125 1.125-1.781 2.688-1.781 4.281 0 1.656 0.656 3.188 1.781 4.281 1.094 1.094 2.594 1.75 4.25 1.75 1.625 0 3.188-0.625 4.281-1.781z"></path>
+                      d="M10.406 13.406l2.5-2.531c0.219-0.219 0.469-0.5 0.719-0.813 0.25-0.281 0.531-0.531 0.813-0.75 0.531-0.469 1.156-0.875 1.938-0.875 0.688 0 1.281 0.313 1.719 0.719s0.688 1 0.688 1.688c0 0.281-0.031 0.594-0.125 0.813-0.219 0.438-0.406 0.75-0.594 1-0.094 0.125-0.188 0.25-0.188 0.375 0 0.094 0 0.188 0.063 0.219 0.344 0.844 0.594 1.563 0.75 2.438 0.094 0.344 0.281 0.5 0.594 0.5 0.125 0 0.25-0.031 0.375-0.125 0.25-0.156 0.469-0.406 0.688-0.656 0.125-0.125 0.219-0.25 0.281-0.313 1.125-1.094 1.781-2.656 1.781-4.25 0-1.688-0.688-3.188-1.781-4.281-1.094-1.063-2.625-1.781-4.25-1.781s-3.188 0.656-4.281 1.813l-4.281 4.25c-1.125 1.156-1.75 2.656-1.75 4.25 0 0.469 0.188 1.438 0.5 2.344 0.313 0.875 0.719 1.656 1.25 1.656 0.281 0 0.875-0.469 1.375-1s1-1.125 1-1.344c0-0.156-0.125-0.344-0.25-0.625-0.156-0.281-0.219-0.625-0.219-1.031 0-0.625 0.25-1.25 0.688-1.688zM10.313 25.406l4.281-4.25c1.125-1.094 1.75-2.688 1.75-4.281 0-0.469-0.188-1.406-0.5-2.313-0.281-0.875-0.719-1.688-1.25-1.688-0.219 0-0.875 0.5-1.344 1.031-0.531 0.531-1.031 1.094-1.031 1.313 0 0.156 0.094 0.406 0.25 0.656 0.156 0.281 0.281 0.594 0.281 1-0.031 0.625-0.281 1.25-0.719 1.75l-2.531 2.5c-0.219 0.25-0.469 0.5-0.719 0.781l-0.781 0.781c-0.531 0.5-1.188 0.844-1.969 0.844-1.313 0-2.375-1.031-2.375-2.375 0-0.313 0.063-0.594 0.156-0.813 0.188-0.438 0.375-0.75 0.594-1 0.094-0.125 0.125-0.25 0.125-0.344 0-0.063-0.031-0.125-0.063-0.25-0.375-0.844-0.594-1.563-0.75-2.438-0.063-0.156-0.094-0.281-0.188-0.344-0.094-0.125-0.25-0.156-0.406-0.156-0.125 0-0.219 0.031-0.344 0.125-0.25 0.156-0.5 0.406-0.719 0.656-0.094 0.125-0.219 0.219-0.281 0.281-1.125 1.125-1.781 2.688-1.781 4.281 0 1.656 0.656 3.188 1.781 4.281 1.094 1.094 2.594 1.75 4.25 1.75 1.625 0 3.188-0.625 4.281-1.781z"
+                    ></path>
                   </g>
                   #00295F
                 </svg>
               </router-link>
             </div>
             <button
-                @click="saveNews(newsSlide.id, newsSlide.publicationDate, newsSlide.publicationTime, newsSlide.content, newsSlide.title, newsSlide.imageLink, index); newsDisabler[index] = false"
-                v-if="newsDisabler[index]" class="news-admin__button admin-button">Сохранить
+              @click="
+                saveNews(
+                  newsSlide.id,
+                  newsSlide.publicationDate,
+                  newsSlide.publicationTime,
+                  newsSlide.content,
+                  newsSlide.title,
+                  newsSlide.imageLink,
+                  index,
+                );
+                newsDisabler[index] = false;
+              "
+              v-if="newsDisabler[index]"
+              class="news-admin__button admin-button"
+            >
+              Сохранить
             </button>
           </div>
         </div>
       </div>
       <div v-show="activeItem === 'schedule'" class="admin__view-item">
         <div class="admin-schedule">
-          <input ref="scheduleUrl" type="file" accept=".xlsx">
-          <button @click="uploadSchedule" class="admin-button">Загрузить</button>
+          <input ref="scheduleUrl" type="file" accept=".xlsx" />
+          <button @click="uploadSchedule" class="admin-button">
+            Загрузить
+          </button>
         </div>
         <div v-if="scheduleError" class="schedule-error">
           {{ scheduleError }}
         </div>
       </div>
-      <div v-show="admRole === 'ADMIN' && activeItem === 'employees'" class="admin__view-item">
+      <div
+        v-show="admRole === 'ADMIN' && activeItem === 'employees'"
+        class="admin__view-item"
+      >
         <div class="admin-users">
           <div class="admin-users__item">
             <div class="admin-users__item-head">
               <div style="display: flex; gap: 5px">
                 <p
-                    @click="handleEmployeesActiveTabChange('employees')"
-                    :class="['admin-users__item-head_name', 'employees-tab-button', activeEmployeesTab === 'employees' ? 'active' : '']"
+                  @click="handleEmployeesActiveTabChange('employees')"
+                  :class="[
+                    'admin-users__item-head_name',
+                    'employees-tab-button',
+                    activeEmployeesTab === 'employees' ? 'active' : '',
+                  ]"
                 >
                   Сотрудники
                 </p>
                 <p class="admin-users__item-head_name">/</p>
                 <p
-                    @click="handleEmployeesActiveTabChange('personalPlan')"
-                    :class="['admin-users__item-head_name', 'employees-tab-button', activeEmployeesTab === 'personalPlan' ? 'active' : '']"
+                  @click="handleEmployeesActiveTabChange('personalPlan')"
+                  :class="[
+                    'admin-users__item-head_name',
+                    'employees-tab-button',
+                    activeEmployeesTab === 'personalPlan' ? 'active' : '',
+                  ]"
                 >
                   Индивидуальный план
                 </p>
               </div>
-              <router-link to="/admin/create_user" class="admin-button">Добавить</router-link>
+              <router-link to="/admin/create_user" class="admin-button"
+                >Добавить</router-link
+              >
             </div>
 
             <div style="display: flex; gap: 10px">
-              <select v-model="sortOption" class="admin-button" style="padding: 5px 10px;">
+              <select
+                v-model="sortOption"
+                class="admin-button"
+                style="padding: 5px 10px"
+              >
                 <option value="1">По ФИО (А-Я)</option>
                 <option value="2">По ФИО (Я-А)</option>
               </select>
-              <select v-model="filterOption" class="admin-button" style="padding: 5px 10px;">
+              <select
+                v-model="filterOption"
+                class="admin-button"
+                style="padding: 5px 10px"
+              >
                 <option value="">Должность...</option>
-                <option v-for="post in uniquePosts" :value="post">{{ post }}</option>
+                <option v-for="post in uniquePosts" :value="post">
+                  {{ post }}
+                </option>
               </select>
               <input
-                  v-model="employeesSearchQuery"
-                  type="text"
-                  placeholder="Поиск..."
-                  class="employees-search-input admin-button"
-                  style="padding: 5px 10px; flex-grow: 1;"
-              >
+                v-model="employeesSearchQuery"
+                type="text"
+                placeholder="Поиск..."
+                class="employees-search-input admin-button"
+                style="padding: 5px 10px; flex-grow: 1"
+              />
             </div>
             <div class="admin-users__item-list">
               <div v-for="user in filteredAndSortedUsers" class="user-item">
-                <p class="user-item__name">{{ user.lastName + ' ' + user.firstName + ' ' + user.patronymic }}</p>
+                <p class="user-item__name">
+                  {{
+                    user.lastName + " " + user.firstName + " " + user.patronymic
+                  }}
+                </p>
                 <template v-if="activeEmployeesTab === 'employees'">
-                  <router-link :to="'/profile/' + user.id" style="margin-left: auto;" class="admin-button">Редактировать
+                  <router-link
+                    :to="'/profile/' + user.id"
+                    style="margin-left: auto"
+                    class="admin-button"
+                    >Редактировать
                   </router-link>
-                  <button @click="confirmDeleteUser(user)" class="admin-button">Удалить</button>
+                  <button @click="confirmDeleteUser(user)" class="admin-button">
+                    Удалить
+                  </button>
                 </template>
                 <div v-else style="display: flex; gap: 15px">
                   <a
-                      v-if="user.plan"
-                      :href="`${API_FILES_URL}/${user.plan}`"
-                      class="download-button admin-button"
-                      target="_blank"
+                    v-if="user.plan"
+                    :href="`${API_FILES_URL}/${user.plan}`"
+                    class="download-button admin-button"
+                    target="_blank"
                   >
                     Скачать текущий план
                   </a>
                   <button class="upload-button admin-button">
                     Загрузить план
                     <input
-                        type="file"
-                        ref="fileInput"
-                        @change="handleFileUpload($event, user)"
-                        accept=".pdf"
-                        class="file-input"
-                    >
+                      type="file"
+                      ref="fileInput"
+                      @change="handleFileUpload($event, user)"
+                      accept=".pdf"
+                      class="file-input"
+                    />
                   </button>
                 </div>
               </div>
@@ -731,70 +1067,127 @@ const deleteMail = async (mailId) => {
           <div class="admin-users__item">
             <div class="admin-users__item-head">
               <p class="admin-users__item-head_name">Студенты</p>
-              <router-link to="/admin/create_student" class="admin-button">Добавить</router-link>
+              <router-link to="/admin/create_student" class="admin-button"
+                >Добавить</router-link
+              >
             </div>
             <div class="admin-users__item-list">
-              <StudentsListTable/>
+              <StudentsListTable />
             </div>
           </div>
         </div>
       </div>
       <div v-show="activeItem === 'newsletter'" class="admin__view-item">
-        <router-link to="/create-mail" class="mails-button admin-button">Создать рассылку</router-link>
+        <router-link to="/create-mail" class="mails-button admin-button"
+          >Создать рассылку</router-link
+        >
         <table class="mails">
           <thead>
-          <tr>
-            <th>Тема</th>
-            <th>Получатели</th>
-            <th>Дата отправки</th>
-            <th>Статус</th>
-            <th>Действие</th>
-          </tr>
+            <tr>
+              <th>Тема</th>
+              <th>Получатели</th>
+              <th>Дата отправки</th>
+              <th>Статус</th>
+              <th>Действие</th>
+            </tr>
           </thead>
           <tbody>
-          <tr v-for="mail in mails">
-            <td>{{ mail.subject }}</td>
-            <td>
-              <p v-for="way in mail.emails">
-                {{ way.email }}
-              </p>
-            </td>
-            <td>{{ mail.newsletterDate.split('T')[0].split('-').reverse().join('.') }}</td>
-            <td>{{ assocStatus[mail.status] }}</td>
-            <td>
-              <div class="mail-moves">
-                <router-link :to="'/edit-mail/' + mail.id">
-                  <svg data-v-54c38a05="" style="margin-right: 10px;" width="32" height="32" viewBox="0 0 24 24"
-                       xmlns="http://www.w3.org/2000/svg">
-                    <g data-v-54c38a05="" id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                    <g data-v-54c38a05="" id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                    <g data-v-54c38a05="" id="SVGRepo_iconCarrier">
-                      <path data-v-54c38a05="" fill-rule="evenodd" clip-rule="evenodd"
-                            d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"></path>
+            <tr v-for="mail in mails">
+              <td>{{ mail.subject }}</td>
+              <td>
+                <p v-for="way in mail.emails">
+                  {{ way.email }}
+                </p>
+              </td>
+              <td>
+                {{
+                  mail.newsletterDate
+                    .split("T")[0]
+                    .split("-")
+                    .reverse()
+                    .join(".")
+                }}
+              </td>
+              <td>{{ assocStatus[mail.status] }}</td>
+              <td>
+                <div class="mail-moves">
+                  <router-link :to="'/edit-mail/' + mail.id">
+                    <svg
+                      data-v-54c38a05=""
+                      style="margin-right: 10px"
+                      width="32"
+                      height="32"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <g
+                        data-v-54c38a05=""
+                        id="SVGRepo_bgCarrier"
+                        stroke-width="0"
+                      ></g>
+                      <g
+                        data-v-54c38a05=""
+                        id="SVGRepo_tracerCarrier"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      ></g>
+                      <g data-v-54c38a05="" id="SVGRepo_iconCarrier">
+                        <path
+                          data-v-54c38a05=""
+                          fill-rule="evenodd"
+                          clip-rule="evenodd"
+                          d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"
+                        ></path>
+                      </g>
+                    </svg>
+                  </router-link>
+                  <svg
+                    @click="deleteMail(mail.id)"
+                    width="32"
+                    height="32"
+                    viewBox="0 -0.5 21 21"
+                    xmlns="http://www.w3.org/2000/svg"
+                    style="fill: #000000"
+                  >
+                    <g id="SVGRepo_bgCarrier" style="stroke-width: 0"></g>
+                    <g
+                      id="SVGRepo_tracerCarrier"
+                      style="stroke-linecap: round; stroke-linejoin: round"
+                    ></g>
+                    <g id="SVGRepo_iconCarrier">
+                      <title>delete [#1487]</title>
+                      <desc>Created with Sketch.</desc>
+                      <defs></defs>
+                      <g
+                        id="Page-1"
+                        style="
+                          stroke: none;
+                          stroke-width: 1;
+                          fill: none;
+                          fill-rule: evenodd;
+                        "
+                      >
+                        <g
+                          id="Dribbble-Light-Preview"
+                          transform="translate(-179.000000, -360.000000)"
+                          style="fill: #00295f"
+                        >
+                          <g
+                            id="icons"
+                            transform="translate(56.000000, 160.000000)"
+                          >
+                            <path
+                              d="M130.35,216 L132.45,216 L132.45,208 L130.35,208 L130.35,216 Z M134.55,216 L136.65,216 L136.65,208 L134.55,208 L134.55,216 Z M128.25,218 L138.75,218 L138.75,206 L128.25,206 L128.25,218 Z M130.35,204 L136.65,204 L136.65,202 L130.35,202 L130.35,204 Z M138.75,204 L138.75,200 L128.25,200 L128.25,204 L123,204 L123,206 L126.15,206 L126.15,220 L140.85,220 L140.85,206 L144,206 L144,204 L138.75,204 Z"
+                              id="delete-[#1487]"
+                            ></path>
+                          </g>
+                        </g>
+                      </g>
                     </g>
                   </svg>
-                </router-link>
-                <svg @click="deleteMail(mail.id)" width="32" height="32" viewBox="0 -0.5 21 21"
-                     xmlns="http://www.w3.org/2000/svg" style="fill:#000000">
-                  <g id="SVGRepo_bgCarrier" style="stroke-width:0"></g>
-                  <g id="SVGRepo_tracerCarrier" style="stroke-linecap:round;stroke-linejoin:round"></g>
-                  <g id="SVGRepo_iconCarrier"><title>delete [#1487]</title>
-                    <desc>Created with Sketch.</desc>
-                    <defs></defs>
-                    <g id="Page-1" style="stroke:none;stroke-width:1;fill:none;fill-rule:evenodd">
-                      <g id="Dribbble-Light-Preview" transform="translate(-179.000000, -360.000000)" style="fill:#00295F">
-                        <g id="icons" transform="translate(56.000000, 160.000000)">
-                          <path
-                              d="M130.35,216 L132.45,216 L132.45,208 L130.35,208 L130.35,216 Z M134.55,216 L136.65,216 L136.65,208 L134.55,208 L134.55,216 Z M128.25,218 L138.75,218 L138.75,206 L128.25,206 L128.25,218 Z M130.35,204 L136.65,204 L136.65,202 L130.35,202 L130.35,204 Z M138.75,204 L138.75,200 L128.25,200 L128.25,204 L123,204 L123,206 L126.15,206 L126.15,220 L140.85,220 L140.85,206 L144,206 L144,204 L138.75,204 Z"
-                              id="delete-[#1487]"></path>
-                    </g>
-                  </g>
-                </g>
-                  </g>
-                </svg>
-              </div>
-            </td>
-          </tr>
+                </div>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -803,17 +1196,28 @@ const deleteMail = async (mailId) => {
 
   <GDialog v-model="deleteUserDialogState" :max-width="400">
     <div class="delete-confirm-modal">
-      <p>Вы уверены, что хотите удалить сотрудника
-        <strong>{{ userToDelete?.lastName }} {{ userToDelete?.firstName }} {{ userToDelete?.patronymic }}</strong>?
+      <p>
+        Вы уверены, что хотите удалить сотрудника
+        <strong
+          >{{ userToDelete?.lastName }} {{ userToDelete?.firstName }}
+          {{ userToDelete?.patronymic }}</strong
+        >?
       </p>
       <div class="delete-confirm-modal__actions">
-        <button @click="deleteUser" class="admin-button delete-confirm-modal__delete">Удалить</button>
-        <button @click="deleteUserDialogState = false" class="admin-button">Отмена</button>
+        <button
+          @click="deleteUser"
+          class="admin-button delete-confirm-modal__delete"
+        >
+          Удалить
+        </button>
+        <button @click="deleteUserDialogState = false" class="admin-button">
+          Отмена
+        </button>
       </div>
     </div>
   </GDialog>
 
-  <Loader v-if="isLoading"/>
+  <Loader v-if="isLoading" />
 </template>
 
 <style lang="scss" scoped>
@@ -844,6 +1248,7 @@ const deleteMail = async (mailId) => {
   margin: 0 auto;
   display: flex;
   align-items: flex-start;
+  padding-top: 20px;
   gap: 50px;
 
   @media (max-width: 1480px) {
@@ -931,7 +1336,7 @@ const deleteMail = async (mailId) => {
 
 .employees-search-input {
   background-color: unset;
-  color: $pr1
+  color: $pr1;
 }
 
 .upload-button {
@@ -1022,11 +1427,12 @@ const deleteMail = async (mailId) => {
     width: 100%;
     height: 100%;
     left: 0;
+    top: 0;
     cursor: pointer;
     z-index: 1;
 
     &:after {
-      content: '';
+      content: "";
       position: absolute;
       width: 100%;
       height: 100%;
@@ -1044,6 +1450,8 @@ const deleteMail = async (mailId) => {
     top: 0;
     bottom: 0;
     margin: auto;
+    z-index: 2;
+    pointer-events: none;
   }
 }
 
@@ -1185,7 +1593,8 @@ select option {
         align-items: center;
         gap: 10px;
 
-        &-day, &-time {
+        &-day,
+        &-time {
           font-weight: 700;
         }
       }
@@ -1225,5 +1634,4 @@ select option {
     }
   }
 }
-
 </style>

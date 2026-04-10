@@ -1,104 +1,150 @@
 <template>
-  <section class="events">
-    <div v-if="eventsFuture.length > 0" class="section-header">
-      <h1 class="section-header__title">Предстоящие мероприятия</h1>
-      <router-link class="section-header__link" to="/events">
-        Все мероприятия
-        <svg width="40" height="9" viewBox="0 0 40 9" xmlns="http://www.w3.org/2000/svg">
-          <path
-              d="M1.00908 5.30969H36.3673L33.2593 7.67647C32.8557 7.98789 32.8557 8.48616 33.2593 8.76644C33.663 9.07786 34.3088 9.07786 34.6721 8.76644L39.8789 4.71799C40.0404 4.59343 40.0404 4.40657 39.8789 4.28201L34.6721 0.233564C34.2684 -0.0778547 33.6226 -0.0778547 33.2593 0.233564C32.8557 0.544983 32.8557 1.04325 33.2593 1.32353L36.3673 3.69031H1.00908C0.443996 3.69031 0 4.03287 0 4.46886C0 4.96713 0.443996 5.30969 1.00908 5.30969Z"/>
-        </svg>
-      </router-link>
+  <section class="events" v-if="hasAnyEvents">
+    <!-- Предстоящие мероприятия -->
+    <div v-if="eventsFuture.length > 0">
+      <div class="section-header">
+        <h1 class="section-header__title">Предстоящие мероприятия</h1>
+        <router-link class="section-header__link" to="/events">
+          Все мероприятия
+          <svg
+            width="40"
+            height="9"
+            viewBox="0 0 40 9"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M1.00908 5.30969H36.3673L33.2593 7.67647C32.8557 7.98789 32.8557 8.48616 33.2593 8.76644C33.663 9.07786 34.3088 9.07786 34.6721 8.76644L39.8789 4.71799C40.0404 4.59343 40.0404 4.40657 39.8789 4.28201L34.6721 0.233564C34.2684 -0.0778547 33.6226 -0.0778547 33.2593 0.233564C32.8557 0.544983 32.8557 1.04325 33.2593 1.32353L36.3673 3.69031H1.00908C0.443996 3.69031 0 4.03287 0 4.46886C0 4.96713 0.443996 5.30969 1.00908 5.30969Z"
+            />
+          </svg>
+        </router-link>
+      </div>
+      <div class="events__field">
+        <router-link
+          v-for="event in eventsFuture.slice(0, 4)"
+          :key="event.id"
+          :to="'/events/' + event.id"
+          class="event"
+        >
+          <div class="event__date">
+            <p class="event__date-day">
+              {{ formatDateToString(event.startDateTime) }}
+            </p>
+            <p class="event__date-time">
+              {{ formatTimeToString(event.startDateTime) }}
+            </p>
+          </div>
+          <p class="event__name">{{ event.title }}</p>
+        </router-link>
+      </div>
     </div>
-    <div class="events__field">
-      <router-link v-for="event in eventsFuture.slice(0, 4)" :to="'/events/' + event.id" class="event">
-        <div class="event__date">
-          <p class="event__date-day">{{ formatDateToString(event.startDateTime) }}</p>
-          <p class="event__date-time">{{ formatTimeToString(event.startDateTime) }}</p>
-        </div>
-        <p class="event__name">{{ event.title }}</p>
-      </router-link>
-    </div>
-    <div v-if="eventsPass.length > 0" class="section-header">
-      <h1 class="section-header__title">Прошедшие мероприятия</h1>
-      <router-link v-if="eventsFuture.length === 0" class="section-header__link" to="/events">
-        Все мероприятия
-        <svg width="40" height="9" viewBox="0 0 40 9" xmlns="http://www.w3.org/2000/svg">
-          <path
-              d="M1.00908 5.30969H36.3673L33.2593 7.67647C32.8557 7.98789 32.8557 8.48616 33.2593 8.76644C33.663 9.07786 34.3088 9.07786 34.6721 8.76644L39.8789 4.71799C40.0404 4.59343 40.0404 4.40657 39.8789 4.28201L34.6721 0.233564C34.2684 -0.0778547 33.6226 -0.0778547 33.2593 0.233564C32.8557 0.544983 32.8557 1.04325 33.2593 1.32353L36.3673 3.69031H1.00908C0.443996 3.69031 0 4.03287 0 4.46886C0 4.96713 0.443996 5.30969 1.00908 5.30969Z"/>
-        </svg>
-      </router-link>
-    </div>
-    <div class="events__field">
-      <router-link v-for="event in eventsPass.slice(0, 4)" :to="'/events/' + event.id" class="event">
-        <div class="event__date">
-          <p class="event__date-day">{{ formatDateToString(event.startDateTime) }}</p>
-          <p class="event__date-time">{{ formatTimeToString(event.startDateTime) }}</p>
-        </div>
-        <p class="event__name">{{ event.title }}</p>
-      </router-link>
+
+    <!-- Прошедшие мероприятия -->
+    <div v-if="eventsPass.length > 0">
+      <div class="section-header">
+        <h1 class="section-header__title">Прошедшие мероприятия</h1>
+        <router-link
+          v-if="eventsFuture.length === 0"
+          class="section-header__link"
+          to="/events"
+        >
+          Все мероприятия
+          <svg
+            width="40"
+            height="9"
+            viewBox="0 0 40 9"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M1.00908 5.30969H36.3673L33.2593 7.67647C32.8557 7.98789 32.8557 8.48616 33.2593 8.76644C33.663 9.07786 34.3088 9.07786 34.6721 8.76644L39.8789 4.71799C40.0404 4.59343 40.0404 4.40657 39.8789 4.28201L34.6721 0.233564C34.2684 -0.0778547 33.6226 -0.0778547 33.2593 0.233564C32.8557 0.544983 32.8557 1.04325 33.2593 1.32353L36.3673 3.69031H1.00908C0.443996 3.69031 0 4.03287 0 4.46886C0 4.96713 0.443996 5.30969 1.00908 5.30969Z"
+            />
+          </svg>
+        </router-link>
+      </div>
+      <div class="events__field">
+        <router-link
+          v-for="event in eventsPass.slice(0, 4)"
+          :key="event.id"
+          :to="'/events/' + event.id"
+          class="event"
+        >
+          <div class="event__date">
+            <p class="event__date-day">
+              {{ formatDateToString(event.startDateTime) }}
+            </p>
+            <p class="event__date-time">
+              {{ formatTimeToString(event.startDateTime) }}
+            </p>
+          </div>
+          <p class="event__name">{{ event.title }}</p>
+        </router-link>
+      </div>
     </div>
   </section>
 </template>
 
 <script setup>
-import {onMounted, ref} from "vue";
+import { computed, onMounted, ref } from "vue";
 import axios from "axios";
 
-const eventsPass = ref([])
-const eventsFuture = ref([])
+const eventsPass = ref([]);
+const eventsFuture = ref([]);
 
+// Вычисляемое свойство для проверки наличия любых событий
+const hasAnyEvents = computed(() => {
+  return eventsFuture.value.length > 0 || eventsPass.value.length > 0;
+});
 
-const currentDate = new Date();
 onMounted(() => {
-  eventList()
-})
+  eventList();
+});
 
 const formatDateToString = (eventDate) => {
   const dateObject = new Date(eventDate);
   return `${dateObject.getDate().toString().padStart(2, "0")}.${(
-      dateObject.getMonth() + 1
+    dateObject.getMonth() + 1
   )
-      .toString()
-      .padStart(2, "0")}.${dateObject.getFullYear()}`;
-}
+    .toString()
+    .padStart(2, "0")}.${dateObject.getFullYear()}`;
+};
 
 const formatTimeToString = (eventDate) => {
   const dateObject = new Date(eventDate);
-  return `${dateObject
-      .getHours()
-      .toString()
-      .padStart(2, "0")}:${dateObject
-      .getMinutes()
-      .toString()
-      .padStart(2, "0")}`;
-
-}
-
+  return `${dateObject.getHours().toString().padStart(2, "0")}:${dateObject
+    .getMinutes()
+    .toString()
+    .padStart(2, "0")}`;
+};
 
 const upcomingEvents = (events) => {
-  return events.filter(event => {
+  const currentDate = new Date();
+  return events.filter((event) => {
     const startDate = new Date(event.startDateTime);
     return startDate > currentDate;
   });
 };
 
 const pastEvents = (events) => {
-  return events.filter(event => {
+  const currentDate = new Date();
+  return events.filter((event) => {
     const startDate = new Date(event.startDateTime);
     return startDate <= currentDate;
   });
 };
+
 const eventList = async () => {
-  await axios.get('events')
-      .then((events) => {
-        eventsPass.value = pastEvents(events.data)
-        eventsFuture.value = upcomingEvents(events.data)
-      })
-}
+  try {
+    const response = await axios.get("events");
+    eventsFuture.value = upcomingEvents(response.data);
+    eventsPass.value = pastEvents(response.data);
+  } catch (error) {
+    console.error("Error fetching events:", error);
+    eventsFuture.value = [];
+    eventsPass.value = [];
+  }
+};
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 @import "./src/assets/styles/variables";
 
 .events {
@@ -167,7 +213,7 @@ const eventList = async () => {
       }
 
       &:after {
-        content: '';
+        content: "";
         position: absolute;
         height: 100%;
         width: 2px;

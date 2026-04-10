@@ -8,22 +8,30 @@
           nextEl: '.main__slider-nav_button.next',
         }"
         :autoplay="{
-          delay: 2500,
+          delay: 5000,
           disableOnInteraction: false,
         }"
         :modules="[Navigation, Autoplay]"
       >
         <SwiperSlide v-for="slide in slidesArr">
-          <a :href="slide.urlTo" class="event">
+          <div
+            class="event"
+            :style="{
+              backgroundImage: `url(${API_FILES_URL}/${slide.imageURL})`,
+            }"
+          >
+            <div class="event__overlay"></div>
             <div class="event__text">
               <p class="event__text-value">{{ slide.title }}</p>
+              <a
+                v-if="slide.urlTo"
+                :href="slide.urlTo"
+                class="event__button"
+                target="_blank"
+                >Подробнее</a
+              >
             </div>
-            <img
-              :src="`${API_FILES_URL}/${slide.imageURL}`"
-              alt=""
-              class="event__image"
-            />
-          </a>
+          </div>
         </SwiperSlide>
       </Swiper>
       <div class="main__slider-nav">
@@ -86,77 +94,194 @@ const getSlides = async () => {
   display: flex;
   flex-direction: column;
   gap: 40px;
-  max-width: 1440px;
-  margin: 0 auto;
-
-  @media (max-width: 1480px) {
-    max-width: calc(100% - 40px);
-  }
+  width: 100%;
+  margin: 0;
+  padding-top: 0px;
 
   &__slider {
     width: 100%;
     position: relative;
 
+    :deep(.swiper) {
+      width: 100%;
+    }
+
+    :deep(.swiper-slide) {
+      width: 100%;
+    }
+
     .event {
+      position: relative;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-start;
       box-sizing: border-box;
       padding-left: 83px;
-      background: $pr2;
-      border-radius: 10px;
+      width: 100%;
+      min-height: 500px;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+
+      &__overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          rgba(0, 0, 0, 0.7) 0%,
+          rgba(0, 0, 0, 0.3) 100%
+        );
+        z-index: 1;
+      }
 
       &__text {
+        position: relative;
+        z-index: 2;
         display: flex;
         flex-direction: column;
-        gap: 22px;
-        max-width: 505px;
-
-        &-name {
-          font-size: 18px;
-          line-height: 21px;
-          color: white;
-        }
+        gap: 30px;
+        max-width: 600px;
 
         &-value {
-          font-size: 32px;
+          font-size: 42px;
           font-weight: 700;
-          line-height: 38px;
+          line-height: 50px;
           color: white;
+          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
       }
 
-      &__image {
-        width: 562px;
-        height: 416px;
-        object-fit: cover;
-        border-radius: 0 10px 10px 0;
+      &__button {
+        display: inline-block;
+        padding: 12px 32px;
+        background: transparent;
+        border: 2px solid white;
+        color: white;
+        font-size: 18px;
+        font-weight: 600;
+        text-decoration: none;
+        border-radius: 50px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: fit-content;
+        text-align: center;
+
+        &:hover {
+          background: white;
+          color: #000;
+          transform: translateY(-2px);
+        }
       }
     }
 
     &-nav {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 12px;
       position: absolute;
-      width: 100%;
-      box-sizing: border-box;
-      padding: 0 16px;
-      top: 45%;
+      right: 30px;
+      bottom: 30px;
       z-index: 2;
 
       &_button {
-        border: 2px solid $sc5;
+        border: 2px solid white;
         width: 50px;
         height: 50px;
         display: flex;
         align-items: center;
         justify-content: center;
         border-radius: 100%;
-        background: white;
+        background: rgba(255, 255, 255, 0.9);
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        svg path {
+          transition: fill 0.3s ease;
+        }
 
         &:hover {
-          opacity: 0.7;
+          background: white;
+          transform: scale(1.1);
+
+          svg path {
+            fill-opacity: 1;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 1024px) {
+  .main {
+    &__slider {
+      .event {
+        padding-left: 50px;
+        min-height: 400px;
+
+        &__text-value {
+          font-size: 32px;
+          line-height: 40px;
+        }
+
+        &__button {
+          padding: 10px 28px;
+          font-size: 16px;
+        }
+      }
+
+      &-nav {
+        right: 20px;
+        bottom: 20px;
+
+        &_button {
+          width: 40px;
+          height: 40px;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .main {
+    padding-top: 10px;
+
+    &__slider {
+      .event {
+        padding-left: 30px;
+        padding-right: 30px;
+        min-height: 350px;
+        justify-content: center;
+        text-align: center;
+
+        &__text {
+          max-width: 100%;
+          align-items: center;
+        }
+
+        &__text-value {
+          font-size: 24px;
+          line-height: 32px;
+        }
+
+        &__button {
+          padding: 8px 24px;
+          font-size: 14px;
+        }
+      }
+
+      &-nav {
+        right: 15px;
+        bottom: 15px;
+        gap: 8px;
+
+        &_button {
+          width: 35px;
+          height: 35px;
         }
       }
     }
