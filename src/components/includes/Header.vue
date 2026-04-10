@@ -34,14 +34,14 @@
     </div>
     <div class="header__bottom">
       <nav class="nav">
-        <router-link class="nav__item hover-underline" to="/about">О кафедре</router-link>
-        <router-link class="nav__item hover-underline" to="/education">Образование</router-link>
-        <router-link class="nav__item hover-underline" to="/full-schedule">Расписание</router-link>
-        <router-link class="nav__item hover-underline" to="/exams">Учебный процесс</router-link>
-        <router-link class="nav__item hover-underline" to="/students">Студентам</router-link>
-        <router-link class="nav__item hover-underline" to="/teachers">Сотрудники</router-link>
-        <router-link class="nav__item hover-underline" to="/important">Важное</router-link>
-        <router-link class="nav__item hover-underline" to="/miscellaneous">Разное</router-link>
+        <router-link
+            v-for="tab in navTabs"
+            :key="tab.id"
+            class="nav__item hover-underline"
+            :to="tab.url"
+        >
+          {{ tab.name }}
+        </router-link>
       </nav>
     </div>
     <GDialog
@@ -89,9 +89,11 @@ import {computed, onMounted, ref} from "vue";
 import {GDialog} from "gitart-vue-dialog";
 import axios from "axios";
 import {userAuth} from "@/store/userAuth";
+import {useTabsStore} from "@/store/tabsStore";
 import OtpInput from "@/components/includes/OtpInput.vue";
 
 const store = userAuth()
+const tabsStore = useTabsStore()
 
 const dialogState = ref(false)
 const login = ref('')
@@ -106,12 +108,14 @@ const twoFactorCooldown = ref(60)
 const loginOtpRef = ref(null)
 
 const isAuth = computed(() => store.getIsAuth)
+const navTabs = computed(() => tabsStore.visibleTabs)
 
-onMounted(() => {
+onMounted(async () => {
   console.log(store.getRole)
   if (store.getRole !== '') {
     accountInfo()
   }
+  await tabsStore.loadVisibleTabs()
 })
 
 const auth = async () => {
