@@ -85,13 +85,15 @@
 </template>
 
 <script setup>
-import {computed, onMounted, onUnmounted, ref} from "vue";
+import {computed, onMounted, ref} from "vue";
 import {GDialog} from "gitart-vue-dialog";
 import axios from "axios";
 import {userAuth} from "@/store/userAuth";
+import {useTabsStore} from "@/store/tabsStore";
 import OtpInput from "@/components/includes/OtpInput.vue";
 
 const store = userAuth()
+const tabsStore = useTabsStore()
 
 const dialogState = ref(false)
 const login = ref('')
@@ -104,30 +106,16 @@ const twoFactorEmail = ref('')
 const twoFactorLoading = ref(false)
 const twoFactorCooldown = ref(60)
 const loginOtpRef = ref(null)
-const navTabs = ref([])
 
 const isAuth = computed(() => store.getIsAuth)
-
-const loadNavTabs = async () => {
-  try {
-    const { data } = await axios.get('tabs/visible')
-    navTabs.value = data.sort((a, b) => a.sortOrder - b.sortOrder)
-  } catch (e) {
-    navTabs.value = []
-  }
-}
+const navTabs = computed(() => tabsStore.visibleTabs)
 
 onMounted(async () => {
   console.log(store.getRole)
   if (store.getRole !== '') {
     accountInfo()
   }
-  await loadNavTabs()
-  window.addEventListener('tabs-updated', loadNavTabs)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('tabs-updated', loadNavTabs)
+  await tabsStore.loadVisibleTabs()
 })
 
 const auth = async () => {

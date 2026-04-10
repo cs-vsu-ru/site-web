@@ -6,15 +6,9 @@ import Profile from "@/views/Profile.vue";
 import {userAuth} from "@/store/userAuth";
 import NewPage from "@/views/NewPage.vue";
 import Admin from "@/views/Admin";
-import axios from "axios";
 import Schedule from "@/views/Schedule.vue";
 import CreateUser from "@/views/CreateUser.vue";
 import CreateStudent from "@/views/CreateStudent.vue";
-import AboutCaf from "@/views/AboutCaf"
-import Education from "@/views/Education"
-import Students from "@/views/Students"
-import Address from "@/views/Address"
-import Confident from "@/views/Confident"
 import CreateNews from "@/views/CreateNews";
 import AllEvents from "@/views/AllEvents";
 import EventPage from "@/views/EventPage"
@@ -22,15 +16,9 @@ import FullSchedule from "@/views/FullSchedule"
 import CreateMail from "@/views/CreateMail"
 import CreateEvent from "@/views/CreateEvent";
 import EditMail from "@/views/EditMail";
-import Exams from "@/views/Exams";
-import Miscellaneous from "@/views/Miscellaneous.vue";
-import Important from "@/views/Important.vue";
+import TabPage from "@/views/TabPage.vue";
 
 const routes = [
-  {
-    path: '/:pathMatch(.*)*',
-    component: MainPage
-  },
   {
     path: '/',
     name: 'MainPage',
@@ -66,10 +54,6 @@ const routes = [
       if (store.getIsAuth !== '') {
         let role = store.getRole
         role === 'ADMIN' || role === 'MODERATOR' ? next() : next('/')
-        // await axios.get('account')
-        //     .then((accData) => {
-        //       accData.data.mainRole === 'ADMIN' || accData.data.mainRole === 'MODERATOR' ? next() : next('/')
-        //     })
       }
       else {
         next('/')
@@ -91,10 +75,6 @@ const routes = [
       if (store.getIsAuth !== '') {
         let role = store.getRole
         role === 'ADMIN' || role === 'MODERATOR' ? next() : next('/')
-        // await axios.get('account')
-        //     .then((accData) => {
-        //       accData.data.mainRole === 'ADMIN' ? next() : next('/')
-        //     })
       }
       else {
         next('/')
@@ -111,50 +91,11 @@ const routes = [
       if (store.getIsAuth !== '') {
         let role = store.getRole
         role === 'ADMIN' || role === 'MODERATOR' ? next() : next('/')
-        // await axios.get('account')
-        //     .then((accData) => {
-        //       accData.data.mainRole === 'ADMIN' ? next() : next('/')
-        //     })
       }
       else {
         next('/')
       }
     }
-  },
-  {
-    path: '/about',
-    name: 'About',
-    component: AboutCaf
-  },
-  {
-    path: '/education',
-    name: 'Education',
-    component: Education
-  },
-  {
-    path: '/students',
-    name: 'Students',
-    component: Students
-  },
-  {
-    path: '/important',
-    name: 'Important',
-    component: Important
-  },
-  {
-    path: '/miscellaneous',
-    name: 'Miscellaneous',
-    component: Miscellaneous
-  },
-  {
-    path: '/address',
-    name: 'Address',
-    component: Address
-  },
-  {
-    path: '/confident',
-    name: 'Confident',
-    component: Confident
   },
   {
     path: '/admin/create_news',
@@ -166,10 +107,6 @@ const routes = [
       if (store.getIsAuth !== '') {
         let role = store.getRole
         role === 'ADMIN' || role === 'MODERATOR' ? next() : next('/')
-        // await axios.get('account')
-        //     .then((accData) => {
-        //       accData.data.mainRole === 'ADMIN' || accData.data.mainRole === 'MODERATOR' ? next() : next('/')
-        //     })
       }
       else {
         next('/')
@@ -201,10 +138,6 @@ const routes = [
       if (store.getIsAuth !== '') {
         let role = store.getRole
         role === 'ADMIN' || role === 'MODERATOR' ? next() : next('/')
-        // await axios.get('account')
-        //     .then((accData) => {
-        //       accData.data.mainRole === 'ADMIN' || accData.data.mainRole === 'MODERATOR' ? next() : next('/')
-        //     })
       }
       else {
         next('/')
@@ -221,10 +154,6 @@ const routes = [
       if (store.getIsAuth !== '') {
         let role = store.getRole
         role === 'ADMIN' || role === 'MODERATOR' ? next() : next('/')
-        // await axios.get('account')
-        //     .then((accData) => {
-        //       accData.data.mainRole === 'ADMIN' || accData.data.mainRole === 'MODERATOR' ? next() : next('/')
-        //     })
       }
       else {
         next('/')
@@ -241,10 +170,6 @@ const routes = [
       if (store.getIsAuth !== '') {
         let role = store.getRole
         role === 'ADMIN' || role === 'MODERATOR' ? next() : next('/')
-        // await axios.get('account')
-        //     .then((accData) => {
-        //       accData.data.mainRole === 'ADMIN' || accData.data.mainRole === 'MODERATOR' ? next() : next('/')
-        //     })
       }
       else {
         next('/')
@@ -252,11 +177,14 @@ const routes = [
     }
   },
   {
-    path: '/exams',
-    name: 'Exams',
-    component: Exams
+    path: '/:pageName',
+    name: 'TabPage',
+    component: TabPage
   },
-
+  {
+    path: '/:pathMatch(.*)*',
+    component: MainPage
+  }
 ]
 
 const router = createRouter({

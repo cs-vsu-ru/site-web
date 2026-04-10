@@ -58,7 +58,7 @@
         </div>
         <div class="tabs-constructor__modal-field">
           <label>URL</label>
-          <input v-model="form.url" type="text" placeholder="/example-page" class="tabs-constructor__modal-input tabs-constructor__modal-input--mono" />
+          <input v-model="form.url" type="text" placeholder="/example-page" :disabled="editingTab !== null" class="tabs-constructor__modal-input tabs-constructor__modal-input--mono" />
           <span v-if="formErrors.url" class="tabs-constructor__modal-error">{{ formErrors.url }}</span>
         </div>
         <div class="tabs-constructor__modal-field">
@@ -82,8 +82,10 @@
     <!-- Delete confirmation modal -->
     <GDialog v-model="deleteDialogState" :max-width="400">
       <div class="tabs-constructor__modal tabs-constructor__modal--delete">
-        <p>Вы уверены, что хотите удалить вкладку <strong>«{{ tabToDelete?.name }}»</strong>?</p>
-        <p class="tabs-constructor__modal-warning">Это действие необратимо.</p>
+        <p>Вы уверены, что хотите удалить вкладку
+          <strong>«{{ tabToDelete?.name }}»</strong>?
+        </p>
+        <p class="tabs-constructor__modal-warning">Вместе с вкладкой будет удалён весь её контент. Это действие необратимо.</p>
         <div class="tabs-constructor__modal-actions">
           <button @click="deleteDialogState = false" class="admin-button">Отмена</button>
           <button @click="deleteTab" class="admin-button tabs-constructor__delete-btn">Удалить</button>
@@ -94,13 +96,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import draggable from 'vuedraggable'
 import { GDialog } from 'gitart-vue-dialog/dist/index'
+import { useTabsStore } from '@/store/tabsStore'
 
-const tabs = ref([])
-const isLoading = ref(false)
+const tabsStore = useTabsStore()
+
+const localTabs = ref([])
+const isLoading = computed(() => tabsStore.isLoadingAll)
 const editDialogState = ref(false)
 const deleteDialogState = ref(false)
 const editingTab = ref(null)
@@ -108,36 +113,34 @@ const tabToDelete = ref(null)
 const form = ref({ name: '', url: '', sortOrder: 0, visible: true })
 const formErrors = ref({ name: '', url: '' })
 
-const notifyNavUpdate = () => {
-  window.dispatchEvent(new Event('tabs-updated'))
+const tabs = computed({
+  get: () => localTabs.value,
+  set: (value) => { localTabs.value = value },
+})
+
+const syncFromStore = () => {
+  localTabs.value = [...tabsStore.allTabs]
 }
 
 const loadTabs = async () => {
-  isLoading.value = true
-  try {
-    const { data } = await axios.get('tabs')
-    tabs.value = data.sort((a, b) => a.sortOrder - b.sortOrder)
-  } catch (e) {
-    alert('Ошибка загрузки вкладок')
-  } finally {
-    isLoading.value = false
-  }
+  await tabsStore.loadAllTabs(true)
+  syncFromStore()
 }
 
 onMounted(() => { loadTabs() })
 
 // Drag-and-drop reorder
 const onDragEnd = async () => {
-  const previousTabs = [...tabs.value]
-  const items = tabs.value.map((tab, index) => ({ id: tab.id, sortOrder: index + 1 }))
-  tabs.value.forEach((tab, index) => { tab.sortOrder = index + 1 })
+  const previousTabs = [...localTabs.value]
+  const items = localTabs.value.map((tab, index) => ({ id: tab.id, sortOrder: index + 1 }))
+  localTabs.value.forEach((tab, index) => { tab.sortOrder = index + 1 })
   try {
-    const { data } = await axios.put('tabs/reorder', { items })
-    tabs.value = data.sort((a, b) => a.sortOrder - b.sortOrder)
-    notifyNavUpdate()
+    await axios.put('tabs/reorder', { items })
+    await tabsStore.invalidate()
+    syncFromStore()
   } catch (e) {
-    tabs.value = previousTabs
-    alert('Ошибка сохранения порядка')
+    localTabs.value = previousTabs
+    alert('Не удалось сохранить порядок. Попробуйте ещё раз.')
   }
 }
 
@@ -147,7 +150,7 @@ const toggleVisibility = async (tab) => {
   tab.visible = !tab.visible
   try {
     await axios.put(`tabs/${tab.id}`, { visible: tab.visible })
-    notifyNavUpdate()
+    await tabsStore.invalidate()
   } catch (e) {
     tab.visible = previousValue
     alert('Ошибка изменения видимости')
@@ -156,7 +159,7 @@ const toggleVisibility = async (tab) => {
 
 // Create/Edit dialog
 const resetForm = () => {
-  form.value = { name: '', url: '', sortOrder: tabs.value.length + 1, visible: true }
+  form.value = { name: '', url: '', sortOrder: localTabs.value.length + 1, visible: true }
   formErrors.value = { name: '', url: '' }
 }
 
@@ -193,6 +196,13 @@ const validateForm = () => {
     formErrors.value.url = 'Максимум 255 символов'
     valid = false
   }
+  const urlExists = localTabs.value.some(
+    (t) => t.url === form.value.url && (!editingTab.value || t.id !== editingTab.value.id)
+  )
+  if (valid && urlExists) {
+    formErrors.value.url = 'Вкладка с таким URL уже существует'
+    valid = false
+  }
   return valid
 }
 
@@ -205,8 +215,8 @@ const saveTab = async () => {
       await axios.post('tabs', form.value)
     }
     editDialogState.value = false
-    await loadTabs()
-    notifyNavUpdate()
+    await tabsStore.invalidate()
+    syncFromStore()
   } catch (e) {
     alert('Ошибка сохранения вкладки')
   }
@@ -220,15 +230,16 @@ const confirmDelete = (tab) => {
 
 const deleteTab = async () => {
   if (!tabToDelete.value) return
-  const previousTabs = [...tabs.value]
-  tabs.value = tabs.value.filter(t => t.id !== tabToDelete.value.id)
+  const previousTabs = [...localTabs.value]
+  localTabs.value = localTabs.value.filter((t) => t.id !== tabToDelete.value.id)
   try {
     await axios.delete(`tabs/${tabToDelete.value.id}`)
     deleteDialogState.value = false
     tabToDelete.value = null
-    notifyNavUpdate()
+    await tabsStore.invalidate()
+    syncFromStore()
   } catch (e) {
-    tabs.value = previousTabs
+    localTabs.value = previousTabs
     deleteDialogState.value = false
     alert('Ошибка удаления вкладки')
   }
