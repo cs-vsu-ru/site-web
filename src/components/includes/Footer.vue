@@ -3,11 +3,11 @@
     <div class="footer__container">
       <div class="footer__container-left">
         <nav class="footer-nav">
-          <router-link class="footer-nav__item hover-underline" to="/address">Адреса и контакты</router-link>
+          <router-link class="footer-nav__item hover-underline" to="/contacts">Адреса и контакты</router-link>
           <router-link class="footer-nav__item hover-underline" to="/confident">Политика конфиденциальности</router-link>
         </nav>
         <div class="footer-info">
-          <p class="footer-info__item">©Воронежский Государственный Университет 1997-2023 Все права защищены</p>
+          <p class="footer-info__item">©Воронежский Государственный Университет 1997-{{ currentYear }} Все права защищены</p>
           <p class="footer-info__item">При использовании материала ссылка обязательна</p>
         </div>
       </div>
@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-
+const currentYear = new Date().getFullYear()
 </script>
 
 <style lang="scss" scoped>
