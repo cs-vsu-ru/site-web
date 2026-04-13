@@ -959,7 +959,7 @@ thead th.time-col {
   background: $pr1;
   box-shadow: 0 0 0 2px white, 0 0 0 3px rgba($pr1, 0.25);
   cursor: help;
-  z-index: 4;
+  z-index: 2;
   animation: lesson-now-pulse 2.6s ease-out infinite;
 
   &--top {
