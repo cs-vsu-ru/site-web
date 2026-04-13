@@ -1,64 +1,63 @@
-<!--2015-10-05T08:30:00-->
 <template>
   <section class="news-all">
-      <h1 class="news-all__title">Новости</h1>
-      <div class="news-all__field">
-          <router-link :to="'/news/new/' + newsSlide.id" v-for="newsSlide in newsSlider" class="new">
-              <img :src="`${API_FILES_URL}/${newsSlide.imageLink}`" alt="" class="new__image">
-              <p class="new__date" v-if="newsSlide.publicationAt">{{ new Date(newsSlide.publicationAt).getDate() + ' ' + monthAssoc[newsSlide.publicationAt.split('-').reverse()[1]] }}</p>
-              <p class="new__text">{{ newsSlide.title }}</p>
-          </router-link>
+    <h1 class="news-all__title">Новости</h1>
+    <div class="news-all__field">
+      <div v-for="newsSlide in newsSlider" :key="newsSlide.id" class="new">
+        <router-link :to="'/news/new/' + newsSlide.id" class="new__link">
+          <div class="new__media">
+            <img :src="`${API_FILES_URL}/${newsSlide.imageLink}`" alt="" class="new__image">
+            <span class="new__date" v-if="newsSlide.publicationAt">
+              {{ new Date(newsSlide.publicationAt).getDate() + ' ' + monthAssoc[newsSlide.publicationAt.split('-').reverse()[1]] }}
+            </span>
+            <span class="new__arrow" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 12h14M13 6l6 6-6 6" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+          </div>
+          <p class="new__title">{{ newsSlide.title }}</p>
+          <span class="new__accent"></span>
+        </router-link>
       </div>
+    </div>
   </section>
 </template>
 
 <script setup>
-import {onMounted, ref} from "vue";
-import axios from "axios";
-import { API_FILES_URL } from '@/main';
+import { onMounted, ref } from 'vue'
+import axios from 'axios'
+import { API_FILES_URL } from '@/main'
 
 const newsSlider = ref([])
-const monthAssoc = ref({
-    '01': 'января',
-    '02': 'февраля',
-    '03': 'марта',
-    '04': 'апреля',
-    '05': 'мая',
-    '06': 'июня',
-    '07': 'июля',
-    '08': 'августа',
-    '09': 'сентября',
-    '10': 'октября',
-    '11': 'ноября',
-    '12': 'декабря'
-})
-
-onMounted(() => {
-    newsList()
-})
-
-const newsList = async () => {
-    await axios.get('news')
-        .then((news) => {
-            newsSlider.value = news.data.reverse()
-        })
+const monthAssoc = {
+  '01': 'января', '02': 'февраля', '03': 'марта', '04': 'апреля',
+  '05': 'мая', '06': 'июня', '07': 'июля', '08': 'августа',
+  '09': 'сентября', '10': 'октября', '11': 'ноября', '12': 'декабря'
 }
+
+onMounted(async () => {
+  const res = await axios.get('news')
+  newsSlider.value = res.data.reverse()
+})
 </script>
 
 <style lang="scss" scoped>
-.news-all{
+.news-all {
   max-width: 1440px;
   margin: 0 auto 80px;
 
-  &__field{
-    display: flex;
-    align-items: stretch;
-    flex-wrap: wrap;
-    gap: 85px;
+  @media (max-width: 1480px) {
+    max-width: calc(100% - 40px);
   }
 
-  &__title{
+  &__title {
     margin-bottom: 40px;
+  }
+
+  &__field {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
   }
 }
 </style>

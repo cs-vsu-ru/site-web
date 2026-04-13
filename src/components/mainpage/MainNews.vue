@@ -10,22 +10,31 @@
           </svg>
         </router-link>
       </div>
-      <div class="news__container-field">
+      <div class="news__field">
         <Swiper
-            :slides-per-view="4"
-            :space-between="85"
-            :navigation="{
-              prevEl: prevEl,
-              nextEl: nextEl,
-            }"
-            :modules="[Navigation]"
+          :slides-per-view="4"
+          :space-between="30"
+          :navigation="{ prevEl, nextEl }"
+          :modules="[Navigation]"
         >
-          <SwiperSlide v-for="newsSlide in newsSlider">
-            <router-link :to="'/news/new/' + newsSlide.id" class="new">
-              <img :src="`${API_FILES_URL}/${newsSlide.imageLink}`" alt="" class="new__image">
-              <p class="new__date">{{ new Date(newsSlide.publicationAt).getDate() + ' ' + monthAssoc[newsSlide.publicationAt.split('-').reverse()[1]] }}</p>
-              <p class="new__text">{{ newsSlide.title }}</p>
-            </router-link>
+          <SwiperSlide v-for="newsSlide in newsSlider" :key="newsSlide.id">
+            <div class="new">
+              <router-link :to="'/news/new/' + newsSlide.id" class="new__link">
+                <div class="new__media">
+                  <img :src="`${API_FILES_URL}/${newsSlide.imageLink}`" alt="" class="new__image">
+                  <span class="new__date">
+                    {{ new Date(newsSlide.publicationAt).getDate() + ' ' + monthAssoc[newsSlide.publicationAt.split('-').reverse()[1]] }}
+                  </span>
+                  <span class="new__arrow" aria-hidden="true">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M5 12h14M13 6l6 6-6 6" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </span>
+                </div>
+                <p class="new__title">{{ newsSlide.title }}</p>
+                <span class="new__accent"></span>
+              </router-link>
+            </div>
           </SwiperSlide>
         </Swiper>
         <div class="slider-nav">
@@ -48,49 +57,33 @@
 <script setup>
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import { Navigation } from 'swiper'
-import {onMounted, ref} from "vue";
-import axios from "axios";
-import { API_FILES_URL } from '@/main';
+import { onMounted, ref } from 'vue'
+import axios from 'axios'
+import { API_FILES_URL } from '@/main'
 
 const prevEl = ref(null)
 const nextEl = ref(null)
-const monthAssoc = ref({
-  '01': 'января',
-  '02': 'февраля',
-  '03': 'марта',
-  '04': 'апреля',
-  '05': 'мая',
-  '06': 'июня',
-  '07': 'июля',
-  '08': 'августа',
-  '09': 'сентября',
-  '10': 'октября',
-  '11': 'ноября',
-  '12': 'декабря'
-})
 const newsSlider = ref([])
-
-onMounted(() => {
-    newsList()
-})
-
-const newsList = async () => {
-    await axios.get('news')
-        .then((news) => {
-            newsSlider.value = news.data
-            newsSlider.value.reverse().slice(0, 8)
-        })
+const monthAssoc = {
+  '01': 'января', '02': 'февраля', '03': 'марта', '04': 'апреля',
+  '05': 'мая', '06': 'июня', '07': 'июля', '08': 'августа',
+  '09': 'сентября', '10': 'октября', '11': 'ноября', '12': 'декабря'
 }
+
+onMounted(async () => {
+  const res = await axios.get('news')
+  newsSlider.value = res.data.reverse().slice(0, 8)
+})
 </script>
 
 <style lang="scss">
 @import "../../assets/styles/styles.scss";
 
-.news{
+.news {
   background: $pr3;
   padding: 80px 0;
 
-  &__container{
+  &__container {
     max-width: 1440px;
     margin: 0 auto;
     display: flex;
@@ -100,56 +93,122 @@ const newsList = async () => {
     @media (max-width: 1480px) {
       max-width: calc(100% - 40px);
     }
+  }
 
-    &-field{
-      width: 100%;
-      position: relative;
+  &__field {
+    width: 100%;
+    position: relative;
+
+    .slider-nav {
+      pointer-events: none;
+
+      &__button {
+        pointer-events: auto;
+      }
     }
   }
 }
 
-.new{
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 15px;
-  max-width: 296px;
+.new {
+  display: block;
+  width: 100%;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
   position: relative;
-  cursor: pointer;
+  transition: box-shadow 0.25s ease;
+  box-shadow: 0 0 0 transparent;
 
-  &:before{
-    content: '';
-    position: absolute;
-    height: 100%;
-    width: 2px;
-    left: 0;
-    top: 0;
-    background: $pr2;
+  &__link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
   }
 
-  &__image{
-    width: 296px;
+  &__media {
+    position: relative;
+    width: 100%;
     height: 180px;
+    overflow: hidden;
+  }
+
+  &__image {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    border-radius: 0 10px 10px 0;
+    display: block;
+    pointer-events: none;
   }
 
-  &__date{
-    font-size: 18px;
-    line-height: 21px;
-    color: white;
+  &__date {
+    position: absolute;
+    top: 12px;
+    right: 12px;
     background: $pr2;
-    border-radius: 0 10px 10px 0;
-    padding: 7px 14px;
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1;
+    padding: 7px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.2px;
+    box-shadow: 0 2px 6px rgba(0, 41, 95, 0.18);
+    pointer-events: none;
   }
 
-  &__text{
-    font-size: 24px;
-    line-height: 28px;
-    background: white;
-    padding: 10px;
-    border-radius: 0 10px 10px 0;
-    height: 188px;
+  &__arrow {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: $pr2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+  }
+
+  &__title {
+    padding: 20px;
+    font-size: 20px;
+    line-height: 26px;
+    color: $pr1;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin: 0;
+    min-height: calc(26px * 3 + 40px);
+    box-sizing: border-box;
+  }
+
+  &__accent {
+    display: block;
+    height: 2px;
+    width: 40px;
+    background: $pr2;
+    margin: 0 20px 20px;
+    transition: width 0.3s ease;
+    pointer-events: none;
+  }
+
+  &:hover {
+    box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+
+    .new__arrow {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .new__accent {
+      width: 80px;
+    }
   }
 }
 </style>
