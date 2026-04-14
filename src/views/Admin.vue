@@ -27,6 +27,54 @@ const newsDisabler = ref([])
 const currNews = ref([])
 const scheduleUrl = ref(null)
 const scheduleError = ref('')
+const weekConfigForm = ref({ reference_date: '', is_denominator: false })
+const weekConfigLoaded = ref(false)
+const weekConfigError = ref('')
+const weekConfigSuccess = ref('')
+const weekConfigSaving = ref(false)
+const weekConfigEditing = ref(false)
+const currentIsDenominator = ref(null)
+
+const weekdayNames = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота']
+
+const formatReferenceDate = (iso) => {
+  if (!iso) return ''
+  const d = new Date(iso + 'T00:00:00')
+  if (isNaN(d.getTime())) return iso
+  return d.toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' })
+}
+
+const referenceDateIsMonday = computed(() => {
+  const v = weekConfigForm.value.reference_date
+  if (!v) return null
+  const d = new Date(v + 'T00:00:00')
+  if (isNaN(d.getTime())) return false
+  return d.getDay() === 1
+})
+
+const referenceDateWeekday = computed(() => {
+  const v = weekConfigForm.value.reference_date
+  if (!v) return ''
+  const d = new Date(v + 'T00:00:00')
+  if (isNaN(d.getTime())) return ''
+  return weekdayNames[d.getDay()]
+})
+
+const toLocalISODate = (d) => {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+const shiftReferenceDateByWeek = (weeks) => {
+  const v = weekConfigForm.value.reference_date
+  if (!v) return
+  const d = new Date(v + 'T00:00:00')
+  if (isNaN(d.getTime())) return
+  d.setDate(d.getDate() + weeks * 7)
+  weekConfigForm.value.reference_date = toLocalISODate(d)
+}
 const userList = ref([])
 const sortOption = ref('1');
 const filterOption = ref('');
@@ -108,6 +156,7 @@ onMounted(() => {
   eventList()
   getMails()
   checkRole()
+  loadWeekConfig()
 
   tabsHandler(activeItem.value);
 })
@@ -352,6 +401,67 @@ const deleteNews = async (artId, index) => {
       .then(() => {
         newsShow.value[index] = false
       })
+}
+
+const loadWeekConfig = async () => {
+  try {
+    const response = await parserAxios.get('lessons/week_config/')
+    weekConfigForm.value = {
+      reference_date: response.data.reference_date ?? '',
+      is_denominator: Boolean(response.data.is_denominator)
+    }
+    currentIsDenominator.value = response.data.current_is_denominator ?? null
+    weekConfigLoaded.value = true
+  } catch (err) {
+    weekConfigError.value = 'Не удалось загрузить настройку чередования недель'
+  }
+}
+
+const cancelWeekConfigEdit = () => {
+  weekConfigEditing.value = false
+  weekConfigError.value = ''
+  loadWeekConfig()
+}
+
+const isMondayISO = (dateStr) => {
+  if (!dateStr) return false
+  const d = new Date(dateStr + 'T00:00:00')
+  return !isNaN(d.getTime()) && d.getDay() === 1
+}
+
+const saveWeekConfig = async () => {
+  weekConfigError.value = ''
+  weekConfigSuccess.value = ''
+
+  if (!weekConfigForm.value.reference_date) {
+    weekConfigError.value = 'Укажите опорную дату'
+    return
+  }
+  if (!isMondayISO(weekConfigForm.value.reference_date)) {
+    weekConfigError.value = 'Опорная дата должна быть понедельником'
+    return
+  }
+
+  weekConfigSaving.value = true
+  try {
+    await parserAxios.patch('lessons/week_config/', {
+      reference_date: weekConfigForm.value.reference_date,
+      is_denominator: weekConfigForm.value.is_denominator
+    })
+    weekConfigSuccess.value = 'Настройка сохранена'
+    setTimeout(() => { weekConfigSuccess.value = '' }, 3000)
+    weekConfigEditing.value = false
+    await loadWeekConfig()
+  } catch (err) {
+    const status = err.response?.status
+    if (status === 400) {
+      weekConfigError.value = 'Некорректные данные. Проверьте опорную дату'
+    } else {
+      weekConfigError.value = 'Не удалось сохранить настройку'
+    }
+  } finally {
+    weekConfigSaving.value = false
+  }
 }
 
 const uploadSchedule = async () => {
@@ -657,6 +767,77 @@ const deleteMail = async (mailId) => {
         </div>
         <div v-if="scheduleError" class="schedule-error">
           {{ scheduleError }}
+        </div>
+        <div v-if="weekConfigLoaded" class="week-config">
+          <div class="week-config__summary" v-if="!weekConfigEditing">
+            <span>
+              Сейчас идёт <b>{{ currentIsDenominator ? 'знаменатель' : 'числитель' }}</b>.
+              Опорная неделя — {{ formatReferenceDate(weekConfigForm.reference_date) }}
+              ({{ weekConfigForm.is_denominator ? 'знаменатель' : 'числитель' }}).
+            </span>
+            <button class="week-config__link" @click="weekConfigEditing = true">Изменить</button>
+          </div>
+
+          <div class="week-config__editor" v-else>
+            <div class="week-config__row">
+              <label class="week-config__field">
+                <span>Опорный понедельник</span>
+                <input type="date" v-model="weekConfigForm.reference_date">
+                <span v-if="weekConfigForm.reference_date && referenceDateIsMonday === false"
+                      class="week-config__inline-hint">
+                  выбранная дата — {{ referenceDateWeekday }}, нужен понедельник
+                </span>
+              </label>
+              <button type="button"
+                      class="week-config__shift"
+                      :disabled="!weekConfigForm.reference_date"
+                      @click="shiftReferenceDateByWeek(1)">
+                +1 неделя
+              </button>
+              <button type="button"
+                      class="week-config__shift"
+                      :disabled="!weekConfigForm.reference_date"
+                      @click="shiftReferenceDateByWeek(-1)">
+                −1 неделя
+              </button>
+            </div>
+
+            <div class="week-config__row">
+              <div class="week-config__toggle" role="radiogroup" aria-label="Тип опорной недели">
+                <button type="button"
+                        role="radio"
+                        :aria-checked="!weekConfigForm.is_denominator"
+                        :class="{ active: !weekConfigForm.is_denominator }"
+                        @click="weekConfigForm.is_denominator = false">
+                  Числитель
+                </button>
+                <button type="button"
+                        role="radio"
+                        :aria-checked="weekConfigForm.is_denominator"
+                        :class="{ active: weekConfigForm.is_denominator }"
+                        @click="weekConfigForm.is_denominator = true">
+                  Знаменатель
+                </button>
+              </div>
+            </div>
+
+            <div class="week-config__actions">
+              <button @click="saveWeekConfig"
+                      :disabled="weekConfigSaving || referenceDateIsMonday === false"
+                      class="admin-button">
+                {{ weekConfigSaving ? 'Сохранение…' : 'Сохранить' }}
+              </button>
+              <button type="button"
+                      class="week-config__link"
+                      :disabled="weekConfigSaving"
+                      @click="cancelWeekConfigEdit">
+                Отмена
+              </button>
+            </div>
+          </div>
+
+          <div v-if="weekConfigError" class="schedule-error">{{ weekConfigError }}</div>
+          <div v-if="weekConfigSuccess" class="week-config__success">{{ weekConfigSuccess }}</div>
         </div>
       </div>
       <div v-show="admRole === 'ADMIN' && activeItem === 'employees'" class="admin__view-item">
@@ -1066,6 +1247,126 @@ const deleteMail = async (mailId) => {
   border: 1px solid #f5c6cb;
   border-radius: 6px;
   font-size: 14px;
+}
+
+.week-config {
+  margin-top: 20px;
+  max-width: 720px;
+  font-size: 14px;
+
+  &__summary {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    color: #333;
+  }
+
+  &__link {
+    background: none;
+    border: none;
+    color: #00295F;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+    font-size: 14px;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+  }
+
+  &__editor {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 4px;
+  }
+
+  &__row {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    input[type="date"] {
+      padding: 6px 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+  }
+
+  &__inline-hint {
+    color: #b71c1c;
+    font-size: 12px;
+  }
+
+  &__shift {
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    background: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+
+    &:hover:not(:disabled) {
+      border-color: #00295F;
+      color: #00295F;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+  }
+
+  &__toggle {
+    display: inline-flex;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    overflow: hidden;
+
+    button {
+      padding: 6px 14px;
+      background: white;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background-color 0.2s, color 0.2s;
+
+      & + button {
+        border-left: 1px solid #ccc;
+      }
+
+      &.active {
+        background-color: #00295F;
+        color: white;
+      }
+    }
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  &__success {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+    border-radius: 6px;
+  }
 }
 
 .new-view {

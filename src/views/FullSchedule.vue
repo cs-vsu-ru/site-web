@@ -234,6 +234,20 @@ const areLessonsEqual = (lessons) => {
       && lessons[0].placement === lessons[1].placement
 }
 
+const hasContent = (lesson) => !!(lesson && (lesson.name || lesson.groups || lesson.placement))
+
+const activeBadgePosition = (day, time, pair) => {
+  if (!day.is_current || !time.is_current) return null
+  if (!pair || pair.length === 0) return null
+  if (areLessonsEqual(pair)) {
+    return hasContent(pair[0]) ? 'top' : null
+  }
+  const isDenom = scheduleData.value?.is_denominator
+  const target = pair[isDenom ? 1 : 0]
+  if (!hasContent(target)) return null
+  return isDenom ? 'bottom' : 'top'
+}
+
 const dismissParseErrors = () => {
   parseErrors.value = []
   sessionStorage.removeItem('scheduleParseErrors')
@@ -446,17 +460,29 @@ watch(selectAllState, (state) => {
           </thead>
           <tbody>
           <template v-for="(day, dIndex) in visibleSchedule" :key="dIndex">
-            <tr v-for="(time, tIndex) in day.times" :key="tIndex">
-              <td v-if="tIndex === 0" class="sticky-col day-col" :rowspan="day.times.length">
+            <tr v-for="(time, tIndex) in day.times" :key="tIndex" :class="{ 'is-current-time': time.is_current && day.is_current }">
+              <td v-if="tIndex === 0"
+                  class="sticky-col day-col"
+                  :class="{ 'is-current-day': day.is_current }"
+                  :rowspan="day.times.length">
                 {{ day.weekday }}
               </td>
-              <td class="sticky-col time-col">{{ time.time }}</td>
+              <td class="sticky-col time-col" :class="{ 'is-current-time-cell': time.is_current && day.is_current }">{{ time.time }}</td>
               <td v-for="index in visibleTeacherIndices"
                   :key="index"
                   class="lesson-cell">
+                <span v-if="activeBadgePosition(day, time, time.lessons[index])"
+                      class="lesson-now-badge"
+                      :class="'lesson-now-badge--' + activeBadgePosition(day, time, time.lessons[index])"
+                      data-tooltip="Эта пара идёт сейчас"
+                      aria-label="Эта пара идёт сейчас"></span>
                 <template v-for="(singleLesson, sIndex) in time.lessons[index]" :key="sIndex">
                   <template v-if="!(sIndex === 1 && areLessonsEqual(time.lessons[index]))">
-                  <div class="lesson-part" :class="{ editable: isEditable, 'lesson-part--merged': areLessonsEqual(time.lessons[index]) }">
+                  <div class="lesson-part"
+                       :class="{
+                         editable: isEditable,
+                         'lesson-part--merged': areLessonsEqual(time.lessons[index])
+                       }">
                     {{ singleLesson.name }} {{ singleLesson.groups }} {{ singleLesson.placement }}
                     <button v-if="isEditable"
                             @click="openModal(singleLesson.name, singleLesson.groups, singleLesson.placement, singleLesson.id)"
@@ -917,6 +943,79 @@ thead th.time-col {
     margin-left: 4px;
   }
 }
+
+.is-current-day,
+.is-current-time-cell {
+  color: $pr1 !important;
+  font-weight: 700;
+}
+
+.lesson-now-badge {
+  position: absolute;
+  right: 8px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: $pr1;
+  box-shadow: 0 0 0 2px white, 0 0 0 3px rgba($pr1, 0.25);
+  cursor: help;
+  z-index: 2;
+  animation: lesson-now-pulse 2.6s ease-out infinite;
+
+  &--top {
+    top: 8px;
+  }
+
+  &--bottom {
+    top: calc(50% + 6px);
+  }
+
+  &::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: 50%;
+    right: calc(100% + 12px);
+    transform: translateY(-50%);
+    background: $pr1;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: calc(100% + 6px);
+    transform: translateY(-50%);
+    border: 6px solid transparent;
+    border-left-color: $pr1;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease;
+  }
+
+  &:hover::after,
+  &:hover::before {
+    opacity: 1;
+  }
+}
+
+@keyframes lesson-now-pulse {
+  0% {
+    box-shadow: 0 0 0 2px white, 0 0 0 3px rgba($pr1, 0.25);
+  }
+  100% {
+    box-shadow: 0 0 0 2px white, 0 0 0 7px rgba($pr1, 0);
+  }
+}
+
 
 .download-error {
   margin-top: 10px;
