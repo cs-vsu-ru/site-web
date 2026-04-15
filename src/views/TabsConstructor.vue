@@ -20,11 +20,11 @@
           <template #item="{ element }">
             <div class="tabs-constructor__row" :class="{ 'tabs-constructor__row--hidden': !element.visible }">
               <span class="drag-handle">⠿</span>
-              <span class="tabs-constructor__row-name">
-                {{ element.name }}
+              <span class="tabs-constructor__row-name" :title="element.name">
+                <span class="tabs-constructor__row-name-text">{{ element.name }}</span>
                 <span v-if="!element.visible" class="tabs-constructor__row-badge">(скрыта)</span>
               </span>
-              <span class="tabs-constructor__row-url">{{ element.url }}</span>
+              <span class="tabs-constructor__row-url" :title="element.url">{{ element.url }}</span>
               <label class="toggle" style="justify-self: center;" @click.prevent="toggleVisibility(element)">
                 <input type="checkbox" :checked="element.visible" />
                 <span class="toggle__slider"></span>
@@ -182,8 +182,8 @@ const validateForm = () => {
   if (!form.value.name.trim()) {
     formErrors.value.name = 'Название обязательно'
     valid = false
-  } else if (form.value.name.length > 255) {
-    formErrors.value.name = 'Максимум 255 символов'
+  } else if (form.value.name.length > 100) {
+    formErrors.value.name = 'Максимум 100 символов'
     valid = false
   }
   if (!form.value.url.trim()) {
@@ -194,6 +194,9 @@ const validateForm = () => {
     valid = false
   } else if (form.value.url.length > 255) {
     formErrors.value.url = 'Максимум 255 символов'
+    valid = false
+  } else if (!/^\/[a-zA-Z0-9_\-]+(\/[a-zA-Z0-9_\-]+)*$/.test(form.value.url)) {
+    formErrors.value.url = 'Допустимы только латинские буквы, цифры, дефис и подчёркивание'
     valid = false
   }
   const urlExists = localTabs.value.some(
@@ -295,9 +298,35 @@ const deleteTab = async () => {
     &--hidden { opacity: 0.5; }
   }
 
-  &__row-name { font-size: 15px; color: $sc1; }
-  &__row-badge { font-size: 12px; color: $sc2; font-style: italic; margin-left: 6px; }
-  &__row-url { font-size: 14px; color: $sc5; font-family: monospace; }
+  &__row-name {
+    font-size: 15px;
+    color: $sc1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow: hidden;
+  }
+  &__row-name-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  &__row-badge {
+    font-size: 12px;
+    color: $sc2;
+    font-style: italic;
+    flex-shrink: 0;
+  }
+  &__row-url {
+    font-size: 14px;
+    color: $sc5;
+    font-family: monospace;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
   &__row-actions {
     display: flex;
@@ -342,6 +371,7 @@ const deleteTab = async () => {
 
   &__modal {
     padding: 24px;
+    overflow-wrap: anywhere;
     h3 { margin: 0 0 20px; color: $pr1; font-size: 16px; }
     &--delete { text-align: center; }
   }
