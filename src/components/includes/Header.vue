@@ -39,6 +39,7 @@
             :key="tab.id"
             class="nav__item hover-underline"
             :to="tab.url"
+            :title="tab.name"
         >
           {{ tab.name }}
         </router-link>
@@ -301,11 +302,17 @@ const accountInfo = async () => {
     gap: 10px;
     max-width: 1440px;
     margin: 23px auto;
+    flex-wrap: wrap;
 
     &__item {
       font-size: 18px;
       line-height: 21px;
       color: $pr1;
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: inline-block;
 
       &:after {
         background: $pr1;
