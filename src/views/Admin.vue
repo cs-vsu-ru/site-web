@@ -24,6 +24,9 @@ const newFile = ref(null)
 const activeItem = ref(savedActiveItem ?? 'slider');
 const newsSlider = ref([])
 const newsDisabler = ref([])
+const newsOriginalTitles = ref([])
+const deleteNewsDialogState = ref(false)
+const newsToDelete = ref(null)
 const currNews = ref([])
 const scheduleUrl = ref(null)
 const scheduleError = ref('')
@@ -357,12 +360,27 @@ const newsList = async () => {
           newsDisabler.value.push(false)
           currNews.value.push(null)
           newsShow.value.push(true)
+          newsOriginalTitles.value.push('')
         }
       })
 }
 
 const checkNew = (currId) => {
   currNews.value[currId] = URL.createObjectURL(newUrl.value[currId].files[0])
+}
+
+const startEditNews = (index, title) => {
+  newsOriginalTitles.value[index] = title
+  newsDisabler.value[index] = true
+}
+
+const cancelEditNews = (index) => {
+  newsSlider.value[index].title = newsOriginalTitles.value[index]
+  currNews.value[index] = null
+  if (newUrl.value && newUrl.value[index]) {
+    newUrl.value[index].value = ''
+  }
+  newsDisabler.value[index] = false
 }
 
 const saveNews = async (artId, pubDate, pubTime, content, title, imageURL, slideIdx) => {
@@ -394,6 +412,19 @@ const saveNews = async (artId, pubDate, pubTime, content, title, imageURL, slide
       imageLink: imageURL
     })
   }
+}
+
+const requestDeleteNews = (newsSlide, index) => {
+  newsToDelete.value = { id: newsSlide.id, title: newsSlide.title, index }
+  deleteNewsDialogState.value = true
+}
+
+const confirmDeleteNews = async () => {
+  if (!newsToDelete.value) return
+  const { id, index } = newsToDelete.value
+  deleteNewsDialogState.value = false
+  await deleteNews(id, index)
+  newsToDelete.value = null
 }
 
 const deleteNews = async (artId, index) => {
@@ -689,75 +720,94 @@ const deleteMail = async (mailId) => {
           <router-link to="/create-event" style="align-self: flex-start; flex-shrink: 0" class="admin-button">Создать мероприятие</router-link>
         </div>
       </div>
-      <div v-show="activeItem === 'feed'" class="admin__view-item new-view">
-        <router-link to="/admin/create_news" class="admin-button">Создать новость</router-link>
-        <div class="news-all__field">
-          <div v-for="(newsSlide, index) in newsSlider" class="new" v-show="newsShow[index]">
-            <div class="slider-admin__box">
-              <img v-if="currNews[index] === null" :src="`${API_FILES_URL}/${newsSlide.imageLink}`" alt="" class="slider-admin__item-img">
-              <img v-else :src="`${API_FILES_URL}/${currNews[index]}`" alt="" class="slider-admin__item-img">
-              <input v-on:change="checkNew(index)" ref="newUrl" :id="newsSlide.id" type="file"
-                     accept="image/png, image/jpeg, image/jpg" class="slider-admin__box-input">
-              <label v-if="newsDisabler[index]" class="slider-admin__box-label" :for="newsSlide.id"></label>
-              <svg v-if="newsDisabler[index]" width="64px" height="64px" viewBox="0 0 24 24"
-                   xmlns="http://www.w3.org/2000/svg">
-                <g id="SVGRepo_bgCarrier" style="stroke-width:0"></g>
-                <g id="SVGRepo_tracerCarrier" style="stroke-linecap:round;stroke-linejoin:round"></g>
-                <g id="SVGRepo_iconCarrier">
-                  <path fill-rule="evenodd" clip-rule="evenodd"
-                        d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"></path>
-                </g>
-              </svg>
-            </div>
-            <p class="new__date">{{
-                new Date(newsSlide.publicationAt).getDate() + ' ' + monthAssoc[newsSlide.publicationAt.split('-').reverse()[1]]
-              }}</p>
-            <textarea maxlength="110" v-model="newsSlide.title" class="new__input"
-                      :disabled="!newsDisabler[index]"></textarea>
-            <div class="news-admin__buttons">
-              <svg @click="newsDisabler[index] = true" width="30" height="30" viewBox="0 0 24 24"
-                   xmlns="http://www.w3.org/2000/svg" style="fill:#00295F">
-                <g id="SVGRepo_bgCarrier" style="stroke-width:0"></g>
-                <g id="SVGRepo_tracerCarrier" style="stroke-linecap:round;stroke-linejoin:round"></g>
-                <g id="SVGRepo_iconCarrier">
-                  <path fill-rule="evenodd" clip-rule="evenodd"
-                        d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"></path>
-                </g>
-              </svg>
-              <svg @click="deleteNews(newsSlide.id, index)" width="30" height="30" viewBox="0 -0.5 21 21" xmlns="http://www.w3.org/2000/svg" style="fill:#000000">
-                <g id="SVGRepo_bgCarrier" style="stroke-width:0"></g>
-                <g id="SVGRepo_tracerCarrier" style="stroke-linecap:round;stroke-linejoin:round"></g>
-                <g id="SVGRepo_iconCarrier"><title>delete [#1487]</title>
-                  <desc>Created with Sketch.</desc>
-                  <defs></defs>
-                  <g id="Page-1" style="stroke:none;stroke-width:1;fill:none;fill-rule:evenodd">
-                    <g id="Dribbble-Light-Preview" transform="translate(-179.000000, -360.000000)" style="fill:#00295F">
-                      <g id="icons" transform="translate(56.000000, 160.000000)">
-                        <path
-                            d="M130.35,216 L132.45,216 L132.45,208 L130.35,208 L130.35,216 Z M134.55,216 L136.65,216 L136.65,208 L134.55,208 L134.55,216 Z M128.25,218 L138.75,218 L138.75,206 L128.25,206 L128.25,218 Z M130.35,204 L136.65,204 L136.65,202 L130.35,202 L130.35,204 Z M138.75,204 L138.75,200 L128.25,200 L128.25,204 L123,204 L123,206 L126.15,206 L126.15,220 L140.85,220 L140.85,206 L144,206 L144,204 L138.75,204 Z"
-                            id="delete-[#1487]"></path>
-                      </g>
-                    </g>
-                  </g>
-                </g>
-              </svg>
-              <router-link :to="'/news/new/' + newsSlide.id">
-                <svg style="fill:#00295F;stroke:#00295F" width="30" height="30" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-                  <g id="SVGRepo_bgCarrier" style="stroke-width:0"></g>
-                  <g id="SVGRepo_tracerCarrier" style="stroke-linecap:round;stroke-linejoin:round"></g>
-                  <g id="SVGRepo_iconCarrier"><title>link</title>
-                    <path
-                        d="M10.406 13.406l2.5-2.531c0.219-0.219 0.469-0.5 0.719-0.813 0.25-0.281 0.531-0.531 0.813-0.75 0.531-0.469 1.156-0.875 1.938-0.875 0.688 0 1.281 0.313 1.719 0.719s0.688 1 0.688 1.688c0 0.281-0.031 0.594-0.125 0.813-0.219 0.438-0.406 0.75-0.594 1-0.094 0.125-0.188 0.25-0.188 0.375 0 0.094 0 0.188 0.063 0.219 0.344 0.844 0.594 1.563 0.75 2.438 0.094 0.344 0.281 0.5 0.594 0.5 0.125 0 0.25-0.031 0.375-0.125 0.25-0.156 0.469-0.406 0.688-0.656 0.125-0.125 0.219-0.25 0.281-0.313 1.125-1.094 1.781-2.656 1.781-4.25 0-1.688-0.688-3.188-1.781-4.281-1.094-1.063-2.625-1.781-4.25-1.781s-3.188 0.656-4.281 1.813l-4.281 4.25c-1.125 1.156-1.75 2.656-1.75 4.25 0 0.469 0.188 1.438 0.5 2.344 0.313 0.875 0.719 1.656 1.25 1.656 0.281 0 0.875-0.469 1.375-1s1-1.125 1-1.344c0-0.156-0.125-0.344-0.25-0.625-0.156-0.281-0.219-0.625-0.219-1.031 0-0.625 0.25-1.25 0.688-1.688zM10.313 25.406l4.281-4.25c1.125-1.094 1.75-2.688 1.75-4.281 0-0.469-0.188-1.406-0.5-2.313-0.281-0.875-0.719-1.688-1.25-1.688-0.219 0-0.875 0.5-1.344 1.031-0.531 0.531-1.031 1.094-1.031 1.313 0 0.156 0.094 0.406 0.25 0.656 0.156 0.281 0.281 0.594 0.281 1-0.031 0.625-0.281 1.25-0.719 1.75l-2.531 2.5c-0.219 0.25-0.469 0.5-0.719 0.781l-0.781 0.781c-0.531 0.5-1.188 0.844-1.969 0.844-1.313 0-2.375-1.031-2.375-2.375 0-0.313 0.063-0.594 0.156-0.813 0.188-0.438 0.375-0.75 0.594-1 0.094-0.125 0.125-0.25 0.125-0.344 0-0.063-0.031-0.125-0.063-0.25-0.375-0.844-0.594-1.563-0.75-2.438-0.063-0.156-0.094-0.281-0.188-0.344-0.094-0.125-0.25-0.156-0.406-0.156-0.125 0-0.219 0.031-0.344 0.125-0.25 0.156-0.5 0.406-0.719 0.656-0.094 0.125-0.219 0.219-0.281 0.281-1.125 1.125-1.781 2.688-1.781 4.281 0 1.656 0.656 3.188 1.781 4.281 1.094 1.094 2.594 1.75 4.25 1.75 1.625 0 3.188-0.625 4.281-1.781z"></path>
-                  </g>
-                  #00295F
+      <div v-show="activeItem === 'feed'" class="admin__view-item">
+        <router-link to="/admin/create_news" class="admin-button news-create-btn">
+          <svg class="news-create-btn__icon" width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+          </svg>
+          Создать новость
+        </router-link>
+        <div class="news-grid">
+          <article v-for="(newsSlide, index) in newsSlider"
+                   :key="newsSlide.id"
+                   class="news-card"
+                   :class="{ 'news-card--editing': newsDisabler[index] }"
+                   v-show="newsShow[index]">
+            <div class="news-card__cover">
+              <img v-if="currNews[index] === null"
+                   :src="`${API_FILES_URL}/${newsSlide.imageLink}`"
+                   alt=""
+                   class="news-card__cover-img">
+              <img v-else
+                   :src="`${API_FILES_URL}/${currNews[index]}`"
+                   alt=""
+                   class="news-card__cover-img">
+              <input ref="newUrl"
+                     :id="newsSlide.id"
+                     type="file"
+                     accept="image/png, image/jpeg, image/jpg"
+                     class="news-card__cover-input"
+                     @change="checkNew(index)">
+              <label v-if="newsDisabler[index]" :for="newsSlide.id" class="news-card__cover-overlay">
+                <svg width="28" height="28" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
                 </svg>
-              </router-link>
+                <span>Изменить обложку</span>
+              </label>
             </div>
-            <button
-                @click="saveNews(newsSlide.id, newsSlide.publicationDate, newsSlide.publicationTime, newsSlide.content, newsSlide.title, newsSlide.imageLink, index); newsDisabler[index] = false"
-                v-if="newsDisabler[index]" class="news-admin__button admin-button">Сохранить
-            </button>
-          </div>
+            <div class="news-card__body">
+              <p class="news-card__date">
+                {{ new Date(newsSlide.publicationAt).getDate() + ' ' + monthAssoc[newsSlide.publicationAt.split('-').reverse()[1]] }}
+              </p>
+              <textarea maxlength="110"
+                        v-model="newsSlide.title"
+                        class="news-card__title"
+                        :disabled="!newsDisabler[index]"
+                        rows="3"></textarea>
+              <div class="news-card__footer">
+                <div class="news-card__actions">
+                  <button type="button"
+                          class="news-card__icon-btn"
+                          title="Редактировать"
+                          aria-label="Редактировать"
+                          @click="startEditNews(index, newsSlide.title)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                    </svg>
+                  </button>
+                  <button type="button"
+                          class="news-card__icon-btn news-card__icon-btn--danger"
+                          title="Удалить"
+                          aria-label="Удалить"
+                          @click="requestDeleteNews(newsSlide, index)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path fill="currentColor" d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                    </svg>
+                  </button>
+                  <router-link :to="'/news/new/' + newsSlide.id"
+                               class="news-card__icon-btn"
+                               title="Открыть страницу"
+                               aria-label="Открыть страницу">
+                    <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path fill="currentColor" d="M14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7zM19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7z"/>
+                    </svg>
+                  </router-link>
+                </div>
+                <div v-if="newsDisabler[index]" class="news-card__edit-actions">
+                  <button type="button"
+                          class="news-card__cancel"
+                          @click="cancelEditNews(index)">
+                    Отмена
+                  </button>
+                  <button type="button"
+                          class="admin-button news-card__save"
+                          @click="saveNews(newsSlide.id, newsSlide.publicationDate, newsSlide.publicationTime, newsSlide.content, newsSlide.title, newsSlide.imageLink, index); newsDisabler[index] = false">
+                    Сохранить
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
         </div>
       </div>
       <div v-show="activeItem === 'schedule'" class="admin__view-item">
@@ -999,6 +1049,18 @@ const deleteMail = async (mailId) => {
     </div>
   </GDialog>
 
+  <GDialog v-model="deleteNewsDialogState" :max-width="420">
+    <div class="delete-confirm-modal">
+      <p>Удалить новость
+        <strong v-if="newsToDelete?.title">«{{ newsToDelete.title }}»</strong><span v-else>без заголовка</span>?
+      </p>
+      <div class="delete-confirm-modal__actions">
+        <button @click="confirmDeleteNews" class="admin-button delete-confirm-modal__delete">Удалить</button>
+        <button @click="deleteNewsDialogState = false" class="admin-button">Отмена</button>
+      </div>
+    </div>
+  </GDialog>
+
   <Loader v-if="isLoading"/>
 </template>
 
@@ -1059,50 +1121,193 @@ const deleteMail = async (mailId) => {
       }
     }
 
-    .new {
+  }
+}
+
+.news-create-btn {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+
+  &__icon {
+    flex-shrink: 0;
+  }
+}
+
+.news-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
+  gap: 20px;
+  width: 100%;
+}
+
+.news-card {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  background: white;
+  border: 1px solid $sc3;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  &--editing {
+    border-color: $pr1;
+  }
+
+  &__cover {
+    position: relative;
+    flex-shrink: 0;
+    width: 200px;
+    height: 130px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: $sc3;
+  }
+
+  &__cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  &__cover-input {
+    display: none;
+  }
+
+  &__cover-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: rgba($pr1, 0.6);
+    color: white;
+    font-size: 13px;
+    line-height: 16px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: rgba($pr1, 0.75);
+    }
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  &__date {
+    font-size: 13px;
+    line-height: 16px;
+    color: $sc5;
+    margin: 0;
+  }
+
+  &__title {
+    font-size: 16px;
+    line-height: 22px;
+    color: $pr1;
+    background: white;
+    border: 1px solid $sc2;
+    border-radius: 8px;
+    padding: 8px 10px;
+    resize: none;
+    font-family: inherit;
+    transition: border-color 0.15s ease;
+
+    &:focus {
+      outline: none;
+      border-color: $pr1;
+    }
+
+    &:disabled {
+      border-color: transparent;
+      background: transparent;
+      color: $pr1;
       cursor: default;
     }
+  }
 
-    .news-all__field {
-      display: flex;
-      align-items: stretch;
-      flex-wrap: wrap;
-      gap: 50px;
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: auto;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  &__icon-btn {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: $pr1;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+
+    &:hover {
+      background: $pr3;
+      border-color: $pr1;
     }
 
-    .new__input {
-      font-size: 24px;
-      line-height: 28px;
-      background: white;
-      padding: 10px;
-      resize: none;
-      height: 200px;
-      border: 2px solid $pr1;
-      border-radius: 10px;
-      margin-left: 5px;
-
-      &:disabled {
-        border: none;
-      }
+    &--danger:hover {
+      color: crimson;
+      background: rgba(220, 20, 60, 0.08);
+      border-color: currentColor;
     }
+  }
 
-    .news-admin__buttons {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      margin: 0 auto;
+  &__edit-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
 
-      svg {
-        cursor: pointer;
-      }
-    }
+  &__save {
+    padding: 6px 16px;
+    font-size: 14px;
+    line-height: 18px;
+  }
 
-    .news-admin__button {
-      margin: 0 auto;
-      position: absolute;
-      bottom: -40px;
-      left: 0;
-      right: 0;
+  &__cancel {
+    padding: 6px 14px;
+    font-size: 14px;
+    line-height: 18px;
+    color: $sc5;
+    background: transparent;
+    border: 1px solid $sc2;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+
+    &:hover {
+      background: $sc3;
+      color: $pr1;
+      border-color: $pr1;
     }
   }
 }
@@ -1366,17 +1571,6 @@ const deleteMail = async (mailId) => {
     color: #2e7d32;
     border: 1px solid #c8e6c9;
     border-radius: 6px;
-  }
-}
-
-.new-view {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-
-  .admin-button {
-    width: 50%;
-    align-self: center;
   }
 }
 
