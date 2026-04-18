@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import axios from 'axios';
 import { API_FILES_URL, NO_IMG_URL, parserAxios } from '@/main';
+import { newsImageSrc, isNewsPlaceholder, logoImg } from '@/utils/newsImage';
 import { GDialog } from 'gitart-vue-dialog/dist/index';
 import Loader from '@/components/includes/Loader';
 import { userAuth } from '@/store/userAuth';
@@ -735,9 +736,10 @@ const deleteMail = async (mailId) => {
                    v-show="newsShow[index]">
             <div class="news-card__cover">
               <img v-if="currNews[index] === null"
-                   :src="`${API_FILES_URL}/${newsSlide.imageLink}`"
+                   :src="newsImageSrc(newsSlide.imageLink)"
+                   :class="['news-card__cover-img', { 'news-card__cover-img--placeholder': isNewsPlaceholder(newsSlide.imageLink) }]"
                    alt=""
-                   class="news-card__cover-img">
+                   @error="$event.target.src = logoImg">
               <img v-else
                    :src="`${API_FILES_URL}/${currNews[index]}`"
                    alt=""
@@ -1176,6 +1178,12 @@ const deleteMail = async (mailId) => {
     height: 100%;
     object-fit: cover;
     display: block;
+
+    &--placeholder {
+      object-fit: contain;
+      padding: 16px;
+      background: white;
+    }
   }
 
   &__cover-input {

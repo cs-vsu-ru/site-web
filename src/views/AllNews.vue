@@ -5,7 +5,10 @@
       <div v-for="newsSlide in newsSlider" :key="newsSlide.id" class="new">
         <router-link :to="'/news/new/' + newsSlide.id" class="new__link">
           <div class="new__media">
-            <img :src="`${API_FILES_URL}/${newsSlide.imageLink}`" alt="" class="new__image">
+            <img :src="newsImageSrc(newsSlide.imageLink)"
+                 :class="['new__image', { 'new__image--placeholder': isNewsPlaceholder(newsSlide.imageLink) }]"
+                 alt=""
+                 @error="$event.target.src = logoImg">
             <span class="new__date" v-if="newsSlide.publicationAt">
               {{ new Date(newsSlide.publicationAt).getDate() + ' ' + monthAssoc[newsSlide.publicationAt.split('-').reverse()[1]] }}
             </span>
@@ -26,7 +29,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import axios from 'axios'
-import { API_FILES_URL } from '@/main'
+import { newsImageSrc, isNewsPlaceholder, logoImg } from '@/utils/newsImage'
 
 const newsSlider = ref([])
 const monthAssoc = {
