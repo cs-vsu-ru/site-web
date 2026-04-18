@@ -14,6 +14,7 @@ const subjectName = ref('')
 const courseNGroups = ref('')
 const placement = ref('')
 const lessonId = ref(null)
+const weekType = ref('EVERY')
 const zoom = ref(1)
 const isFullscreen = ref(false)
 const hideEmptyTeachers = ref(false)
@@ -169,12 +170,17 @@ const handleClickOutside = (event) => {
   }
 }
 
-const openModal = (name, course, room, id) => {
+const openModal = (name, course, room, id, pair, sIndex) => {
   dialogState.value = true
   subjectName.value = name
   courseNGroups.value = course
   placement.value = room
   lessonId.value = id
+  if (!pair || areLessonsEqual(pair)) {
+    weekType.value = 'EVERY'
+  } else {
+    weekType.value = sIndex === 0 ? 'NUMERATOR' : 'DENOMINATOR'
+  }
 }
 
 const loadSchedule = async () => {
@@ -196,7 +202,8 @@ const saveSchedule = async () => {
     await parserAxios.patch(`lessons/${lessonId.value}/`, {
       groups: courseNGroups.value,
       placement: placement.value,
-      name: subjectName.value
+      name: subjectName.value,
+      week_type: weekType.value
     })
     location.reload()
   } catch (err) {
@@ -209,7 +216,8 @@ const deleteLesson = async () => {
     await parserAxios.patch(`lessons/${lessonId.value}/`, {
       groups: '',
       placement: '',
-      name: ''
+      name: '',
+      week_type: weekType.value
     })
     location.reload()
   } catch (err) {
@@ -485,7 +493,7 @@ watch(selectAllState, (state) => {
                        }">
                     {{ singleLesson.name }} {{ singleLesson.groups }} {{ singleLesson.placement }}
                     <button v-if="isEditable"
-                            @click="openModal(singleLesson.name, singleLesson.groups, singleLesson.placement, singleLesson.id)"
+                            @click="openModal(singleLesson.name, singleLesson.groups, singleLesson.placement, singleLesson.id, time.lessons[index], sIndex)"
                             class="edit-btn">
                       <svg width="20px" height="20px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
@@ -522,6 +530,29 @@ watch(selectAllState, (state) => {
           <div class="login-modal__inputs-item">
             <p class="login-modal__inputs-item_name">Аудитория</p>
             <input type="text" class="login-modal__inputs-item_input" v-model="placement" required>
+          </div>
+          <div class="login-modal__inputs-item">
+            <p class="login-modal__inputs-item_name">Чётность недели</p>
+            <div class="week-type-group" role="radiogroup" aria-label="Чётность недели">
+              <button type="button"
+                      class="week-type-group__option"
+                      :class="{ 'week-type-group__option--active': weekType === 'EVERY' }"
+                      @click="weekType = 'EVERY'">
+                Каждую неделю
+              </button>
+              <button type="button"
+                      class="week-type-group__option"
+                      :class="{ 'week-type-group__option--active': weekType === 'NUMERATOR' }"
+                      @click="weekType = 'NUMERATOR'">
+                Числитель
+              </button>
+              <button type="button"
+                      class="week-type-group__option"
+                      :class="{ 'week-type-group__option--active': weekType === 'DENOMINATOR' }"
+                      @click="weekType = 'DENOMINATOR'">
+                Знаменатель
+              </button>
+            </div>
           </div>
         </div>
         <button type="submit" class="login-modal__submit">Сохранить</button>
@@ -1026,5 +1057,38 @@ thead th.time-col {
   border: 1px solid #f5c6cb;
   border-radius: 6px;
   font-size: 14px;
+}
+
+.week-type-group {
+  display: flex;
+  border: 1px solid $pr1;
+  border-radius: 6px;
+  overflow: hidden;
+
+  &__option {
+    flex: 1;
+    padding: 8px 10px;
+    background: white;
+    color: $pr1;
+    border: none;
+    border-right: 1px solid $pr1;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+
+    &:last-child {
+      border-right: none;
+    }
+
+    &:hover:not(&--active) {
+      background: rgba($pr1, 0.08);
+    }
+
+    &--active {
+      background: $pr1;
+      color: white;
+      cursor: default;
+    }
+  }
 }
 </style>

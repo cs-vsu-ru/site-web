@@ -145,11 +145,7 @@ const loadPage = async () => {
 
   userRole.value = authStore.getRole
 
-  // Ensure store is populated. Admin gets all tabs; otherwise visible only.
-  if (userRole.value === 'ADMIN') {
-    await tabsStore.loadAllTabs()
-  }
-  await tabsStore.loadVisibleTabs()
+  await tabsStore.loadAllTabs()
 
   const foundTab = tabsStore.findTabByUrl(route.path)
   if (!foundTab) {
