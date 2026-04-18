@@ -1,5 +1,5 @@
 <script setup>
-import {ref, computed, onMounted, onBeforeUnmount, watch} from 'vue'
+import {ref, computed, onMounted, onBeforeUnmount, watch, nextTick} from 'vue'
 import {parserAxios} from '@/main'
 import Loader from '@/components/includes/Loader'
 import {userAuth} from '@/store/userAuth'
@@ -15,6 +15,8 @@ const courseNGroups = ref('')
 const placement = ref('')
 const lessonId = ref(null)
 const weekType = ref('EVERY')
+const modalMode = ref('edit')
+const subjectInput = ref(null)
 const zoom = ref(1)
 const isFullscreen = ref(false)
 const hideEmptyTeachers = ref(false)
@@ -176,11 +178,15 @@ const openModal = (name, course, room, id, pair, sIndex) => {
   courseNGroups.value = course
   placement.value = room
   lessonId.value = id
+  modalMode.value = (name || course || room) ? 'edit' : 'add'
   if (!pair || areLessonsEqual(pair)) {
     weekType.value = 'EVERY'
   } else {
     weekType.value = sIndex === 0 ? 'NUMERATOR' : 'DENOMINATOR'
   }
+  nextTick(() => {
+    subjectInput.value?.focus()
+  })
 }
 
 const loadSchedule = async () => {
@@ -516,23 +522,32 @@ watch(selectAllState, (state) => {
         </table>
       </div>
     </div>
-    <GDialog v-model="dialogState" :max-width="500" v-if="userRole === 'ADMIN' || userRole === 'MODERATOR'">
-      <form @submit.prevent="saveSchedule" class="login-modal">
-        <div class="login-modal__inputs">
-          <div class="login-modal__inputs-item">
-            <p class="login-modal__inputs-item_name">Название предмета</p>
-            <input type="text" class="login-modal__inputs-item_input" v-model="subjectName" required>
-          </div>
-          <div class="login-modal__inputs-item">
-            <p class="login-modal__inputs-item_name">Курc и группы</p>
-            <input type="text" class="login-modal__inputs-item_input" v-model="courseNGroups" required>
-          </div>
-          <div class="login-modal__inputs-item">
-            <p class="login-modal__inputs-item_name">Аудитория</p>
-            <input type="text" class="login-modal__inputs-item_input" v-model="placement" required>
-          </div>
-          <div class="login-modal__inputs-item">
-            <p class="login-modal__inputs-item_name">Чётность недели</p>
+    <GDialog v-model="dialogState" :max-width="520" v-if="userRole === 'ADMIN' || userRole === 'MODERATOR'">
+      <form @submit.prevent="saveSchedule" class="lesson-modal">
+        <div class="lesson-modal__header">
+          <h2 class="lesson-modal__title">{{ modalMode === 'edit' ? 'Редактирование занятия' : 'Добавление занятия' }}</h2>
+          <button type="button" class="lesson-modal__close" aria-label="Закрыть" @click="dialogState = false">
+            <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18.3 5.71a1 1 0 0 0-1.41 0L12 10.59 7.11 5.7a1 1 0 1 0-1.41 1.42L10.59 12l-4.89 4.88a1 1 0 1 0 1.41 1.42L12 13.41l4.89 4.89a1 1 0 0 0 1.41-1.42L13.41 12l4.89-4.88a1 1 0 0 0 0-1.41z"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="lesson-modal__body">
+          <label class="lesson-modal__field">
+            <span class="lesson-modal__label">Название предмета</span>
+            <input ref="subjectInput" type="text" class="lesson-modal__input" v-model="subjectName" required>
+          </label>
+          <label class="lesson-modal__field">
+            <span class="lesson-modal__label">Курс и группы</span>
+            <input type="text" class="lesson-modal__input" v-model="courseNGroups" required>
+          </label>
+          <label class="lesson-modal__field">
+            <span class="lesson-modal__label">Аудитория</span>
+            <input type="text" class="lesson-modal__input" v-model="placement" required>
+          </label>
+          <div class="lesson-modal__field">
+            <span class="lesson-modal__label">Чётность недели</span>
             <div class="week-type-group" role="radiogroup" aria-label="Чётность недели">
               <button type="button"
                       class="week-type-group__option"
@@ -555,8 +570,11 @@ watch(selectAllState, (state) => {
             </div>
           </div>
         </div>
-        <button type="submit" class="login-modal__submit">Сохранить</button>
-        <button @click="deleteLesson" type="button" class="login-modal__submit delete">Удалить</button>
+
+        <div class="lesson-modal__actions">
+          <button @click="deleteLesson" type="button" class="lesson-modal__btn lesson-modal__btn--danger">Удалить</button>
+          <button type="submit" class="lesson-modal__btn lesson-modal__btn--primary">Сохранить</button>
+        </div>
       </form>
     </GDialog>
   </section>
@@ -1059,22 +1077,143 @@ thead th.time-col {
   font-size: 14px;
 }
 
+.lesson-modal {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 24px 24px;
+  gap: 20px;
+  font-family: inherit;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  &__title {
+    font-size: 22px;
+    line-height: 26px;
+    color: $pr1;
+    margin: 0;
+  }
+
+  &__close {
+    width: 32px;
+    height: 32px;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $sc5;
+    transition: background 0.15s ease, color 0.15s ease;
+
+    svg {
+      fill: currentColor;
+    }
+
+    &:hover {
+      background: $sc3;
+      color: $pr1;
+    }
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  &__label {
+    font-size: 14px;
+    line-height: 18px;
+    color: $sc5;
+  }
+
+  &__input {
+    font-size: 16px;
+    line-height: 20px;
+    padding: 10px 12px;
+    background: white;
+    border: 1px solid $sc2;
+    border-radius: 10px;
+    color: $pr1;
+    transition: border-color 0.15s ease;
+    font-family: inherit;
+
+    &:focus {
+      outline: none;
+      border-color: $pr1;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  &__btn {
+    font-size: 16px;
+    line-height: 20px;
+    padding: 9px 20px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    font-family: inherit;
+
+    &--primary {
+      background: $pr1;
+      color: white;
+      border-color: $pr1;
+
+      &:hover {
+        background: darken($pr1, 6%);
+      }
+    }
+
+    &--danger {
+      background: white;
+      color: crimson;
+      border-color: currentColor;
+
+      &:hover {
+        background: crimson;
+        color: white;
+      }
+    }
+  }
+}
+
 .week-type-group {
   display: flex;
   border: 1px solid $pr1;
-  border-radius: 6px;
+  border-radius: 10px;
   overflow: hidden;
 
   &__option {
     flex: 1;
-    padding: 8px 10px;
+    padding: 9px 10px;
     background: white;
     color: $pr1;
     border: none;
     border-right: 1px solid $pr1;
     font-size: 14px;
+    line-height: 18px;
     cursor: pointer;
     transition: background 0.15s ease, color 0.15s ease;
+    font-family: inherit;
 
     &:last-child {
       border-right: none;
