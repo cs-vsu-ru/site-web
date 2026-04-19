@@ -14,7 +14,6 @@ const course = ref('')
 const group = ref('')
 const supervisor = ref('')
 const role = ref('STUDENT')
-
 const userList = ref([])
 
 const years = Array.from({ length: 101 }, (_, index) => 2025 - index);
@@ -42,12 +41,11 @@ const createStudent = async () => {
     login: login.value,
     password: password.value,
     email: email.value,
-    mainRole: role.value,
-    course: course.value,
+    course: Number(course.value),
     group: group.value,
-    startYear: startYear.value,
-    endYear: endYear.value,
-    supervisor: supervisor.value,
+    startYear: Number(startYear.value),
+    endYear: Number(endYear.value),
+    supervisor: Number(supervisor.value),
   })
       .then(() => {
         window.location.replace('/is/admin')
@@ -93,7 +91,7 @@ const createStudent = async () => {
           </div>
           <div class="user-data__item">
             <p class="user-data__item-name">Курс</p>
-            <input v-model="course" type="text" class="user-data__item-input" required>
+            <input v-model.number="course" type="number" min="1" class="user-data__item-input" required>
           </div>
           <div class="user-data__item">
             <p class="user-data__item-name">Группа</p>
@@ -101,19 +99,19 @@ const createStudent = async () => {
           </div>
           <div class="user-data__item">
             <p class="user-data__item-name">Год начала обучения</p>
-            <select v-model="startYear" class="user-data__item-input" required>
+            <select v-model.number="startYear" class="user-data__item-input" required>
               <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
             </select>
           </div>
           <div class="user-data__item">
             <p class="user-data__item-name">Год окончания обучения</p>
-            <select v-model="endYear" class="user-data__item-input" required>
+            <select v-model.number="endYear" class="user-data__item-input" required>
               <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
             </select>
           </div>
           <div class="user-data__item">
             <p class="user-data__item-name">Научный руководитель</p>
-            <select v-model="supervisor" class="user-data__item-input" required>
+            <select v-model.number="supervisor" class="user-data__item-input" required>
               <option v-for="user in userList" :key="user.id" :value="user.id">
                 {{ user.fullName }}
               </option>
