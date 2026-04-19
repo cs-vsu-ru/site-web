@@ -542,26 +542,44 @@ const uploadSchedule = async () => {
 const getUsers = async () => {
   await axios.get('employees')
       .then((userData) => {
-        userList.value = userData.data
+        userList.value = userData.data.filter(user => user.isActive !== false)
       })
 }
 
-const deleteUserDialogState = ref(false)
-const userToDelete = ref(null)
+const employeeActionDialogState = ref(false)
+const employeeActionTarget = ref(null)
+const employeeActionType = ref('delete')
 
-const confirmDeleteUser = (user) => {
-  userToDelete.value = user
-  deleteUserDialogState.value = true
+const openEmployeeActionDialog = (user, actionType) => {
+  employeeActionTarget.value = user
+  employeeActionType.value = actionType
+  employeeActionDialogState.value = true
 }
 
-const deleteUser = async () => {
-  if (!userToDelete.value) return
-  await axios.delete('employees/' + userToDelete.value.id)
-      .then(() => {
-        deleteUserDialogState.value = false
-        userToDelete.value = null
-        location.reload()
-      })
+const closeEmployeeActionDialog = () => {
+  employeeActionDialogState.value = false
+  employeeActionTarget.value = null
+  employeeActionType.value = 'delete'
+}
+
+const submitEmployeeAction = async () => {
+  if (!employeeActionTarget.value) return
+
+  try {
+    if (employeeActionType.value === 'disable') {
+      await axios.patch(`employees/${employeeActionTarget.value.id}/disable`, {})
+    } else {
+      await axios.delete(`employees/${employeeActionTarget.value.id}`)
+    }
+
+    await getUsers()
+    closeEmployeeActionDialog()
+  } catch (error) {
+    console.error('Employee action failed:', error)
+    alert(employeeActionType.value === 'disable'
+        ? 'Ошибка при скрытии сотрудника'
+        : 'Ошибка при удалении сотрудника')
+  }
 }
 
 const getMails = async () => {
@@ -935,9 +953,47 @@ const deleteMail = async (mailId) => {
               <div v-for="user in filteredAndSortedUsers" class="user-item">
                 <p class="user-item__name">{{ user.lastName + ' ' + user.firstName + ' ' + user.patronymic }}</p>
                 <template v-if="activeEmployeesTab === 'employees'">
-                  <router-link :to="'/profile/' + user.id" style="margin-left: auto;" class="admin-button">Редактировать
-                  </router-link>
-                  <button @click="confirmDeleteUser(user)" class="admin-button">Удалить</button>
+                  <div class="employee-actions">
+                    <router-link :to="'/profile/' + user.id" class="admin-button">Редактировать</router-link>
+                    <button
+                        @click="openEmployeeActionDialog(user, 'disable')"
+                        aria-label="Скрыть"
+                        title="Скрыть сотрудника"
+                        class="employee-actions__button employee-actions__button--hide"
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 3L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M10.58 10.58C10.21 10.95 10 11.46 10 12C10 13.1 10.9 14 12 14C12.54 14 13.05 13.79 13.42 13.42" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M9.88 5.09C10.56 4.86 11.27 4.75 12 4.75C16.5 4.75 20.31 8.06 21.5 12C21.1 13.31 20.36 14.5 19.38 15.45" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M6.71 6.72C4.68 8 3.26 9.84 2.5 12C3.69 15.94 7.5 19.25 12 19.25C13.8 19.25 15.49 18.72 16.91 17.81" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
+                    <button
+                        @click="openEmployeeActionDialog(user, 'delete')"
+                        aria-label="Удалить"
+                        title="Удалить сотрудника"
+                        class="employee-actions__button employee-actions__button--delete"
+                    >
+                      <svg width="20px" height="20px" viewBox="0 0 21 21" version="1.1"
+                           xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none">
+                        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                        <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                        <g id="SVGRepo_iconCarrier">
+                          <desc>Created with Sketch.</desc>
+                          <defs></defs>
+                          <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                            <g id="Dribbble-Light-Preview" transform="translate(-179.000000, -360.000000)" fill="currentColor">
+                              <g id="icons" transform="translate(56.000000, 160.000000)">
+                                <path
+                                    d="M130.35,216 L132.45,216 L132.45,208 L130.35,208 L130.35,216 Z M134.55,216 L136.65,216 L136.65,208 L134.55,208 L134.55,216 Z M128.25,218 L138.75,218 L138.75,206 L128.25,206 L128.25,218 Z M130.35,204 L136.65,204 L136.65,202 L130.35,202 L130.35,204 Z M138.75,204 L138.75,200 L128.25,200 L128.25,204 L123,204 L123,206 L126.15,206 L126.15,220 L140.85,220 L140.85,206 L144,206 L144,204 L138.75,204 Z"
+                                    id="delete-[#1487]"></path>
+                              </g>
+                            </g>
+                          </g>
+                        </g>
+                      </svg>
+                    </button>
+                  </div>
                 </template>
                 <div v-else style="display: flex; gap: 15px">
                   <a
@@ -1039,14 +1095,17 @@ const deleteMail = async (mailId) => {
     </div>
   </section>
 
-  <GDialog v-model="deleteUserDialogState" :max-width="400">
+  <GDialog v-model="employeeActionDialogState" :max-width="400">
     <div class="delete-confirm-modal">
-      <p>Вы уверены, что хотите удалить сотрудника
-        <strong>{{ userToDelete?.lastName }} {{ userToDelete?.firstName }} {{ userToDelete?.patronymic }}</strong>?
+      <p>
+        {{ employeeActionType === 'disable' ? 'Скрыть сотрудника' : 'Полностью удалить сотрудника' }}
+        <strong>{{ employeeActionTarget?.lastName }} {{ employeeActionTarget?.firstName }} {{ employeeActionTarget?.patronymic }}</strong>?
       </p>
       <div class="delete-confirm-modal__actions">
-        <button @click="deleteUser" class="admin-button delete-confirm-modal__delete">Удалить</button>
-        <button @click="deleteUserDialogState = false" class="admin-button">Отмена</button>
+        <button @click="submitEmployeeAction" class="admin-button delete-confirm-modal__delete">
+          {{ employeeActionType === 'disable' ? 'Скрыть' : 'Удалить' }}
+        </button>
+        <button @click="closeEmployeeActionDialog" class="admin-button">Отмена</button>
       </div>
     </div>
   </GDialog>
@@ -1635,6 +1694,42 @@ select option {
   &__name {
     font-size: 22px;
     line-height: 25px;
+  }
+}
+
+.employee-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+
+  &__button {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: $pr1;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+
+    &:hover {
+      background: $pr3;
+    }
+  }
+
+  &__button--hide:hover {
+    color: $sc5;
+  }
+
+  &__button--delete:hover {
+    color: #dc3545;
   }
 }
 

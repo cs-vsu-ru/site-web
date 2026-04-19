@@ -26,7 +26,9 @@ onMounted(() => {
 const getUsers = async () => {
   await axios.get('employees')
       .then((userData) => {
-        userList.value = userData.data.map(user => ({
+        userList.value = userData.data
+            .filter(user => user.isActive !== false)
+            .map(user => ({
               id: user.id,
               fullName: `${user.firstName} ${user.lastName} ${user.patronymic}`
             }));
