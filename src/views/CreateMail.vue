@@ -15,7 +15,7 @@ onMounted(() => {
 const getTeachers = async () => {
   await axios.get('employees')
       .then((teacherData) => {
-        teacherList.value = teacherData.data
+        teacherList.value = teacherData.data.filter(teacher => teacher.isActive !== false)
       })
 }
 

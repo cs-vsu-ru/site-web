@@ -54,7 +54,7 @@ const teacherList = async () => {
 
   await axios.get('employees')
       .then((req) => {
-        teachersArr.value = req.data
+        teachersArr.value = req.data.filter(teacher => teacher.isActive !== false)
         isLoading.value = false
       })
 }
