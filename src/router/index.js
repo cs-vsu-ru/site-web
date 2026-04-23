@@ -1,8 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import MainPage from '../views/MainPage.vue'
+import axios from "axios";
 import AllTeachers from "@/views/AllTeachers.vue";
 import AllNews from "@/views/AllNews.vue";
 import Profile from "@/views/Profile.vue";
+import StudentProfile from "@/views/StudentProfile.vue";
 import {userAuth} from "@/store/userAuth";
 import NewPage from "@/views/NewPage.vue";
 import Admin from "@/views/Admin";
@@ -37,7 +39,27 @@ const routes = [
   {
     path: '/profile/:id',
     name: 'Profile',
-    component: Profile
+    component: Profile,
+    beforeEnter: async (to, from, next) => {
+      const store = userAuth()
+
+      if (store.getIsAuth === '') {
+        next()
+        return
+      }
+
+      try {
+        await axios.get('student/account')
+        next(`/student-profile/${to.params.id}`)
+      } catch (error) {
+        next()
+      }
+    }
+  },
+  {
+    path: '/student-profile/:id',
+    name: 'StudentProfile',
+    component: StudentProfile
   },
   {
     path: '/news/new/:id',

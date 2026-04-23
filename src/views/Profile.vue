@@ -31,7 +31,7 @@
           >Изменить фото</label
         >
         <router-link
-          v-else
+          v-else-if="showScheduleLink"
           :to="'/schedule/' + destination.id"
           class="profile__left-buttons_item"
           >Расписание преподавателя
@@ -215,9 +215,7 @@
     </div>
 
     <button
-      v-if="
-        (userRole === 'ADMIN' || currUserId === destination.id) && !activeEdit
-      "
+      v-if="canEditProfile && !activeEdit"
       @click="
         activeEdit = true;
         getLogin(destination.id);
@@ -227,9 +225,7 @@
       Редактировать
     </button>
     <button
-      v-if="
-        (userRole === 'ADMIN' || currUserId === destination.id) && activeEdit
-      "
+      v-if="canEditProfile && activeEdit"
       @click="saveProfile"
       class="admin-button profile__edit"
     >
@@ -274,10 +270,46 @@ const destinationId = computed(() => route.params.id);
 const destination = computed(() => {
   return accountInfo.value.find((item) => item.id == destinationId.value);
 });
+const isStudentProfile = computed(() =>
+  destination.value?.mainRole === "STUDENT" ||
+  destination.value?.role === "STUDENT" ||
+  store.getRole === "STUDENT",
+);
+const isOwnProfile = computed(() => currUserId.value == destinationId.value);
+const canEditProfile = computed(() =>
+  !isStudentProfile.value &&
+  (userRole.value === "ADMIN" || isOwnProfile.value),
+);
+const showScheduleLink = computed(() =>
+  !activeEdit.value && !isStudentProfile.value && destination.value?.hasLessons !== false,
+);
 onMounted(() => {
   accountAPI();
   getUserData();
 });
+
+const normalizeAccountResponse = (data) => (Array.isArray(data) ? data[0] : data);
+const getAuthenticatedAccount = async () => {
+  const endpoints = ["account", "student/account"];
+
+  for (const endpoint of endpoints) {
+    try {
+      const response = await axios.get(endpoint);
+      return {
+        endpoint,
+        data: normalizeAccountResponse(response.data),
+      };
+    } catch (error) {
+      if (endpoint === endpoints[endpoints.length - 1]) {
+        throw error;
+      }
+    }
+  }
+};
+const getStudentProfileById = async (id) => {
+  const response = await axios.get(`student/${id}`);
+  return normalizeAccountResponse(response.data);
+};
 
 const checkImg = () => {
   profileImg.value = URL.createObjectURL(imgUrl.value.files[0]);
@@ -285,20 +317,44 @@ const checkImg = () => {
 
 const accountAPI = async () => {
   isLoading.value = true;
-  await axios.get("employees").then((accId) => {
-    accountInfo.value = accId.data;
+  try {
+    const accountResponse = await getAuthenticatedAccount();
+    const currentAccount = accountResponse.data;
+
+    if (
+      currentAccount?.mainRole === "STUDENT" ||
+      currentAccount?.role === "STUDENT" ||
+      store.getRole === "STUDENT"
+    ) {
+      if (currentAccount?.id == destinationId.value) {
+        accountInfo.value = currentAccount ? [currentAccount] : [];
+      } else {
+        const studentProfile = await getStudentProfileById(destinationId.value);
+        accountInfo.value = studentProfile ? [studentProfile] : [];
+      }
+      return;
+    }
+
+    await axios.get("employees").then((accId) => {
+      accountInfo.value = accId.data;
+    });
+  } finally {
     isLoading.value = false;
-  });
+  }
 };
 
 const getUserData = async () => {
   userRole.value = store.getRole;
-  await axios.get("account").then((user) => {
-    currUserId.value = user.data.id;
-  });
+  const user = await getAuthenticatedAccount();
+  currUserId.value = user.data?.id;
+  userRole.value = user.data?.mainRole || user.data?.role || store.getRole;
 };
 
 const getLogin = async (currId) => {
+  if (isStudentProfile.value) {
+    login.value = null;
+    return;
+  }
   await axios.get("employees/admin/" + currId).then((loginData) => {
     login.value = loginData.data;
   });
