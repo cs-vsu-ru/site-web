@@ -1,58 +1,57 @@
 <script setup>
-import {onMounted, ref} from "vue";
+import { onMounted, ref } from "vue";
 import axios from "axios";
 
-const login = ref('')
-const password = ref('')
-const lastName = ref('')
-const firstName = ref('')
-const patronymic = ref('')
-const email = ref('')
-const startYear = ref('')
-const endYear = ref('')
-const course = ref('')
-const group = ref('')
-const supervisor = ref('')
-const role = ref('STUDENT')
-const userList = ref([])
+const login = ref("");
+const password = ref("");
+const lastName = ref("");
+const firstName = ref("");
+const patronymic = ref("");
+const email = ref("");
+const startYear = ref("");
+const endYear = ref("");
+const course = ref("");
+const group = ref("");
+const supervisor = ref("");
+const role = ref("STUDENT");
+const userList = ref([]);
 
-const years = Array.from({ length: 101 }, (_, index) => 2025 - index);
+const years = Array.from({ length: 101 }, (_, index) => 2027 - index);
 
 onMounted(() => {
-  getUsers()
-})
+  getUsers();
+});
 
 const getUsers = async () => {
-  await axios.get('employees')
-      .then((userData) => {
-        userList.value = userData.data
-            .filter(user => user.isActive !== false)
-            .map(user => ({
-              id: user.id,
-              fullName: `${user.firstName} ${user.lastName} ${user.patronymic}`
-            }));
-      });
-}
+  await axios.get("employees").then((userData) => {
+    userList.value = userData.data
+      .filter((user) => user.isActive !== false)
+      .map((user) => ({
+        id: user.id,
+        fullName: `${user.firstName} ${user.lastName} ${user.patronymic}`,
+      }));
+  });
+};
 
 const createStudent = async () => {
-
-  await axios.post('students', {
-    firstName: firstName.value,
-    lastName: lastName.value,
-    patronymic: patronymic.value,
-    login: login.value,
-    password: password.value,
-    email: email.value,
-    course: Number(course.value),
-    group: group.value,
-    startYear: Number(startYear.value),
-    endYear: Number(endYear.value),
-    supervisor: Number(supervisor.value),
-  })
-      .then(() => {
-        window.location.replace('/is/admin')
-      })
-}
+  await axios
+    .post("students", {
+      firstName: firstName.value,
+      lastName: lastName.value,
+      patronymic: patronymic.value,
+      login: login.value,
+      password: password.value,
+      email: email.value,
+      course: Number(course.value),
+      group: group.value,
+      startYear: Number(startYear.value),
+      endYear: Number(endYear.value),
+      supervisor: supervisor.value,
+    })
+    .then(() => {
+      window.location.replace("/is/admin");
+    });
+};
 </script>
 
 <template>
@@ -69,61 +68,115 @@ const createStudent = async () => {
           </div>
           <div class="user-data__item">
             <p class="user-data__item-name">E-mail</p>
-            <input v-model="email" type="text" class="user-data__item-input" required>
+            <input
+              v-model="email"
+              type="text"
+              class="user-data__item-input"
+              required
+            />
           </div>
           <div class="user-data__item">
             <p class="user-data__item-name">Логин</p>
-            <input v-model="login" type="text" class="user-data__item-input" required>
+            <input
+              v-model="login"
+              type="text"
+              class="user-data__item-input"
+              required
+            />
           </div>
           <div class="user-data__item">
             <p class="user-data__item-name">Пароль</p>
-            <input v-model="password" type="text" class="user-data__item-input" required>
+            <input
+              v-model="password"
+              type="text"
+              class="user-data__item-input"
+              required
+            />
           </div>
           <div class="user-data__item">
             <p class="user-data__item-name">Фамилия</p>
-            <input v-model="lastName" type="text" class="user-data__item-input" required>
+            <input
+              v-model="lastName"
+              type="text"
+              class="user-data__item-input"
+              required
+            />
           </div>
           <div class="user-data__item">
             <p class="user-data__item-name">Имя</p>
-            <input v-model="firstName" type="text" class="user-data__item-input" required>
+            <input
+              v-model="firstName"
+              type="text"
+              class="user-data__item-input"
+              required
+            />
           </div>
           <div class="user-data__item">
             <p class="user-data__item-name">Отчество</p>
-            <input v-model="patronymic" type="text" class="user-data__item-input" required>
+            <input
+              v-model="patronymic"
+              type="text"
+              class="user-data__item-input"
+              required
+            />
           </div>
           <div class="user-data__item">
             <p class="user-data__item-name">Курс</p>
-            <input v-model.number="course" type="number" min="1" class="user-data__item-input" required>
+            <input
+              v-model.number="course"
+              type="number"
+              min="1"
+              class="user-data__item-input"
+              required
+            />
           </div>
           <div class="user-data__item">
             <p class="user-data__item-name">Группа</p>
-            <input v-model="group" type="text" class="user-data__item-input" required>
+            <input
+              v-model="group"
+              type="text"
+              class="user-data__item-input"
+              required
+            />
           </div>
           <div class="user-data__item">
             <p class="user-data__item-name">Год начала обучения</p>
-            <select v-model.number="startYear" class="user-data__item-input" required>
-              <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
+            <select
+              v-model.number="startYear"
+              class="user-data__item-input"
+              required
+            >
+              <option v-for="year in years" :key="year" :value="year">
+                {{ year }}
+              </option>
             </select>
           </div>
           <div class="user-data__item">
             <p class="user-data__item-name">Год окончания обучения</p>
-            <select v-model.number="endYear" class="user-data__item-input" required>
-              <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
+            <select
+              v-model.number="endYear"
+              class="user-data__item-input"
+              required
+            >
+              <option v-for="year in years" :key="year" :value="year">
+                {{ year }}
+              </option>
             </select>
           </div>
           <div class="user-data__item">
             <p class="user-data__item-name">Научный руководитель</p>
-            <select v-model.number="supervisor" class="user-data__item-input" required>
+            <select
+              v-model.number="supervisor"
+              class="user-data__item-input"
+              required
+            >
               <option v-for="user in userList" :key="user.id" :value="user.id">
                 {{ user.fullName }}
               </option>
             </select>
           </div>
-
         </div>
-        <div class="user-extension">
-
-        </div>
+        <div class="user-extension"></div>
       </div>
     </div>
     <div class="user-create__buttons">
@@ -161,7 +214,6 @@ const createStudent = async () => {
         background: $sc3;
         width: 364px;
         height: 364px;
-
 
         &__label {
           font-size: 24px;
