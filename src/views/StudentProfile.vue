@@ -31,13 +31,16 @@
         Группа
         <span>{{ student.group }}</span>
       </p>
-      <p v-if="student.startYear || student.endYear" class="profile__right-item">
+      <p
+        v-if="student.startYear || student.endYear"
+        class="profile__right-item"
+      >
         Годы обучения
         <span>{{ student.startYear }} - {{ student.endYear }}</span>
       </p>
       <p class="profile__right-item">
         Научный руководитель
-        <span>{{ scientificSupervisorName || "-" }}</span>
+        <span>{{ userMap[student.supervisor] || "-" }}</span>
       </p>
       <p class="profile__right-item">
         Тема ВКР
@@ -49,10 +52,7 @@
       </p>
     </div>
 
-    <div
-      v-if="currUserId === student.id"
-      class="profile__tfa"
-    >
+    <div v-if="currUserId === student.id" class="profile__tfa">
       <button class="admin-button" @click="openTwoFactor">
         {{ student.twoFactorEnabled ? "Отключить 2FA" : "Подключить 2FA" }}
       </button>
@@ -85,22 +85,36 @@ const isLoading = ref(false);
 const tfaDialogState = ref(false);
 const tfaRef = ref(null);
 const employeeOptions = ref([]);
+const userList = ref([]);
+
+onMounted(() => {
+  getUsers();
+});
+
+const getUsers = async () => {
+  await axios.get("employees").then((userData) => {
+    userList.value = userData.data
+      .filter((user) => user.isActive !== false)
+      .map((user) => ({
+        id: user.id,
+        fullName: `${user.firstName} ${user.lastName} ${user.patronymic}`,
+      }));
+  });
+};
+
+const userMap = computed(() => {
+  const map = {};
+  userList.value.forEach((user) => {
+    map[user.id] = user.fullName;
+  });
+  return map;
+});
 
 const destinationId = computed(() => route.params.id);
 const fullName = computed(() =>
   student.value
     ? `${student.value.lastName} ${student.value.firstName} ${student.value.patronymic}`
     : "",
-);
-
-const employeeNameById = (id) => {
-  if (!id) return "";
-  const employee = employeeOptions.value.find((item) => item.id === id);
-  return employee ? employee.fullName : "";
-};
-
-const scientificSupervisorName = computed(() =>
-  employeeNameById(student.value?.scientificSupervisor),
 );
 
 const normalizeResponse = (data) => (Array.isArray(data) ? data[0] : data);
