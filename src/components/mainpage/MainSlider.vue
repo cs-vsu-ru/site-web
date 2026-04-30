@@ -118,7 +118,7 @@ const getSlides = async () => {
         content: "";
         position: absolute;
         inset: 0;
-        background: rgba(0, 0, 0, 0.38);
+        background: rgba(0, 0, 0, 0.48);
         z-index: 0;
       }
 
