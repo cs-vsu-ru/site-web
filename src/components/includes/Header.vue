@@ -371,7 +371,7 @@ const accountInfo = async () => {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 34px;
+    gap: 56px;
     max-width: 1440px;
     margin: 0 auto;
     padding: 22px 40px;
