@@ -363,19 +363,25 @@ const accountInfo = async () => {
     }
   }
 
+  &__bottom {
+    background: $pr1;
+  }
+
   .nav {
     display: flex;
     align-items: center;
-    justify-content: space-around;
-    gap: 10px;
+    justify-content: center;
+    gap: 34px;
     max-width: 1440px;
-    margin: 23px auto;
+    margin: 0 auto;
+    padding: 22px 40px;
     flex-wrap: wrap;
 
     &__item {
-      font-size: 18px;
-      line-height: 21px;
-      color: $pr1;
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 24px;
+      color: white;
       max-width: 200px;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -383,7 +389,7 @@ const accountInfo = async () => {
       display: inline-block;
 
       &:after {
-        background: $pr1;
+        background: white;
       }
     }
   }
@@ -487,30 +493,61 @@ const accountInfo = async () => {
 
 .header-buttons {
   display: flex;
-  align-items: stretch;
-  gap: 15px;
+  align-items: center;
+  gap: 10px;
+
+  .admin-button {
+    min-height: 44px;
+    padding: 0 18px;
+    border: 1px solid rgba($pr1, 0.18);
+    border-radius: 999px;
+    background: $pr1;
+    box-shadow: 0 8px 18px rgba($pr1, 0.14);
+    color: white;
+    font-size: 16px;
+    line-height: 20px;
+    white-space: nowrap;
+
+    &:hover {
+      background: lighten($pr1, 7%);
+      border-color: lighten($pr1, 7%);
+      color: white;
+      transform: translateY(-1px);
+    }
+  }
 
   &__profile,
   &__logout {
-    width: 40px;
-    height: 40px;
-    background: $sc2;
-    border-radius: 10px;
+    width: 44px;
+    height: 44px;
+    background: $pr3;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 3px solid $pr1;
-    box-sizing: content-box;
+    border: 1px solid rgba($pr1, 0.18);
+    box-shadow: 0 8px 18px rgba($pr1, 0.1);
 
     & svg {
-      width: 30px;
-      height: 30px;
-      fill: white;
+      width: 24px;
+      height: 24px;
+      fill: $pr1;
     }
 
     &:hover {
       background: $pr1;
+      border-color: $pr1;
+      transform: translateY(-1px);
+
+      & svg {
+        fill: white;
+      }
     }
+  }
+
+  &__logout:hover {
+    background: #c62828;
+    border-color: #c62828;
   }
 }
 </style>
