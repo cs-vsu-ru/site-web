@@ -23,7 +23,13 @@
               <p v-if="slide.description" class="event__text-description">
                 {{ slide.description }}
               </p>
-              <a v-if="slide.urlTo" :href="slide.urlTo" class="event__link">
+              <a
+                v-if="slide.urlTo"
+                :href="slide.urlTo"
+                class="event__link"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 Подробнее
               </a>
             </div>
