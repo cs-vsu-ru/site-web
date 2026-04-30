@@ -14,16 +14,26 @@
         :modules="[Navigation, Autoplay]"
       >
         <SwiperSlide v-for="slide in slidesArr">
-          <a :href="slide.urlTo" class="event">
+          <div
+            class="event"
+            :style="{ backgroundImage: `url(${API_FILES_URL}/${slide.imageURL})` }"
+          >
             <div class="event__text">
               <p class="event__text-value">{{ slide.title }}</p>
+              <p v-if="slide.description" class="event__text-description">
+                {{ slide.description }}
+              </p>
+              <a
+                v-if="slide.urlTo"
+                :href="slide.urlTo"
+                class="event__link"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Подробнее
+              </a>
             </div>
-            <img
-              :src="`${API_FILES_URL}/${slide.imageURL}`"
-              alt=""
-              class="event__image"
-            />
-          </a>
+          </div>
         </SwiperSlide>
       </Swiper>
       <div class="main__slider-nav">
@@ -66,7 +76,6 @@ import { onMounted, ref } from "vue";
 import { API_FILES_URL } from "@/main";
 
 const slidesArr = ref([]);
-
 onMounted(() => {
   getSlides();
 });
@@ -86,31 +95,44 @@ const getSlides = async () => {
   display: flex;
   flex-direction: column;
   gap: 40px;
-  max-width: 1440px;
-  margin: 0 auto;
-
-  @media (max-width: 1480px) {
-    max-width: calc(100% - 40px);
-  }
+  width: 100%;
+  margin-top: -40px;
 
   &__slider {
     width: 100%;
     position: relative;
+    overflow: hidden;
 
     .event {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: block;
+      position: relative;
+      min-height: 460px;
       box-sizing: border-box;
-      padding-left: 83px;
-      background: $pr2;
-      border-radius: 10px;
+      padding: 90px max(220px, calc((100vw - 1440px) / 2 + 220px)) 110px max(83px, calc((100vw - 1440px) / 2 + 83px));
+      background-color: $pr2;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
+
+      &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.48);
+        z-index: 0;
+      }
 
       &__text {
+        position: relative;
+        z-index: 1;
         display: flex;
         flex-direction: column;
-        gap: 22px;
-        max-width: 505px;
+        align-items: flex-start;
+        justify-content: center;
+        gap: 28px;
+        min-height: 260px;
+        max-width: 620px;
+        text-align: left;
 
         &-name {
           font-size: 18px;
@@ -124,42 +146,61 @@ const getSlides = async () => {
           line-height: 38px;
           color: white;
         }
+
+        &-description {
+          max-width: 560px;
+          font-size: 20px;
+          font-weight: 400;
+          line-height: 28px;
+          color: rgba(255, 255, 255, 0.86);
+        }
       }
 
-      &__image {
-        width: 562px;
-        height: 416px;
-        object-fit: cover;
-        border-radius: 0 10px 10px 0;
+      &__link {
+        align-self: flex-start;
+        padding: 0 0 4px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.55);
+        color: white;
+        font-size: 17px;
+        font-weight: 700;
+        line-height: 21px;
+        opacity: 0.78;
+
+        &:hover {
+          opacity: 1;
+        }
       }
     }
 
     &-nav {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-end;
+      gap: 14px;
       position: absolute;
-      width: 100%;
+      right: max(40px, calc((100vw - 1440px) / 2 + 40px));
+      bottom: 40px;
       box-sizing: border-box;
-      padding: 0 16px;
-      top: 45%;
       z-index: 2;
 
       &_button {
-        border: 2px solid $sc5;
+        border: 1px solid rgba(255, 255, 255, 0.45);
         width: 50px;
         height: 50px;
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 100%;
-        background: white;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(3px);
 
         &:hover {
-          opacity: 0.7;
+          background: rgba(255, 255, 255, 0.7);
+          opacity: 1;
         }
       }
     }
   }
+
 }
 </style>

@@ -19,6 +19,7 @@ const previewUrl = ref([])
 const currFile = ref([])
 const newSlide = ref(false)
 const newText = ref('')
+const newDescription = ref('')
 const addUrl = ref(null)
 const newUrl = ref(null)
 const newFile = ref(null)
@@ -232,7 +233,7 @@ const getSlidesForAdmin = async () => {
       })
 }
 
-const saveChanges = async (slideId, imageURL, title, urlTo, slideIdx) => {
+const saveChanges = async (slideId, imageURL, title, description, urlTo, slideIdx) => {
   if (previewUrl.value[slideIdx].files[0]) {
     let formData = new FormData()
 
@@ -250,6 +251,7 @@ const saveChanges = async (slideId, imageURL, title, urlTo, slideIdx) => {
             id: slideId,
             imageURL: urlData.data,
             title: title,
+            description: description,
             urlTo: urlTo
           })
         })
@@ -258,6 +260,7 @@ const saveChanges = async (slideId, imageURL, title, urlTo, slideIdx) => {
       id: slideId,
       imageURL: imageURL,
       title: title,
+      description: description,
       urlTo: urlTo
     })
   }
@@ -318,6 +321,7 @@ const addSlide = async () => {
           await axios.post('sliders', {
             imageURL: urlData.data,
             title: newText.value,
+            description: newDescription.value,
             urlTo: newsUrl.value
           })
 
@@ -327,6 +331,7 @@ const addSlide = async () => {
     await axios.post('sliders', {
       imageURL: `${NO_IMG_URL}`,
       title: newText.value,
+      description: newDescription.value,
       urlTo: newsUrl.value
     })
         .then(() => {
@@ -643,6 +648,9 @@ const deleteMail = async (mailId) => {
             <div style="display: flex;flex-direction: column; justify-content: space-between; gap: 10px; width: 50%">
               <textarea v-model="slide.title" class="slider-admin__item-text"
                         :disabled="checkDisable[index]"></textarea>
+              <textarea v-model="slide.description" class="slider-admin__item-text"
+                        :disabled="checkDisable[index]"
+                        placeholder="Введите описание для слайда"></textarea>
               <input :disabled="checkDisable[index]" type="text" class="slider-admin__item-text" v-model="slide.urlTo">
             </div>
             <div class="slider-admin__item-buttons">
@@ -675,7 +683,7 @@ const deleteMail = async (mailId) => {
               </svg>
             </div>
             <button
-                @click="saveChanges(slide.id, currFile[index] || slide.imageURL, slide.title, slide.urlTo, index); checkDisable[index] = true"
+                @click="saveChanges(slide.id, currFile[index] || slide.imageURL, slide.title, slide.description, slide.urlTo, index); checkDisable[index] = true"
                 v-if="!checkDisable[index]" class="slider-admin__item-save admin-button">Сохранить
             </button>
           </div>
@@ -698,6 +706,8 @@ const deleteMail = async (mailId) => {
             <div style="display: flex;flex-direction: column; justify-content: space-between; gap: 10px; width: 50%">
               <textarea v-model="newText" class="slider-admin__item-text"
                         placeholder="Введите текст для слайда"></textarea>
+              <textarea v-model="newDescription" class="slider-admin__item-text"
+                        placeholder="Введите описание для слайда"></textarea>
               <input v-model="newsUrl" type="text" class="slider-admin__item-text" placeholder="Введите ссылку">
             </div>
             <button @click="addSlide" class="slider-admin__item-save admin-button">Сохранить</button>

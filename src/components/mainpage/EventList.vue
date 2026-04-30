@@ -1,5 +1,5 @@
 <template>
-  <section class="events">
+  <section v-if="eventsFuture.length > 0 || eventsPass.length > 0" class="events">
     <div v-if="eventsFuture.length > 0" class="section-header">
       <h1 class="section-header__title">Предстоящие мероприятия</h1>
       <router-link class="section-header__link" to="/events">
@@ -10,7 +10,7 @@
         </svg>
       </router-link>
     </div>
-    <div class="events__field">
+    <div v-if="eventsFuture.length > 0" class="events__field">
       <router-link v-for="event in eventsFuture.slice(0, 4)" :to="'/events/' + event.id" class="event">
         <div class="event__date">
           <p class="event__date-day">{{ formatDateToString(event.startDateTime) }}</p>
@@ -29,7 +29,7 @@
         </svg>
       </router-link>
     </div>
-    <div class="events__field">
+    <div v-if="eventsPass.length > 0" class="events__field">
       <router-link v-for="event in eventsPass.slice(0, 4)" :to="'/events/' + event.id" class="event">
         <div class="event__date">
           <p class="event__date-day">{{ formatDateToString(event.startDateTime) }}</p>
