@@ -301,8 +301,6 @@ const accountInfo = async () => {
   width: 100%;
 
   &__top {
-    border-bottom: 2px solid $pr2;
-
     &-container {
       display: flex;
       align-items: center;
@@ -389,7 +387,19 @@ const accountInfo = async () => {
       display: inline-block;
 
       &:after {
-        background: white;
+        background: $pr2;
+      }
+
+      &:hover,
+      &.router-link-active,
+      &.router-link-exact-active {
+        color: $pr2;
+      }
+
+      &.router-link-active:after,
+      &.router-link-exact-active:after {
+        left: 0;
+        right: 0;
       }
     }
   }

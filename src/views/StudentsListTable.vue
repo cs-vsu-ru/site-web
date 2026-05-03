@@ -29,7 +29,11 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="student in paginatedData" :key="student.id">
+          <tr
+            v-for="student in paginatedData"
+            :key="student.id"
+            :class="{ 'student-row--inactive': student.isActive === false }"
+          >
             <td @click="startEdit(student)">
               <template v-if="editedStudentId === student.id">
                 <input
@@ -181,8 +185,8 @@
               <div class="student-actions">
                 <button
                   @click="openStudentActionDialog(student, 'disable')"
-                  aria-label="Скрыть"
-                  title="Скрыть студента"
+                  :aria-label="getStudentVisibilityActionLabel(student)"
+                  :title="`${getStudentVisibilityActionLabel(student)} студента`"
                   class="student-actions__button student-actions__button--hide"
                 >
                   <svg
@@ -290,7 +294,7 @@
         <p>
           {{
             studentActionType === "disable"
-              ? "Скрыть студента"
+              ? getStudentVisibilityDialogTitle(studentActionTarget)
               : "Полностью удалить студента"
           }}
           <strong
@@ -304,7 +308,7 @@
             @click="submitStudentAction"
             class="delete-confirm-modal__delete"
           >
-            {{ studentActionType === "disable" ? "Скрыть" : "Удалить" }}
+            {{ studentActionType === "disable" ? getStudentVisibilityActionLabel(studentActionTarget) : "Удалить" }}
           </button>
           <button @click="closeStudentActionDialog">Отмена</button>
         </div>
@@ -321,6 +325,39 @@ import { GDialog } from "gitart-vue-dialog/dist/index";
 const userList = ref([]);
 const studentsList = ref([]);
 const years = Array.from({ length: 101 }, (_, index) => 2027 - index);
+const hiddenStudentsStorageKey = "adminHiddenStudents";
+
+function readHiddenStudents() {
+  try {
+    return JSON.parse(localStorage.getItem(hiddenStudentsStorageKey) || "[]");
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveHiddenStudents(students) {
+  localStorage.setItem(hiddenStudentsStorageKey, JSON.stringify(students));
+}
+
+function cacheHiddenStudent(student) {
+  const hiddenStudents = readHiddenStudents().filter((item) => item.id !== student.id);
+  hiddenStudents.push({ ...student, isActive: false });
+  saveHiddenStudents(hiddenStudents);
+}
+
+function removeHiddenStudent(studentId) {
+  saveHiddenStudents(readHiddenStudents().filter((student) => student.id !== studentId));
+}
+
+function mergeHiddenStudents(students) {
+  const studentMap = new Map(students.map((student) => [student.id, student]));
+  readHiddenStudents().forEach((student) => {
+    if (!studentMap.has(student.id)) {
+      studentMap.set(student.id, { ...student, isActive: false });
+    }
+  });
+  return Array.from(studentMap.values());
+}
 
 const columns = [
   { key: "email", label: "Почта" },
@@ -364,9 +401,7 @@ const getUsers = async () => {
 
 const getStudents = async () => {
   await axios.get("students").then((userData) => {
-    studentsList.value = userData.data.filter(
-      (student) => student.isActive !== false,
-    );
+    studentsList.value = mergeHiddenStudents(userData.data);
   });
 };
 
@@ -500,17 +535,41 @@ function closeStudentActionDialog() {
   studentActionType.value = "delete";
 }
 
+function getStudentVisibilityActionLabel(student) {
+  return student?.isActive === false ? "Показать" : "Скрыть";
+}
+
+function getStudentVisibilityDialogTitle(student) {
+  return student?.isActive === false ? "Показать студента" : "Скрыть студента";
+}
+
 async function submitStudentAction() {
   if (!studentActionTarget.value) return;
 
   try {
     if (studentActionType.value === "disable") {
+      const student = studentActionTarget.value;
+      const nextIsActive = student.isActive === false;
       await axios.patch(`students/${studentActionTarget.value.id}/disable`, {});
+
+      if (nextIsActive) {
+        removeHiddenStudent(student.id);
+        await getStudents();
+      } else {
+        const inactiveStudent = { ...student, isActive: false };
+        cacheHiddenStudent(inactiveStudent);
+        studentsList.value = studentsList.value.map((item) =>
+          item.id === student.id ? inactiveStudent : item,
+        );
+      }
     } else {
       await axios.delete(`students/${studentActionTarget.value.id}`);
+      removeHiddenStudent(studentActionTarget.value.id);
+      studentsList.value = studentsList.value.filter(
+        (student) => student.id !== studentActionTarget.value.id,
+      );
     }
 
-    await getStudents();
     closeStudentActionDialog();
   } catch (error) {
     console.error("Student action failed:", error);
@@ -622,6 +681,19 @@ async function submitStudentAction() {
 
   th:hover {
     background-color: $sc4;
+  }
+
+  .student-row--inactive {
+    background: #f1f3f5;
+    color: #8a8f98;
+
+    td {
+      border-color: #d8dde3;
+    }
+
+    .student-actions__button {
+      color: #8a8f98;
+    }
   }
 
   .pagination {
