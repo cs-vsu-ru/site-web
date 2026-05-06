@@ -40,11 +40,15 @@
       </p>
       <p class="profile__right-item">
         Научный руководитель
-        <span>{{ userMap[student.supervisor] || "-" }}</span>
+        <span>{{ student.supervisorFullName || "—" }}</span>
+      </p>
+      <p class="profile__right-item">
+        Тема курсовой
+        <span>{{ student.courseWorkTopic || "—" }}</span>
       </p>
       <p class="profile__right-item">
         Тема ВКР
-        <span>{{ student.courseJob || "-" }}</span>
+        <span>{{ student.thesisTopic || "—" }}</span>
       </p>
       <p v-if="student.departmentInfo" class="profile__right-item">
         Кафедра

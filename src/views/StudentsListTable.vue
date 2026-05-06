@@ -154,27 +154,10 @@
               </template>
             </td>
 
-            <td @click="startEdit(student)">
-              <template v-if="editedStudentId === student.id">
-                <select
-                  v-model="student.supervisor"
-                  @blur="stopEdit(student)"
-                  @change="stopEdit(student)"
-                >
-                  <option
-                    v-for="user in userList"
-                    :key="user.id"
-                    :value="user.id"
-                  >
-                    {{ user.fullName }}
-                  </option>
-                </select>
-              </template>
-              <template v-else>
-                <span :title="student.supervisorName">{{
-                  student.supervisorName
-                }}</span>
-              </template>
+            <td>
+              <span :title="student.supervisorFullName || '—'">
+                {{ student.supervisorFullName || "—" }}
+              </span>
             </td>
 
             <td>
@@ -322,7 +305,6 @@ import { ref, computed, onMounted } from "vue";
 import axios from "axios";
 import { GDialog } from "gitart-vue-dialog/dist/index";
 
-const userList = ref([]);
 const studentsList = ref([]);
 const years = Array.from({ length: 101 }, (_, index) => 2027 - index);
 const hiddenStudentsStorageKey = "adminHiddenStudents";
@@ -368,7 +350,7 @@ const columns = [
   { key: "group", label: "Группа" },
   { key: "startYear", label: "Год нач." },
   { key: "endYear", label: "Год оконч." },
-  { key: "supervisorName", label: "Руководитель" },
+  { key: "supervisorFullName", label: "Руководитель" },
   { key: "login", label: "Логин" },
   { key: "deleteCol", label: "" },
 ];
@@ -379,25 +361,8 @@ const sortKey = ref("");
 const sortOrder = ref("asc");
 
 onMounted(() => {
-  getUsers();
   getStudents();
 });
-
-const getUsers = async () => {
-  await axios.get("employees").then((userData) => {
-    userList.value = userData.data
-      .filter((user) => user.isActive !== false)
-      .map((user) => ({
-        id: user.id,
-        fullName: `${user.lastName} ${user.firstName.charAt(
-          0,
-        )}.${user.patronymic.charAt(0)}.`,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        patronymic: user.patronymic,
-      }));
-  });
-};
 
 const getStudents = async () => {
   await axios.get("students").then((userData) => {
@@ -430,20 +395,12 @@ function stopEdit(student) {
         "group",
         "startYear",
         "endYear",
-        "supervisor",
         "login",
         "password",
       ].includes(key)
     ) {
       changedFields[key] = student[key];
     }
-  }
-
-  const supervisor = userList.value.find(
-    (user) => user.id === student.supervisor,
-  );
-  if (supervisor) {
-    student.supervisorName = `${supervisor.lastName} ${supervisor.firstName[0]}.${supervisor.patronymic[0]}.`;
   }
 
   if (Object.keys(changedFields).length) {
@@ -460,20 +417,8 @@ async function editStudent(id, body) {
   });
 }
 
-const studentsWithSupervisorName = computed(() => {
-  return studentsList.value.map((student) => {
-    const supervisor = userList.value.find(
-      (user) => user.id === student.supervisor,
-    );
-    return {
-      ...student,
-      supervisorName: supervisor ? supervisor.fullName : "—",
-    };
-  });
-});
-
 const sortedData = computed(() => {
-  const data = [...studentsWithSupervisorName.value];
+  const data = [...studentsList.value];
   if (!sortKey.value) return data;
   return data.sort((a, b) => {
     const aVal = a[sortKey.value];
