@@ -100,6 +100,151 @@ const activeEmployeesTab = ref(
   localStorage.getItem("employeesActiveTab") ?? "employees",
 );
 const fileInput = ref(null);
+
+const importDialogState = ref(false);
+const importSource = ref("file");
+const importFile = ref(null);
+const importFileInput = ref(null);
+const importUrl = ref("");
+const importLoading = ref(false);
+const importResult = ref(null);
+const importError = ref("");
+
+const openImportDialog = () => {
+  importDialogState.value = true;
+  importSource.value = "file";
+  importFile.value = null;
+  importUrl.value = "";
+  importResult.value = null;
+  importError.value = "";
+};
+
+const closeImportDialog = () => {
+  importDialogState.value = false;
+  if (importFileInput.value) importFileInput.value.value = "";
+};
+
+const onImportFileChange = (event) => {
+  importFile.value = event.target.files[0] || null;
+  importError.value = "";
+};
+
+const submitImport = async () => {
+  importLoading.value = true;
+  importError.value = "";
+  importResult.value = null;
+  try {
+    let response;
+    if (importSource.value === "file") {
+      if (!importFile.value) {
+        importError.value = "Выберите файл .xlsx или .csv";
+        return;
+      }
+      const formData = new FormData();
+      formData.append("file", importFile.value);
+      response = await axios.post("students/import", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+    } else {
+      const url = importUrl.value.trim();
+      if (!url) {
+        importError.value = "Введите URL Google Sheets";
+        return;
+      }
+      response = await axios.post("students/import/google-sheet", { url });
+    }
+    importResult.value = response.data;
+  } catch (err) {
+    if (err.response?.data?.errors) {
+      importResult.value = err.response.data;
+    } else if (typeof err.response?.data === "string") {
+      importError.value = err.response.data;
+    } else {
+      importError.value = "Не удалось выполнить импорт";
+    }
+  } finally {
+    importLoading.value = false;
+  }
+};
+
+const finishImport = () => {
+  closeImportDialog();
+  location.reload();
+};
+
+const topicsImportDialogState = ref(false);
+const topicsImportSource = ref("file");
+const topicsImportFile = ref(null);
+const topicsImportFileInput = ref(null);
+const topicsImportUrl = ref("");
+const topicsImportLoading = ref(false);
+const topicsImportResult = ref(null);
+const topicsImportError = ref("");
+
+const openTopicsImportDialog = () => {
+  topicsImportDialogState.value = true;
+  topicsImportSource.value = "file";
+  topicsImportFile.value = null;
+  topicsImportUrl.value = "";
+  topicsImportResult.value = null;
+  topicsImportError.value = "";
+};
+
+const closeTopicsImportDialog = () => {
+  topicsImportDialogState.value = false;
+  if (topicsImportFileInput.value) topicsImportFileInput.value.value = "";
+};
+
+const onTopicsFileChange = (event) => {
+  topicsImportFile.value = event.target.files[0] || null;
+  topicsImportError.value = "";
+};
+
+const submitTopicsImport = async () => {
+  topicsImportLoading.value = true;
+  topicsImportError.value = "";
+  topicsImportResult.value = null;
+  try {
+    let response;
+    if (topicsImportSource.value === "file") {
+      if (!topicsImportFile.value) {
+        topicsImportError.value = "Выберите файл .xlsx или .csv";
+        return;
+      }
+      const formData = new FormData();
+      formData.append("file", topicsImportFile.value);
+      response = await axios.post("students/topics/import", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+    } else {
+      const url = topicsImportUrl.value.trim();
+      if (!url) {
+        topicsImportError.value = "Введите URL Google Sheets";
+        return;
+      }
+      response = await axios.post("students/topics/import/google-sheet", {
+        url,
+      });
+    }
+    topicsImportResult.value = response.data;
+  } catch (err) {
+    if (err.response?.data?.errors) {
+      topicsImportResult.value = err.response.data;
+    } else if (typeof err.response?.data === "string") {
+      topicsImportError.value = err.response.data;
+    } else {
+      topicsImportError.value = "Не удалось выполнить импорт";
+    }
+  } finally {
+    topicsImportLoading.value = false;
+  }
+};
+
+const finishTopicsImport = () => {
+  closeTopicsImportDialog();
+  location.reload();
+};
+
 const eventArr = ref([]);
 const monthAssoc = ref({
   "01": "января",
@@ -1538,9 +1683,25 @@ const deleteMail = async (mailId) => {
           <div class="admin-users__item">
             <div class="admin-users__item-head">
               <p class="admin-users__item-head_name">Студенты</p>
-              <router-link to="/admin/create_student" class="admin-button"
-                >Добавить</router-link
-              >
+              <div class="admin-users__item-head_actions">
+                <button
+                  type="button"
+                  class="admin-button"
+                  @click="openImportDialog"
+                >
+                  Импорт студентов
+                </button>
+                <button
+                  type="button"
+                  class="admin-button"
+                  @click="openTopicsImportDialog"
+                >
+                  Импорт тем
+                </button>
+                <router-link to="/admin/create_student" class="admin-button"
+                  >Добавить</router-link
+                >
+              </div>
             </div>
             <div class="admin-users__item-list">
               <StudentsListTable />
@@ -1718,11 +1879,334 @@ const deleteMail = async (mailId) => {
     </div>
   </GDialog>
 
+  <GDialog v-model="importDialogState" :max-width="640">
+    <div class="import-modal">
+      <h3 class="import-modal__title">Импорт студентов</h3>
+
+      <div v-if="!importResult" class="import-modal__form">
+        <p class="import-modal__hint">
+          Загрузите выгрузку участников курса из Moodle.
+        </p>
+
+        <div class="import-modal__tabs">
+          <button
+            type="button"
+            :class="{ active: importSource === 'file' }"
+            @click="importSource = 'file'"
+          >
+            Файл .xlsx/.csv
+          </button>
+          <button
+            type="button"
+            :class="{ active: importSource === 'gsheet' }"
+            @click="importSource = 'gsheet'"
+          >
+            Ссылка Google Sheets
+          </button>
+        </div>
+
+        <input
+          v-if="importSource === 'file'"
+          ref="importFileInput"
+          type="file"
+          accept=".xlsx,.csv"
+          class="import-modal__file"
+          @change="onImportFileChange"
+          :disabled="importLoading"
+        />
+        <div v-else class="import-modal__url">
+          <input
+            v-model="importUrl"
+            type="url"
+            placeholder="https://docs.google.com/spreadsheets/..."
+            class="import-modal__url-input"
+            :disabled="importLoading"
+          />
+          <p class="import-modal__hint">
+            Таблица должна быть открыта по ссылке (Файл → Поделиться → Доступ
+            по ссылке: Просмотр).
+          </p>
+        </div>
+
+        <p v-if="importError" class="import-modal__error">{{ importError }}</p>
+        <Loader v-if="importLoading" />
+        <div class="import-modal__actions">
+          <button
+            class="admin-button"
+            @click="closeImportDialog"
+            :disabled="importLoading"
+          >
+            Отмена
+          </button>
+          <button
+            class="admin-button"
+            @click="submitImport"
+            :disabled="importLoading"
+          >
+            Импортировать
+          </button>
+        </div>
+      </div>
+
+      <div v-else class="import-modal__result">
+        <p>Создано: <strong>{{ importResult.created }}</strong></p>
+        <p>Обновлено: <strong>{{ importResult.updated }}</strong></p>
+        <p>Пропущено: <strong>{{ importResult.skipped ?? 0 }}</strong></p>
+        <p>Ошибок: <strong>{{ importResult.errors.length }}</strong></p>
+
+        <table v-if="importResult.errors.length" class="import-modal__errors">
+          <thead>
+            <tr>
+              <th>Строка</th>
+              <th>Поле</th>
+              <th>Сообщение</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(err, idx) in importResult.errors" :key="idx">
+              <td>{{ err.row }}</td>
+              <td>{{ err.field }}</td>
+              <td>{{ err.message }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="import-modal__actions">
+          <button class="admin-button" @click="finishImport">Закрыть</button>
+        </div>
+      </div>
+    </div>
+  </GDialog>
+
+  <GDialog v-model="topicsImportDialogState" :max-width="640">
+    <div class="import-modal">
+      <h3 class="import-modal__title">Импорт тем и научных руководителей</h3>
+
+      <div v-if="!topicsImportResult" class="import-modal__form">
+        <p class="import-modal__hint">
+          Перед импортом убедитесь, что студенты уже добавлены в систему. Темы
+          для отсутствующих студентов будут отклонены с ошибкой.
+        </p>
+        <p class="import-modal__hint">
+          Повторный импорт перезаписывает темы целиком — пустые ячейки в файле
+          затрут существующие значения.
+        </p>
+
+        <div class="import-modal__tabs">
+          <button
+            type="button"
+            :class="{ active: topicsImportSource === 'file' }"
+            @click="topicsImportSource = 'file'"
+          >
+            Файл .xlsx/.csv
+          </button>
+          <button
+            type="button"
+            :class="{ active: topicsImportSource === 'gsheet' }"
+            @click="topicsImportSource = 'gsheet'"
+          >
+            Ссылка Google Sheets
+          </button>
+        </div>
+
+        <input
+          v-if="topicsImportSource === 'file'"
+          ref="topicsImportFileInput"
+          type="file"
+          accept=".xlsx,.csv"
+          class="import-modal__file"
+          @change="onTopicsFileChange"
+          :disabled="topicsImportLoading"
+        />
+        <div v-else class="import-modal__url">
+          <input
+            v-model="topicsImportUrl"
+            type="url"
+            placeholder="https://docs.google.com/spreadsheets/..."
+            class="import-modal__url-input"
+            :disabled="topicsImportLoading"
+          />
+          <p class="import-modal__hint">
+            Таблица должна быть открыта по ссылке (Файл → Поделиться → Доступ
+            по ссылке: Просмотр).
+          </p>
+        </div>
+
+        <p v-if="topicsImportError" class="import-modal__error">
+          {{ topicsImportError }}
+        </p>
+        <Loader v-if="topicsImportLoading" />
+
+        <div class="import-modal__actions">
+          <button
+            class="admin-button"
+            @click="closeTopicsImportDialog"
+            :disabled="topicsImportLoading"
+          >
+            Отмена
+          </button>
+          <button
+            class="admin-button"
+            @click="submitTopicsImport"
+            :disabled="topicsImportLoading"
+          >
+            Импортировать
+          </button>
+        </div>
+      </div>
+
+      <div v-else class="import-modal__result">
+        <p>
+          Обработано:
+          <strong>{{ topicsImportResult.processedRows }}</strong>
+        </p>
+        <p>Создано: <strong>{{ topicsImportResult.createdRows }}</strong></p>
+        <p>
+          Обновлено: <strong>{{ topicsImportResult.updatedRows }}</strong>
+        </p>
+        <p>
+          Ошибок: <strong>{{ topicsImportResult.errors.length }}</strong>
+        </p>
+
+        <table
+          v-if="topicsImportResult.errors.length"
+          class="import-modal__errors"
+        >
+          <thead>
+            <tr>
+              <th>Строка</th>
+              <th>Логин студента</th>
+              <th>Сообщение</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(err, idx) in topicsImportResult.errors" :key="idx">
+              <td>{{ err.rowNumber }}</td>
+              <td>{{ err.studentLogin || "—" }}</td>
+              <td>{{ err.message }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="import-modal__actions">
+          <button class="admin-button" @click="finishTopicsImport">
+            Закрыть
+          </button>
+        </div>
+      </div>
+    </div>
+  </GDialog>
+
   <Loader v-if="isLoading" />
 </template>
 
 <style lang="scss" scoped>
 @import "@/assets/styles/_variables.scss";
+
+.admin-users__item-head_actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.import-modal__tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid $sc2;
+  margin-bottom: 8px;
+
+  button {
+    padding: 8px 14px;
+    border: none;
+    background: transparent;
+    color: $sc2;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    font-size: 16px;
+
+    &.active {
+      color: $pr1;
+      border-bottom-color: $pr1;
+    }
+  }
+}
+
+.import-modal__url {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  &-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid $sc2;
+    border-radius: 6px;
+    font-size: 14px;
+
+    &::placeholder {
+      color: $sc6;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: $pr1;
+    }
+  }
+}
+
+.import-modal {
+  background: #fff;
+  border-radius: 10px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  &__title {
+    margin: 0;
+    font-size: 22px;
+  }
+
+  &__hint {
+    margin: 0;
+    color: $sc2;
+  }
+
+  &__file {
+    padding: 6px 0;
+  }
+
+  &__error {
+    margin: 0;
+    color: #dc3545;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 8px;
+  }
+
+  &__errors {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+
+    th, td {
+      border: 1px solid $sc2;
+      padding: 6px 8px;
+      text-align: left;
+      font-size: 14px;
+    }
+  }
+
+  &__form, &__result {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+}
 
 .mail-moves {
   svg {

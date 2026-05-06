@@ -70,7 +70,7 @@
     <GDialog v-model="dialogState" :max-width="500">
       <!-- Обычный логин -->
       <form
-        v-if="!twoFactorRequired"
+        v-if="!twoFactorRequired && !bindRequired"
         @submit.prevent="auth"
         class="login-modal"
       >
@@ -97,6 +97,36 @@
         </div>
         <p class="login-modal__error">{{ authError }}</p>
         <button type="submit" class="login-modal__submit">Вход</button>
+      </form>
+
+      <!-- Шаг bind: ввод Moodle-логина для связки с AD -->
+      <form
+        v-else-if="bindRequired"
+        @submit.prevent="bindStudent"
+        class="login-modal"
+      >
+        <img src="../../assets/img/logo.jpg" alt="" class="login-modal__logo" />
+        <h3 class="login-modal__2fa-title">Подтверждение студента</h3>
+        <p class="login-modal__2fa-subtitle">
+          Введите ваш логин в Moodle, чтобы подтвердить, что вы — студент кафедры.
+        </p>
+        <div class="login-modal__inputs">
+          <div class="login-modal__inputs-item">
+            <p class="login-modal__inputs-item_name">Логин в Moodle</p>
+            <input
+              type="text"
+              class="login-modal__inputs-item_input"
+              v-model="bindMoodleLogin"
+              :disabled="bindLoading"
+              required
+            />
+          </div>
+        </div>
+        <p class="login-modal__error">{{ authError }}</p>
+        <button type="submit" class="login-modal__submit" :disabled="bindLoading">
+          Подтвердить
+        </button>
+        <button type="button" class="login-modal__back" @click="backFromBind">Назад</button>
       </form>
 
       <!-- Ввод кода 2FA -->
@@ -143,6 +173,9 @@ const twoFactorEmail = ref("");
 const twoFactorLoading = ref(false);
 const twoFactorCooldown = ref(60);
 const loginOtpRef = ref(null);
+const bindRequired = ref(false);
+const bindMoodleLogin = ref("");
+const bindLoading = ref(false);
 
 const isAuth = computed(() => store.getIsAuth);
 const navTabs = computed(() => tabsStore.visibleTabs);
@@ -165,7 +198,11 @@ const auth = async () => {
       password: password.value,
       rememberMe: true,
     });
-    if (response.data.requiresTwoFactor) {
+    if (response.data.bindRequired) {
+      bindRequired.value = true;
+      bindMoodleLogin.value = "";
+      authError.value = "";
+    } else if (response.data.requiresTwoFactor) {
       twoFactorRequired.value = true;
       twoFactorEmail.value = response.data.email;
       twoFactorCooldown.value = 60;
@@ -243,6 +280,43 @@ const resend2fa = async () => {
 const backToLogin = () => {
   twoFactorRequired.value = false;
   twoFactorEmail.value = "";
+  authError.value = "";
+};
+
+const bindStudent = async () => {
+  if (!bindMoodleLogin.value.trim()) {
+    authError.value = "Введите логин в Moodle";
+    return;
+  }
+  authError.value = "";
+  bindLoading.value = true;
+  try {
+    const response = await axios.post("auth/student/bind", {
+      adLogin: login.value,
+      password: password.value,
+      moodleLogin: bindMoodleLogin.value.trim(),
+    });
+    const token = response.data.accessToken;
+    store.setAuth(token, response.data.mainRole);
+    location.reload();
+  } catch (err) {
+    if (err.response?.status === 403) {
+      authError.value = "Вы не являетесь студентом кафедры";
+    } else if (err.response?.status === 401) {
+      authError.value = "Неверный логин или пароль";
+    } else if (err.response?.status === 409) {
+      authError.value = "Этот AD-логин уже используется";
+    } else {
+      authError.value = "Не удалось выполнить вход";
+    }
+  } finally {
+    bindLoading.value = false;
+  }
+};
+
+const backFromBind = () => {
+  bindRequired.value = false;
+  bindMoodleLogin.value = "";
   authError.value = "";
 };
 
