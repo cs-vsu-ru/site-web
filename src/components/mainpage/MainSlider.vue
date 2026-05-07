@@ -3,12 +3,13 @@
     <div class="main__slider">
       <Swiper
         :slides-per-view="1"
+        :speed="1200"
         :navigation="{
           prevEl: '.main__slider-nav_button.prev',
           nextEl: '.main__slider-nav_button.next',
         }"
         :autoplay="{
-          delay: 2500,
+          delay: 8000,
           disableOnInteraction: false,
         }"
         :modules="[Navigation, Autoplay]"
@@ -102,6 +103,10 @@ const getSlides = async () => {
     width: 100%;
     position: relative;
     overflow: hidden;
+
+    :deep(.swiper-wrapper) {
+      transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+    }
 
     .event {
       display: block;
