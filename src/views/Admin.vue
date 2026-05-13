@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from "vue";
 import axios from "axios";
 import { API_FILES_URL, NO_IMG_URL, parserAxios } from "@/main";
 import { newsImageSrc, isNewsPlaceholder, logoImg } from "@/utils/newsImage";
+import { fileImageSrc } from "@/utils/fileImage";
 import { GDialog } from "gitart-vue-dialog/dist/index";
 import Loader from "@/components/includes/Loader";
 import { userAuth } from "@/store/userAuth";
@@ -17,12 +18,14 @@ const slidesAdminArr = ref([]);
 const checkDisable = ref([]);
 const previewUrl = ref([]);
 const currFile = ref([]);
+const selectedSlideFiles = ref([]);
 const newSlide = ref(false);
 const newText = ref("");
 const newDescription = ref("");
 const addUrl = ref(null);
 const newUrl = ref(null);
 const newFile = ref(null);
+const newSlideFile = ref(null);
 const activeItem = ref(savedActiveItem ?? "slider");
 const newsSlider = ref([]);
 const newsDisabler = ref([]);
@@ -426,6 +429,7 @@ const getSlidesForAdmin = async () => {
     for (let i in slidesData.data) {
       checkDisable.value.push(true);
       currFile.value.push(null);
+      selectedSlideFiles.value.push(null);
     }
   });
 };
@@ -438,10 +442,10 @@ const saveChanges = async (
   urlTo,
   slideIdx,
 ) => {
-  if (previewUrl.value[slideIdx].files[0]) {
+  if (selectedSlideFiles.value[slideIdx]) {
     let formData = new FormData();
 
-    formData.append("file", previewUrl.value[slideIdx].files[0]);
+    formData.append("file", selectedSlideFiles.value[slideIdx]);
 
     await axios
       .post("upload-file", formData, {
@@ -469,10 +473,16 @@ const saveChanges = async (
   }
 };
 
-const checkFile = (currId) => {
-  currFile.value[currId] = URL.createObjectURL(
-    previewUrl.value[currId].files[0],
-  );
+const checkFile = (currId, event) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  if (currFile.value[currId]) {
+    URL.revokeObjectURL(currFile.value[currId]);
+  }
+
+  selectedSlideFiles.value[currId] = file;
+  currFile.value[currId] = URL.createObjectURL(file);
 };
 
 const handleFileUpload = async (event, employee) => {
@@ -509,10 +519,10 @@ const handleFileUpload = async (event, employee) => {
 };
 
 const addSlide = async () => {
-  if (addUrl.value.files[0]) {
+  if (newSlideFile.value) {
     let formData = new FormData();
 
-    formData.append("file", addUrl.value.files[0]);
+    formData.append("file", newSlideFile.value);
 
     await axios
       .post("upload-file", formData, {
@@ -544,8 +554,16 @@ const addSlide = async () => {
   }
 };
 
-const checkNewFile = () => {
-  newFile.value = URL.createObjectURL(addUrl.value.files[0]);
+const checkNewFile = (event) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  if (newFile.value) {
+    URL.revokeObjectURL(newFile.value);
+  }
+
+  newSlideFile.value = file;
+  newFile.value = URL.createObjectURL(file);
 };
 
 const deleteSlide = async (slideId) => {
@@ -877,18 +895,18 @@ const deleteMail = async (mailId) => {
             <div class="slider-admin__box">
               <img
                 v-if="currFile[index] === null"
-                :src="`${API_FILES_URL}/${slide.imageURL}`"
+                :src="fileImageSrc(slide.imageURL)"
                 alt=""
                 class="slider-admin__item-img"
               />
               <img
                 v-else
-                :src="`${API_FILES_URL}/${currFile[index]}`"
+                :src="currFile[index]"
                 alt=""
                 class="slider-admin__item-img"
               />
               <input
-                v-on:change="checkFile(index)"
+                v-on:change="checkFile(index, $event)"
                 ref="previewUrl"
                 :id="slide.id"
                 type="file"
@@ -1018,7 +1036,7 @@ const deleteMail = async (mailId) => {
               @click="
                 saveChanges(
                   slide.id,
-                  currFile[index] || slide.imageURL,
+                  slide.imageURL,
                   slide.title,
                   slide.description,
                   slide.urlTo,
@@ -2498,6 +2516,7 @@ const deleteMail = async (mailId) => {
     position: relative;
 
     &-img {
+      display: block;
       width: 300px;
       height: 150px;
       object-fit: cover;
@@ -2546,9 +2565,12 @@ const deleteMail = async (mailId) => {
 }
 
 .slider-admin__box {
+  flex: 0 0 300px;
   width: 300px;
   height: 150px;
   position: relative;
+  overflow: hidden;
+  background: $pr3;
 
   &-input {
     display: none;
@@ -2556,6 +2578,7 @@ const deleteMail = async (mailId) => {
 
   &-label {
     position: absolute;
+    top: 0;
     width: 100%;
     height: 100%;
     left: 0;

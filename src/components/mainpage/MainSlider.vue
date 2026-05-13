@@ -4,20 +4,23 @@
       <Swiper
         :slides-per-view="1"
         :speed="1200"
+        :loop="slidesArr.length > 1"
         :navigation="{
           prevEl: '.main__slider-nav_button.prev',
           nextEl: '.main__slider-nav_button.next',
         }"
         :autoplay="{
-          delay: 8000,
+          delay: 4000,
           disableOnInteraction: false,
         }"
         :modules="[Navigation, Autoplay]"
       >
-        <SwiperSlide v-for="slide in slidesArr">
+        <SwiperSlide v-for="slide in slidesArr" :key="slide.id">
           <div
             class="event"
-            :style="{ backgroundImage: `url(${API_FILES_URL}/${slide.imageURL})` }"
+            :style="{
+              backgroundImage: `url('${fileImageSrc(slide.imageURL)}')`,
+            }"
           >
             <div class="event__text">
               <p class="event__text-value">{{ slide.title }}</p>
@@ -74,7 +77,7 @@ import { Swiper, SwiperSlide } from "swiper/vue";
 import { Navigation, Autoplay } from "swiper";
 import axios from "axios";
 import { onMounted, ref } from "vue";
-import { API_FILES_URL } from "@/main";
+import { fileImageSrc } from "@/utils/fileImage";
 
 const slidesArr = ref([]);
 onMounted(() => {
@@ -113,7 +116,8 @@ const getSlides = async () => {
       position: relative;
       min-height: 460px;
       box-sizing: border-box;
-      padding: 90px max(220px, calc((100vw - 1440px) / 2 + 220px)) 110px max(83px, calc((100vw - 1440px) / 2 + 83px));
+      padding: 90px max(220px, calc((100vw - 1440px) / 2 + 220px)) 110px
+        max(83px, calc((100vw - 1440px) / 2 + 83px));
       background-color: $pr2;
       background-position: center;
       background-repeat: no-repeat;
@@ -206,6 +210,5 @@ const getSlides = async () => {
       }
     }
   }
-
 }
 </style>
