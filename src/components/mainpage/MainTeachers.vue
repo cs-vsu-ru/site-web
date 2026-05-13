@@ -26,7 +26,7 @@
                 <div class="teacher__data">
                   <p class="teacher__data-name">{{ teacher.lastName }} <br> {{ teacher.firstName }} <br> {{ teacher.patronymic}}</p>
                   <p class="teacher__data-status">{{ teacher.post }}</p>
-                  <a :href="'mailto:' + teacher.email" class="teacher__data-email">{{ teacher.email }}</a>
+                  <span class="teacher__data-email">{{ teacher.email }}</span>
                 </div>
               </router-link>
             </swiper-slide>

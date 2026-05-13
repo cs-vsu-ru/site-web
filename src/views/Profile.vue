@@ -272,8 +272,7 @@ const destination = computed(() => {
 });
 const isStudentProfile = computed(() =>
   destination.value?.mainRole === "STUDENT" ||
-  destination.value?.role === "STUDENT" ||
-  store.getRole === "STUDENT",
+  destination.value?.role === "STUDENT",
 );
 const isOwnProfile = computed(() => currUserId.value == destinationId.value);
 const canEditProfile = computed(() =>
@@ -306,11 +305,6 @@ const getAuthenticatedAccount = async () => {
     }
   }
 };
-const getStudentProfileById = async (id) => {
-  const response = await axios.get(`student/${id}`);
-  return normalizeAccountResponse(response.data);
-};
-
 const checkImg = () => {
   profileImg.value = URL.createObjectURL(imgUrl.value.files[0]);
 };
@@ -318,23 +312,6 @@ const checkImg = () => {
 const accountAPI = async () => {
   isLoading.value = true;
   try {
-    const accountResponse = await getAuthenticatedAccount();
-    const currentAccount = accountResponse.data;
-
-    if (
-      currentAccount?.mainRole === "STUDENT" ||
-      currentAccount?.role === "STUDENT" ||
-      store.getRole === "STUDENT"
-    ) {
-      if (currentAccount?.id == destinationId.value) {
-        accountInfo.value = currentAccount ? [currentAccount] : [];
-      } else {
-        const studentProfile = await getStudentProfileById(destinationId.value);
-        accountInfo.value = studentProfile ? [studentProfile] : [];
-      }
-      return;
-    }
-
     await axios.get("employees").then((accId) => {
       accountInfo.value = accId.data;
     });

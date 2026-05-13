@@ -25,7 +25,7 @@
           <p class="teacher__data-name">{{ teacher.lastName }} <br> {{ teacher.firstName }} <br>
             {{ teacher.patronymic }}</p>
           <p class="teacher__data-status">{{ teacher.post }}</p>
-          <a href="" class="teacher__data-email">{{ teacher.email }}</a>
+          <span class="teacher__data-email">{{ teacher.email }}</span>
         </div>
       </router-link>
     </div>
