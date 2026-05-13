@@ -219,15 +219,16 @@ const auth = async () => {
       persistAuthAndReload(token, role);
     }
   } catch (err) {
+    const data = err.response?.data;
     const isHtml =
-      err.response?.data &&
-      (err.response.data.includes("<!DOCTYPE") ||
-        err.response.data.trim().startsWith("<"));
+      typeof data === "string" &&
+      (data.includes("<!DOCTYPE") || data.trim().startsWith("<"));
 
     if (isHtml) {
       authError.value = "Сервер временно недоступен. Попробуйте позже.";
     } else {
-      authError.value = "Неверный логин или пароль";
+      authError.value =
+        data?.error?.message || data?.message || "Неверный логин или пароль";
     }
   }
 };
@@ -303,7 +304,7 @@ const bindStudent = async () => {
       password: password.value,
       moodleLogin: bindMoodleLogin.value.trim(),
     });
-    const token = response.data.accessToken;
+    const token = response.data.accessToken || response.data.jwtToken;
     persistAuthAndReload(token, response.data.mainRole);
   } catch (err) {
     if (err.response?.status === 403) {
@@ -534,9 +535,11 @@ const accountInfo = async () => {
 
   &__error {
     color: crimson;
-    position: absolute;
-    left: 40px;
-    bottom: 60px;
+    margin: 0;
+    min-height: 1.2em;
+    text-align: center;
+    font-size: 16px;
+    line-height: 1.2em;
   }
 
   &__submit {
