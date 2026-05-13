@@ -190,6 +190,13 @@ onMounted(async () => {
   await tabsStore.loadVisibleTabs();
 });
 
+const persistAuthAndReload = (token, role) => {
+  localStorage.setItem("token", token ?? "");
+  localStorage.setItem("role", role ?? "");
+  store.setAuth(token, role);
+  location.reload();
+};
+
 const auth = async () => {
   authError.value = "";
   try {
@@ -208,8 +215,8 @@ const auth = async () => {
       twoFactorCooldown.value = 60;
     } else {
       const token = response.data.accessToken || response.data.jwtToken;
-      store.setAuth(token, response.data.mainRole || response.data.role);
-      location.reload();
+      const role = response.data.mainRole || response.data.role;
+      persistAuthAndReload(token, role);
     }
   } catch (err) {
     const isHtml =
@@ -234,8 +241,8 @@ const verify2fa = async (code) => {
       code,
     });
     const token = response.data.accessToken || response.data.jwtToken;
-    store.setAuth(token, response.data.mainRole || response.data.role);
-    location.reload();
+    const role = response.data.mainRole || response.data.role;
+    persistAuthAndReload(token, role);
   } catch (err) {
     const status = err.response?.status;
     const message = err.response?.data;
@@ -297,8 +304,7 @@ const bindStudent = async () => {
       moodleLogin: bindMoodleLogin.value.trim(),
     });
     const token = response.data.accessToken;
-    store.setAuth(token, response.data.mainRole);
-    location.reload();
+    persistAuthAndReload(token, response.data.mainRole);
   } catch (err) {
     if (err.response?.status === 403) {
       authError.value = "Вы не являетесь студентом кафедры";
@@ -321,8 +327,7 @@ const backFromBind = () => {
 };
 
 const logout = () => {
-  store.setAuth("", "");
-  location.reload();
+  persistAuthAndReload("", "");
 };
 
 const getAuthenticatedAccount = async () => {
