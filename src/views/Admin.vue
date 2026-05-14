@@ -175,76 +175,103 @@ const finishImport = () => {
   location.reload();
 };
 
-const topicsImportDialogState = ref(false);
-const topicsImportSource = ref("file");
-const topicsImportFile = ref(null);
-const topicsImportFileInput = ref(null);
-const topicsImportUrl = ref("");
-const topicsImportLoading = ref(false);
-const topicsImportResult = ref(null);
-const topicsImportError = ref("");
+const dataImportDialogState = ref(false);
+const dataImportType = ref("course");
+const dataImportSource = ref("file");
+const dataImportFile = ref(null);
+const dataImportFileInput = ref(null);
+const dataImportUrl = ref("");
+const dataImportLoading = ref(false);
+const dataImportResult = ref(null);
+const dataImportedType = ref(null);
+const dataImportError = ref("");
 
-const openTopicsImportDialog = () => {
-  topicsImportDialogState.value = true;
-  topicsImportSource.value = "file";
-  topicsImportFile.value = null;
-  topicsImportUrl.value = "";
-  topicsImportResult.value = null;
-  topicsImportError.value = "";
+const openDataImportDialog = () => {
+  dataImportDialogState.value = true;
+  dataImportType.value = "course";
+  dataImportSource.value = "file";
+  dataImportFile.value = null;
+  dataImportUrl.value = "";
+  dataImportResult.value = null;
+  dataImportedType.value = null;
+  dataImportError.value = "";
 };
 
-const closeTopicsImportDialog = () => {
-  topicsImportDialogState.value = false;
-  if (topicsImportFileInput.value) topicsImportFileInput.value.value = "";
+const closeDataImportDialog = () => {
+  dataImportDialogState.value = false;
+  if (dataImportFileInput.value) dataImportFileInput.value.value = "";
 };
 
-const onTopicsFileChange = (event) => {
-  topicsImportFile.value = event.target.files[0] || null;
-  topicsImportError.value = "";
+const onDataImportTypeChange = (nextType) => {
+  dataImportType.value = nextType;
+  if (nextType === "nir") {
+    dataImportSource.value = "file";
+  }
+  dataImportFile.value = null;
+  dataImportUrl.value = "";
+  dataImportError.value = "";
+  if (dataImportFileInput.value) dataImportFileInput.value.value = "";
 };
 
-const submitTopicsImport = async () => {
-  topicsImportLoading.value = true;
-  topicsImportError.value = "";
-  topicsImportResult.value = null;
+const onDataImportFileChange = (event) => {
+  dataImportFile.value = event.target.files[0] || null;
+  dataImportError.value = "";
+};
+
+const submitDataImport = async () => {
+  dataImportLoading.value = true;
+  dataImportError.value = "";
+  dataImportResult.value = null;
   try {
     let response;
-    if (topicsImportSource.value === "file") {
-      if (!topicsImportFile.value) {
-        topicsImportError.value = "Выберите файл .xlsx или .csv";
+    if (dataImportType.value === "nir") {
+      if (!dataImportFile.value) {
+        dataImportError.value = "Выберите файл .xlsx";
         return;
       }
       const formData = new FormData();
-      formData.append("file", topicsImportFile.value);
+      formData.append("file", dataImportFile.value);
+      response = await axios.post("students/nir/import", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+    } else if (dataImportSource.value === "file") {
+      if (!dataImportFile.value) {
+        dataImportError.value = "Выберите файл .xlsx или .csv";
+        return;
+      }
+      const formData = new FormData();
+      formData.append("file", dataImportFile.value);
       response = await axios.post("students/topics/import", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
     } else {
-      const url = topicsImportUrl.value.trim();
+      const url = dataImportUrl.value.trim();
       if (!url) {
-        topicsImportError.value = "Введите URL Google Sheets";
+        dataImportError.value = "Введите URL Google Sheets";
         return;
       }
       response = await axios.post("students/topics/import/google-sheet", {
         url,
       });
     }
-    topicsImportResult.value = response.data;
+    dataImportResult.value = response.data;
+    dataImportedType.value = dataImportType.value;
   } catch (err) {
     if (err.response?.data?.errors) {
-      topicsImportResult.value = err.response.data;
+      dataImportResult.value = err.response.data;
+      dataImportedType.value = dataImportType.value;
     } else if (typeof err.response?.data === "string") {
-      topicsImportError.value = err.response.data;
+      dataImportError.value = err.response.data;
     } else {
-      topicsImportError.value = "Не удалось выполнить импорт";
+      dataImportError.value = "Не удалось выполнить импорт";
     }
   } finally {
-    topicsImportLoading.value = false;
+    dataImportLoading.value = false;
   }
 };
 
-const finishTopicsImport = () => {
-  closeTopicsImportDialog();
+const finishDataImport = () => {
+  closeDataImportDialog();
   location.reload();
 };
 
@@ -1712,9 +1739,9 @@ const deleteMail = async (mailId) => {
                 <button
                   type="button"
                   class="admin-button"
-                  @click="openTopicsImportDialog"
+                  @click="openDataImportDialog"
                 >
-                  Импорт тем
+                  Импорт тем и оценок
                 </button>
                 <router-link to="/admin/create_student" class="admin-button"
                   >Добавить</router-link
@@ -1996,77 +2023,96 @@ const deleteMail = async (mailId) => {
     </div>
   </GDialog>
 
-  <GDialog v-model="topicsImportDialogState" :max-width="640">
+  <GDialog v-model="dataImportDialogState" :max-width="720">
     <div class="import-modal">
-      <h3 class="import-modal__title">Импорт тем и научных руководителей</h3>
+      <h3 class="import-modal__title">Импорт тем и оценок</h3>
 
-      <div v-if="!topicsImportResult" class="import-modal__form">
+      <div v-if="!dataImportResult" class="import-modal__form">
         <p class="import-modal__hint">
-          Перед импортом убедитесь, что студенты уже добавлены в систему. Темы
-          для отсутствующих студентов будут отклонены с ошибкой.
-        </p>
-        <p class="import-modal__hint">
-          Повторный импорт перезаписывает темы целиком — пустые ячейки в файле
-          затрут существующие значения.
+          Выберите, что именно вы импортируете.
         </p>
 
-        <div class="import-modal__tabs">
+        <div class="import-modal__type-toggle">
           <button
             type="button"
-            :class="{ active: topicsImportSource === 'file' }"
-            @click="topicsImportSource = 'file'"
+            :class="{ active: dataImportType === 'course' }"
+            @click="onDataImportTypeChange('course')"
+          >
+            Темы курсовых
+          </button>
+          <button
+            type="button"
+            :class="{ active: dataImportType === 'thesis' }"
+            @click="onDataImportTypeChange('thesis')"
+          >
+            Темы ВКР
+          </button>
+          <button
+            type="button"
+            :class="{ active: dataImportType === 'nir' }"
+            @click="onDataImportTypeChange('nir')"
+          >
+            Оценки НИР
+          </button>
+        </div>
+
+        <div v-if="dataImportType !== 'nir'" class="import-modal__tabs">
+          <button
+            type="button"
+            :class="{ active: dataImportSource === 'file' }"
+            @click="dataImportSource = 'file'"
           >
             Файл .xlsx/.csv
           </button>
           <button
             type="button"
-            :class="{ active: topicsImportSource === 'gsheet' }"
-            @click="topicsImportSource = 'gsheet'"
+            :class="{ active: dataImportSource === 'gsheet' }"
+            @click="dataImportSource = 'gsheet'"
           >
             Ссылка Google Sheets
           </button>
         </div>
 
         <input
-          v-if="topicsImportSource === 'file'"
-          ref="topicsImportFileInput"
+          v-if="dataImportType === 'nir' || dataImportSource === 'file'"
+          ref="dataImportFileInput"
           type="file"
-          accept=".xlsx,.csv"
+          :accept="dataImportType === 'nir' ? '.xlsx' : '.xlsx,.csv'"
           class="import-modal__file"
-          @change="onTopicsFileChange"
-          :disabled="topicsImportLoading"
+          @change="onDataImportFileChange"
+          :disabled="dataImportLoading"
         />
         <div v-else class="import-modal__url">
           <input
-            v-model="topicsImportUrl"
+            v-model="dataImportUrl"
             type="url"
             placeholder="https://docs.google.com/spreadsheets/..."
             class="import-modal__url-input"
-            :disabled="topicsImportLoading"
+            :disabled="dataImportLoading"
           />
           <p class="import-modal__hint">
-            Таблица должна быть открыта по ссылке (Файл → Поделиться → Доступ
-            по ссылке: Просмотр).
+            Таблица должна быть открыта по ссылке (Файл → Поделиться →
+            Доступ по ссылке: Просмотр).
           </p>
         </div>
 
-        <p v-if="topicsImportError" class="import-modal__error">
-          {{ topicsImportError }}
+        <p v-if="dataImportError" class="import-modal__error">
+          {{ dataImportError }}
         </p>
-        <Loader v-if="topicsImportLoading" />
+        <Loader v-if="dataImportLoading" />
 
         <div class="import-modal__actions">
           <button
             class="admin-button"
-            @click="closeTopicsImportDialog"
-            :disabled="topicsImportLoading"
+            @click="closeDataImportDialog"
+            :disabled="dataImportLoading"
           >
             Отмена
           </button>
           <button
             class="admin-button"
-            @click="submitTopicsImport"
-            :disabled="topicsImportLoading"
+            @click="submitDataImport"
+            :disabled="dataImportLoading"
           >
             Импортировать
           </button>
@@ -2076,18 +2122,18 @@ const deleteMail = async (mailId) => {
       <div v-else class="import-modal__result">
         <p>
           Обработано:
-          <strong>{{ topicsImportResult.processedRows }}</strong>
+          <strong>{{ dataImportResult.processedRows }}</strong>
         </p>
-        <p>Создано: <strong>{{ topicsImportResult.createdRows }}</strong></p>
+        <p>Создано: <strong>{{ dataImportResult.createdRows }}</strong></p>
         <p>
-          Обновлено: <strong>{{ topicsImportResult.updatedRows }}</strong>
+          Обновлено: <strong>{{ dataImportResult.updatedRows }}</strong>
         </p>
         <p>
-          Ошибок: <strong>{{ topicsImportResult.errors.length }}</strong>
+          Ошибок: <strong>{{ dataImportResult.errors.length }}</strong>
         </p>
 
         <table
-          v-if="topicsImportResult.errors.length"
+          v-if="dataImportResult.errors.length && dataImportedType !== 'nir'"
           class="import-modal__errors"
         >
           <thead>
@@ -2098,16 +2144,37 @@ const deleteMail = async (mailId) => {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(err, idx) in topicsImportResult.errors" :key="idx">
+            <tr v-for="(err, idx) in dataImportResult.errors" :key="idx">
               <td>{{ err.rowNumber }}</td>
               <td>{{ err.studentLogin || "—" }}</td>
               <td>{{ err.message }}</td>
             </tr>
           </tbody>
         </table>
+        <table
+          v-else-if="dataImportResult.errors.length && dataImportedType === 'nir'"
+          class="import-modal__errors"
+        >
+          <thead>
+            <tr>
+              <th>Лист</th>
+              <th>Строка</th>
+              <th>ФИО студента</th>
+              <th>Сообщение</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(err, idx) in dataImportResult.errors" :key="idx">
+              <td>{{ err.sheetName || "—" }}</td>
+              <td>{{ err.rowNumber }}</td>
+              <td>{{ err.studentFullName || "—" }}</td>
+              <td>{{ err.message }}</td>
+            </tr>
+          </tbody>
+        </table>
 
         <div class="import-modal__actions">
-          <button class="admin-button" @click="finishTopicsImport">
+          <button class="admin-button" @click="finishDataImport">
             Закрыть
           </button>
         </div>
@@ -2145,6 +2212,38 @@ const deleteMail = async (mailId) => {
     &.active {
       color: $pr1;
       border-bottom-color: $pr1;
+    }
+  }
+}
+
+.import-modal__type-toggle {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: $sc3;
+  border-radius: 999px;
+  margin-bottom: 16px;
+
+  button {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    background: transparent;
+    color: $sc1;
+    cursor: pointer;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.2;
+    transition: background-color 0.18s ease, color 0.18s ease;
+
+    &:hover:not(.active) {
+      background: rgba(0, 41, 95, 0.06);
+    }
+
+    &.active {
+      background: $pr1;
+      color: #ffffff;
     }
   }
 }
