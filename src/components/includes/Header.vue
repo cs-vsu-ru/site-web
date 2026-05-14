@@ -96,7 +96,13 @@
           </div>
         </div>
         <p class="login-modal__error">{{ authError }}</p>
-        <button type="submit" class="login-modal__submit">Вход</button>
+        <button
+          type="submit"
+          class="login-modal__submit"
+          :disabled="authLoading"
+        >
+          {{ authLoading ? "Вход…" : "Вход" }}
+        </button>
       </form>
 
       <!-- Шаг bind: ввод Moodle-логина для связки с AD -->
@@ -176,6 +182,7 @@ const loginOtpRef = ref(null);
 const bindRequired = ref(false);
 const bindMoodleLogin = ref("");
 const bindLoading = ref(false);
+const authLoading = ref(false);
 
 const isAuth = computed(() => store.getIsAuth);
 const navTabs = computed(() => tabsStore.visibleTabs);
@@ -198,7 +205,9 @@ const persistAuthAndReload = (token, role) => {
 };
 
 const auth = async () => {
+  if (authLoading.value) return;
   authError.value = "";
+  authLoading.value = true;
   try {
     const response = await axios.post("authenticate", {
       username: login.value,
@@ -230,6 +239,8 @@ const auth = async () => {
       authError.value =
         data?.error?.message || data?.message || "Неверный логин или пароль";
     }
+  } finally {
+    authLoading.value = false;
   }
 };
 
@@ -549,10 +560,17 @@ const accountInfo = async () => {
     background: $sc3;
     border-radius: 10px;
     padding: 5px 0;
+    transition: background-color 0.18s ease, color 0.18s ease, opacity 0.18s ease;
 
-    &:hover {
+    &:hover:not(:disabled) {
       background: $pr1;
       color: white;
+    }
+
+    &:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      pointer-events: none;
     }
   }
 
