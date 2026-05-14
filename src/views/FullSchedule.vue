@@ -368,6 +368,11 @@ watch(selectAllState, (state) => {
     <div v-if="downloadError" class="download-error">
       {{ downloadError }}
     </div>
+    <div
+        v-if="scheduleData && typeof scheduleData.is_denominator === 'boolean'"
+        class="current-week-badge">
+      Текущая неделя: <strong>{{ scheduleData.is_denominator ? 'Знаменатель' : 'Числитель' }}</strong>
+    </div>
     <div class="controls">
       <label>
         <input type="checkbox" v-model="hideEmptyTeachers"/>
@@ -859,6 +864,19 @@ thead th.time-col {
   align-items: flex-start;
 }
 
+.current-week-badge {
+  margin: 0 0 24px;
+  font-size: 18px;
+  color: $sc1;
+  line-height: 1.2;
+  font-weight: 500;
+
+  strong {
+    color: $pr1;
+    font-weight: 700;
+  }
+}
+
 .filter-group {
   h3 {
     margin-bottom: 0;
@@ -999,14 +1017,16 @@ thead th.time-col {
   font-weight: 700;
 }
 
+$lesson-now-color: #16a34a;
+
 .lesson-now-badge {
   position: absolute;
   right: 8px;
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: $pr1;
-  box-shadow: 0 0 0 2px white, 0 0 0 3px rgba($pr1, 0.25);
+  background: $lesson-now-color;
+  box-shadow: 0 0 0 2px white, 0 0 0 3px rgba($lesson-now-color, 0.25);
   cursor: help;
   z-index: 2;
   animation: lesson-now-pulse 2.6s ease-out infinite;
@@ -1025,7 +1045,7 @@ thead th.time-col {
     top: 50%;
     right: calc(100% + 12px);
     transform: translateY(-50%);
-    background: $pr1;
+    background: $lesson-now-color;
     color: white;
     padding: 6px 10px;
     border-radius: 4px;
@@ -1044,7 +1064,7 @@ thead th.time-col {
     right: calc(100% + 6px);
     transform: translateY(-50%);
     border: 6px solid transparent;
-    border-left-color: $pr1;
+    border-left-color: $lesson-now-color;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.12s ease;
@@ -1058,10 +1078,10 @@ thead th.time-col {
 
 @keyframes lesson-now-pulse {
   0% {
-    box-shadow: 0 0 0 2px white, 0 0 0 3px rgba($pr1, 0.25);
+    box-shadow: 0 0 0 2px white, 0 0 0 3px rgba($lesson-now-color, 0.25);
   }
   100% {
-    box-shadow: 0 0 0 2px white, 0 0 0 7px rgba($pr1, 0);
+    box-shadow: 0 0 0 2px white, 0 0 0 7px rgba($lesson-now-color, 0);
   }
 }
 
