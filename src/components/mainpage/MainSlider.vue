@@ -111,10 +111,16 @@ const getSlides = async () => {
       transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
     }
 
+    :deep(.swiper-slide) {
+      height: auto;
+      display: flex;
+    }
+
     .event {
       display: block;
       position: relative;
       min-height: 460px;
+      width: 100%;
       box-sizing: border-box;
       padding: 90px max(220px, calc((100vw - 1440px) / 2 + 220px)) 110px
         max(83px, calc((100vw - 1440px) / 2 + 83px));

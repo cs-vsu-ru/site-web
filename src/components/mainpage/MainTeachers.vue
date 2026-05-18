@@ -13,6 +13,8 @@
           <!-- !!!!!!! length from emps.size-->
           <swiper
               :slides-per-view="5"
+              :speed="1200"
+              :loop="teachersArr.length > 5"
               :autoplay="{
                 delay: 1500,
                 disableOnInteraction: false,
@@ -88,6 +90,10 @@ const shuffleArr = (array) => {
         align-items: stretch;
         gap: 22px;
         flex-wrap: wrap;
+
+        .swiper-wrapper {
+            transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+        }
 
         .teacher{
             display: flex;
