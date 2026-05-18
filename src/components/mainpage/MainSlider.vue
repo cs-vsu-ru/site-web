@@ -17,7 +17,7 @@
       >
         <SwiperSlide v-for="slide in slidesArr" :key="slide.id">
           <div
-            class="event"
+            :class="['event', { 'event--document': isDocumentSlide(slide) }]"
             :style="{
               backgroundImage: `url('${fileImageSrc(slide.imageURL)}')`,
             }"
@@ -90,6 +90,15 @@ const getSlides = async () => {
     slidesArr.value.reverse();
   });
 };
+
+const DOCUMENT_KEYWORDS = ["сертификат", "аккредитац", "certificate"];
+
+const isDocumentSlide = (slide) => {
+  const url = typeof slide?.urlTo === "string" ? slide.urlTo : "";
+  if (url.toLowerCase().split("?")[0].endsWith(".pdf")) return true;
+  const title = typeof slide?.title === "string" ? slide.title.toLowerCase() : "";
+  return DOCUMENT_KEYWORDS.some((kw) => title.includes(kw));
+};
 </script>
 
 <style lang="scss" scoped>
@@ -119,7 +128,7 @@ const getSlides = async () => {
     .event {
       display: block;
       position: relative;
-      min-height: 460px;
+      min-height: 600px;
       width: 100%;
       box-sizing: border-box;
       padding: 90px max(220px, calc((100vw - 1440px) / 2 + 220px)) 110px
@@ -135,6 +144,17 @@ const getSlides = async () => {
         inset: 0;
         background: rgba(0, 0, 0, 0.48);
         z-index: 0;
+      }
+
+      &--document::before {
+        background: linear-gradient(
+          to right,
+          rgba(0, 0, 0, 0.55) 0%,
+          rgba(0, 0, 0, 0.45) 25%,
+          rgba(0, 0, 0, 0.15) 50%,
+          rgba(0, 0, 0, 0) 72%,
+          rgba(0, 0, 0, 0) 100%
+        );
       }
 
       &__text {
